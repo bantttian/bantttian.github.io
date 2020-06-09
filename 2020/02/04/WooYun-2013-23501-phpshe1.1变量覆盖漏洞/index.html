@@ -241,7 +241,7 @@
 <p>其中<code>order_state</code>的值是paid，这个值是通过表单<code>info[&#39;order_state&#39;]</code>提交的，这里就是造成变量覆盖的地方，我们可以用自己提交的<code>order_state</code>来覆盖原来的值，先看一下这个值是怎么传进来的。</p>
 <p>phpshe的路由定义在<code>common.php</code>文件中：</p>
 <p><img src="/2020/02/04/WooYun-2013-23501-phpshe1.1%E5%8F%98%E9%87%8F%E8%A6%86%E7%9B%96%E6%BC%8F%E6%B4%9E/imgs/11.png" alt="11"></p>
-<p>当前请求是<a href="http://192.168.247.134/phpshe/index.php?mod=order&amp;act=add，所以`$act`的值就是`add`。" target="_blank" rel="noopener">http://192.168.247.134/phpshe/index.php?mod=order&amp;act=add，所以`$act`的值就是`add`。</a></p>
+<p>当前请求是<a href="http://192.168.247.134/phpshe/index.php?mod=order&amp;act=add" target="_blank" rel="noopener">http://192.168.247.134/phpshe/index.php?mod=order&amp;act=add</a> ，所以<code>$act</code>的值就是<code>add</code>。</p>
 <p>然后要对用户传进来的POST参数进行处理。</p>
 <p><img src="/2020/02/04/WooYun-2013-23501-phpshe1.1%E5%8F%98%E9%87%8F%E8%A6%86%E7%9B%96%E6%BC%8F%E6%B4%9E/imgs/12.png" alt="12"></p>
 <p>我们知道从php5.4.0版本起，因为php.ini中去掉了magic_quotes，所以<code>get_magic_quotes_gpc()</code>始终会返回false，直接进入else逻辑。</p>
