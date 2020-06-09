@@ -201,11 +201,11 @@
 <li>如果<code>$file</code>的值不为<code>flag</code>，就将<code>next.php</code>包含进来。</li>
 </ol>
 <p>可以用以下两种方法绕开<code>file_get_contents()</code></p>
-<h5 id="1-data-php-filter"><a href="#1-data-php-filter" class="headerlink" title="1. data:// + php://filter"></a>1. data:// + php://filter</h5><p><strong>data://</strong>通常可以用来执行php代码</p>
+<h3 id="1-data-php-filter"><a href="#1-data-php-filter" class="headerlink" title="1. data:// + php://filter"></a>1. data:// + php://filter</h3><p><strong>data://</strong>通常可以用来执行php代码</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?text&#x3D;data:&#x2F;&#x2F;text&#x2F;plain,I have a dream&amp;file&#x3D;php:&#x2F;&#x2F;filter&#x2F;read&#x3D;convert.base64-encode&#x2F;resource&#x3D;next.php</span><br></pre></td></tr></table></figure>
 
 <p><img src="/2020/06/07/[BJDCTF2020]ZJCTF%E4%B8%8D%E8%BF%87%E5%A6%82%E6%AD%A4/imgs/2.png" alt="2"></p>
-<h5 id="2-php-input-php-filter"><a href="#2-php-input-php-filter" class="headerlink" title="2. php://input + php://filter"></a>2. php://input + php://filter</h5><p>PHITHON师傅在 <a href="https://www.leavesongs.com/PENETRATION/php-filter-magic.html" target="_blank" rel="noopener">https://www.leavesongs.com/PENETRATION/php-filter-magic.html</a> 中就解释过<strong>php://filter</strong>伪协议的作用</p>
+<h3 id="2-php-input-php-filter"><a href="#2-php-input-php-filter" class="headerlink" title="2. php://input + php://filter"></a>2. php://input + php://filter</h3><p>PHITHON师傅在 <a href="https://www.leavesongs.com/PENETRATION/php-filter-magic.html" target="_blank" rel="noopener">https://www.leavesongs.com/PENETRATION/php-filter-magic.html</a> 中就解释过<strong>php://filter</strong>伪协议的作用</p>
 <blockquote>
 <p>php://filter是PHP语言中特有的协议流，作用是作为一个“中间流”来处理其他流。比如，我们可以用如下一行代码将POST内容转换成base64编码并输出：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readfile(&quot;php:&#x2F;&#x2F;filter&#x2F;read&#x3D;convert.base64-encode&#x2F;resource&#x3D;php:&#x2F;&#x2F;input&quot;);</span><br></pre></td></tr></table></figure>

