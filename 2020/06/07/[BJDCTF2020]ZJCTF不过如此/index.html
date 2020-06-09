@@ -249,8 +249,8 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">preg_replace(<span class="string">'/(.*)/ei'</span>, <span class="string">'strtolower("\\1")'</span>, <span class="string">'$&#123;phpinfo()&#125;'</span>);</span><br></pre></td></tr></table></figure>
 
 <p><img src="/2020/06/07/[BJDCTF2020]ZJCTF%E4%B8%8D%E8%BF%87%E5%A6%82%E6%AD%A4/imgs/5.png" alt="5"></p>
-<p>这里比较难理解的是`{${ phpinfo() }}`和`${ phpinfo() }`，这是php中的可变变量，具体参考 <a href="https://www.php.net/manual/zh/language.variables.variable.php" target="_blank" rel="noopener">https://www.php.net/manual/zh/language.variables.variable.php</a> </p>
-<p>要理解为什么是`${{ phpinfo() }}`很简单，我们只要理解为什么单纯的使用<code>phpinfo()</code>不行就可以了。按照前面的分析，用正则<code>.*</code>去匹配<code>phpinfo()</code>的结果就是<code>phpinfo()</code>，替换到<code>strtolower(&quot;\\1&quot;)</code>中得到的结果是：</p>
+<p>这里比较难理解的是{${phpinfo()}}和${phpinfo()}，这是php中的可变变量，具体参考 <a href="https://www.php.net/manual/zh/language.variables.variable.php" target="_blank" rel="noopener">https://www.php.net/manual/zh/language.variables.variable.php</a> </p>
+<p>要理解为什么是${{phpinfo()}}很简单，我们只要理解为什么单纯的使用<code>phpinfo()</code>不行就可以了。按照前面的分析，用正则<code>.*</code>去匹配<code>phpinfo()</code>的结果就是<code>phpinfo()</code>，替换到<code>strtolower(&quot;\\1&quot;)</code>中得到的结果是：</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">strtolower(<span class="string">"phpinfo()"</span>);</span><br></pre></td></tr></table></figure>
 
 <p>这种情况下什么都不会被执行，因为php不会执行双引号中的函数。</p>
