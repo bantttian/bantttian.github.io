@@ -285,7 +285,7 @@
 <p><img src="/2020/06/27/VulnHub_DC-3/imgs/14.png" alt="14"></p>
 <p>说明这个不行，换一个 <a href="https://www.exploit-db.com/exploits/39772" target="_blank" rel="noopener">https://www.exploit-db.com/exploits/39772</a> :</p>
 <p><img src="/2020/06/27/VulnHub_DC-3/imgs/16.png" alt="16"></p>
-<p>根据39772.txt中的poc，首先要下载提供的exp：<a href="https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip" target="_blank" rel="noopener">https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip</a> （得挂个代理才行）。</p>
+<p>根据39772.txt中的poc，首先要下载提供的<a href="VulnHub_DC-3/exp_Local-Privilege-Escalation/39772.zip">exp</a>：<a href="https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip" target="_blank" rel="noopener">https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip</a> （得挂个代理才行）。</p>
 <p>下载后解压zip包发现有两个tar包，分别是<code>crasher.tar</code>和<code>exploit.tar</code>，这里用的是<code>exploit.tar</code>包中的exp，解压后有4个文件：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">compile.sh</span><br><span class="line">doubleput.c</span><br><span class="line">hello.c</span><br><span class="line">suidhelper.c</span><br></pre></td></tr></table></figure>
 
