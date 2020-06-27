@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>WooYun-2015-142913 espcms v6.4.15.08.25任意用户登录 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">WooYun-2015-142913 espcms v6.4.15.08.25任意用户登录</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-01-30&nbsp;&nbsp;10:46:54</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h4 id="漏洞概况"><a href="#漏洞概况" class="headerlink" title="漏洞概况"></a>漏洞概况</h4><p>这个漏洞的成因是没有考虑到php是弱类型语言，不合理使用intval()函数而造成的任意用户登录。</p>
+<h4 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h4><ul>
+<li>espcms 6.4.15.08.25</li>
+<li>php 5.6.40</li>
+<li>Ubuntu 18.04 + Mysql 5.7 + Apache2</li>
+</ul>
+<h4 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h4><p>搭建好环境后，我们先注册几个会员账号。</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/1.png" alt="1"></p>
+<p>登录后台管理员账号后可以在会员管理这里看到注册的会员账号。</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/2.png" alt="2"></p>
+<p>可以看到我们注册了5个用户，为了登录ID为3的用户，我们可以先注册一个以”数字3+字符串”的用户3test</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/3.png" alt="3"></p>
+<p>刷新当前页面，用burpsuite抓包，将<code>ecisp_member_info</code>的值修改得和<code>ecisp_member_info</code>一样。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ecisp_member_username&#x3D;57liGUuVT2EkJ0mZuAZgYCl%2B%2Fi3PJuRjagZ21ZMaR7I%3D; ecisp_member_info&#x3D;57liGUuVT2EkJ0mZuAZgYCl%2B%2Fi3PJuRjagZ21ZMaR7I%3D;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/4.png" alt="4"></p>
+<p>发送修改后的数据包，发现成功登录了ID为3的用户lxx。</p>
+<h4 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h4><p><code>interface/membermain.php</code>:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">in_center</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;CON[<span class="string">'mem_isucenter'</span>]) &#123;</span><br><span class="line">			<span class="keyword">include_once</span> admin_ROOT . <span class="string">'public/uc_client/client.php'</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">parent</span>::start_pagetemplate();</span><br><span class="line">		<span class="keyword">parent</span>::member_purview();</span><br><span class="line">		$lng = (admin_LNG == <span class="string">'big5'</span>) ? <span class="keyword">$this</span>-&gt;CON[<span class="string">'is_lancode'</span>] : admin_LNG;</span><br><span class="line">		$db_where = <span class="string">"userid=$this-&gt;ec_member_username_id AND username='$this-&gt;ec_member_username' "</span>;</span><br><span class="line">		$db_table1 = db_prefix . <span class="string">'member AS a'</span>;</span><br><span class="line">		$db_table2 = db_prefix . <span class="string">'member_value AS b'</span>;</span><br><span class="line">		$db_sql = <span class="string">"SELECT * FROM $db_table1 LEFT JOIN $db_table2 ON a.userid = b.userid  WHERE a.userid = $this-&gt;ec_member_username_id "</span>;</span><br><span class="line">		$rsMember = <span class="keyword">$this</span>-&gt;db-&gt;fetch_first($db_sql);</span><br><span class="line">		$rsMember[<span class="string">'userid'</span>] = <span class="keyword">$this</span>-&gt;ec_member_username_id;</span><br><span class="line">		</span><br><span class="line">    	$rsMember[<span class="string">'rankname'</span>] = <span class="keyword">$this</span>-&gt;get_member_purview($rsMember[<span class="string">'mcid'</span>], <span class="string">'rankname'</span>);</span><br><span class="line">		$userid = intval($rsMember[<span class="string">'userid'</span>]);</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">empty</span>($userid)) &#123;</span><br><span class="line">			<span class="keyword">exit</span>(<span class="string">'user err!'</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		...</span><br></pre></td></tr></table></figure>
+
+<p>我们跟踪一下espcms验证用户信息的流程，<code>in_center()</code>函数会调用<code>member_purview()</code>，这是处理uid的函数。</p>
+<p><code>public/class_connector.php</code> :</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/6.png" alt="6"></p>
+<p>先通过<code>$this-&gt;fun-&gt;accept(&#39;ecisp_member_info&#39;, &#39;C&#39;)</code>获取cookie中的<code>ecisp_member_info</code>值。</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/7.png" alt="7"></p>
+<p>这里没有传入<code>$htmlcode</code>，所以<code>$htmlcode</code>默认为true，会执行</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">($rehtml ? <span class="keyword">$this</span>-&gt;preg_htmldecode($putvalue) : <span class="keyword">$this</span>-&gt;htmldecode($putvalue))</span><br></pre></td></tr></table></figure>
+
+<p>又因为没有传入<code>$rehtml</code>，所以<code>$rehtml</code>默认为false，会执行</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;preg_htmldecode($putvalue)</span><br></pre></td></tr></table></figure>
+
+<p>返回的结果就是<code>57liGUuVT2EkJ0mZuAZgYCl+/i3PJuRjagZ21ZMaR7I=</code></p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/10.png" alt="10"></p>
+<p>接着返回的字符串就会传入<code>$this-&gt;fun-&gt;eccode($this-&gt;fun-&gt;accept(&#39;ecisp_member_info&#39;, &#39;C&#39;), &#39;DECODE&#39;, db_pscode)</code>。跟进<code>eccode()</code>函数，发现会对传入的字符串进行解密操作。</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/8.png" alt="8"></p>
+<p>经过<code>decryptCookie()</code>函数后就可以获得解密后的<code>ecisp_member_info</code>值。</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/9.png" alt="9"></p>
+<p>比如我们新注册的用户是<code>3test</code>，那么返回的<code>$user_info</code>值就是<code>3test</code>，然后将这个值赋给<code>$ec_member_username_id</code>。</p>
+<p>漏洞的主要成因就是对<code>$ec_member_username_id</code>进行了intval操作。因为php是弱类型语言，所以<code>3test</code>就会被intval理解为<strong>3</strong>。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">$this</span>-&gt;ec_member_username_id = intval($ec_member_username_id);</span><br></pre></td></tr></table></figure>
+
+<p>执行完<code>member_purview()</code>函数，<code>$this-&gt;ec_member_username_id</code>就是3，此时<code>$db_where</code>就是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">userid&#x3D;3 AND username&#x3D;&#39;3test&#39;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">in_center</span><span class="params">()</span></span>&#123;</span><br><span class="line">	...</span><br><span class="line">	...</span><br><span class="line">	$db_where = <span class="string">"userid=$this-&gt;ec_member_username_id AND username='$this-&gt;ec_member_username' "</span>;</span><br><span class="line">	$db_table1 = db_prefix . <span class="string">'member AS a'</span>;</span><br><span class="line">	$db_table2 = db_prefix . <span class="string">'member_value AS b'</span>;</span><br><span class="line">	$db_sql = <span class="string">"SELECT * FROM $db_table1 LEFT JOIN $db_table2 ON a.userid = b.userid  WHERE a.userid = $this-&gt;ec_member_username_id "</span>;</span><br><span class="line">	...</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时sql查询语句为：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> espcms_member <span class="keyword">AS</span> a <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> espcms_member_value <span class="keyword">AS</span> b <span class="keyword">ON</span> a.userid = b.userid  <span class="keyword">WHERE</span> a.userid = <span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到这时返回的结果就是ID为3的用户lxx。</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/11.png" alt="11"></p>
+<h4 id="官方补丁"><a href="#官方补丁" class="headerlink" title="官方补丁"></a>官方补丁</h4><p>这个补丁完全可以绕过啊，官方没有没有成功修复这个漏洞orz…</p>
+<p><img src="/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/imgs/patch.png" alt="patch"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/">https://bantttian.github.io/2020/01/30/WooYun-2015-142913-espcms6.4.15.08.25%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/01/31/seacms6.45%E5%89%8D%E5%8F%B0getshell%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">seacms6.45 前台getshell漏洞分析</a>
+            
+            
+            <a class="next" rel="next" href="/2020/01/13/CVE-2020-5513-GilaCMS1.1.18%E8%B7%AF%E5%BE%84%E9%81%8D%E5%8E%86%E6%BC%8F%E6%B4%9E/">CVE-2020-5513 Gila CMS 1.1.18 路径遍历漏洞</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
