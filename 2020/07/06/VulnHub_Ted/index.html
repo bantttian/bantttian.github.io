@@ -245,7 +245,7 @@
 
 <p><img src="/2020/07/06/VulnHub_Ted/imgs/13.png" alt="13"></p>
 <p>成功连接目标主机。</p>
-<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><h4 id="根据内核版本提权"><a href="#根据内核版本提权" class="headerlink" title="根据内核版本提权"></a>根据内核版本提权</h4><p>首先查看目标主机的内核版本以及操作系统：</p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><h3 id="根据内核版本提权"><a href="#根据内核版本提权" class="headerlink" title="根据内核版本提权"></a>根据内核版本提权</h3><p>首先查看目标主机的内核版本以及操作系统：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">www-data@ubuntu:/var/www/html$ uname -r</span><br><span class="line">uname -r</span><br><span class="line">4.4.0-21-generic</span><br><span class="line">www-data@ubuntu:/var/www/html$ uname -a</span><br><span class="line">uname -a</span><br><span class="line">Linux ubuntu 4.4.0-21-generic #37-Ubuntu SMP Mon Apr 18 18:33:37 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux</span><br></pre></td></tr></table></figure>
 
 <p>这个内核版本和<a href="https://bantttian.github.io/2020/06/27/VulnHub_DC-3/"><code>DC-3</code></a>靶场是一样的啊，都是<code>ubuntu 4.4.21</code>。打开metasploit，搜索可用的本地提权漏洞：</p>
@@ -260,7 +260,7 @@
 <p>但是在执行<code>compile.sh</code>时出错了：</p>
 <p><img src="/2020/07/06/VulnHub_Ted/imgs/15.png" alt="15"></p>
 <p>因为对二进制不了解，我也没办法修改exp，只能另辟蹊径。</p>
-<h4 id="sudo命令提权"><a href="#sudo命令提权" class="headerlink" title="sudo命令提权"></a>sudo命令提权</h4><p><code>sudo -l</code>查看有什么命令是当前用户能sudo执行的：</p>
+<h3 id="sudo命令提权"><a href="#sudo命令提权" class="headerlink" title="sudo命令提权"></a>sudo命令提权</h3><p><code>sudo -l</code>查看有什么命令是当前用户能sudo执行的：</p>
 <p><img src="/2020/07/06/VulnHub_Ted/imgs/16.png" alt="16"></p>
 <p>发现了<code>/usr/bin/apt-get</code>命令，在网上看到了一篇利用<code>apt-get</code>提权的文章:  <a href="https://www.hackingarticles.in/linux-for-pentester-apt-privilege-escalation/" target="_blank" rel="noopener">https://www.hackingarticles.in/linux-for-pentester-apt-privilege-escalation/</a>  :</p>
 <p><img src="/2020/07/06/VulnHub_Ted/imgs/18.png" alt="18"></p>
