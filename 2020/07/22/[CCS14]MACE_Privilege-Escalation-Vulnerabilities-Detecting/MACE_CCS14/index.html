@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-07-22&nbsp;&nbsp;15:20:32</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="CCS’14-amp-MACE-Detecting-Privilege-Escalation-Vulnerabilities-in-Web-Applications"><a href="#CCS’14-amp-MACE-Detecting-Privilege-Escalation-Vulnerabilities-in-Web-Applications" class="headerlink" title="CCS’14 &amp; MACE: Detecting Privilege Escalation Vulnerabilities in Web Applications"></a>CCS’14 &amp; MACE: Detecting Privilege Escalation Vulnerabilities in Web Applications</h1><h2 id="主要内容"><a href="#主要内容" class="headerlink" title="主要内容"></a>主要内容</h2><p>原文链接： <a href="https://dl.acm.org/doi/pdf/10.1145/2660267.2660337" target="_blank" rel="noopener">https://dl.acm.org/doi/pdf/10.1145/2660267.2660337</a> </p>
+<p>本文发表在USENIX Security’14，第一作者是来自威斯康星大学麦迪逊分校的<strong>Maliheh Monshizadeh</strong>：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/1.png" alt="1"> </p>
+<p>作者在Web应用程序安全方面发布了不少的论文，在2016年，该作者还发布了一篇给Web应用程序逻辑漏洞打patch的文章。</p>
+<h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>现代的Web应用程序通常会有用户角色划分，如游客、普通用户和管理员等。对于网站上的各种资源，不同的用户角色有不同的访问权限，所以网站通常会实现访问权限策略（access control policy）。但是如果开发者在实现这些访问控制权限设计时就存在缺陷，那么攻击者就可以访问到一些超出本身权限的资源和功能，这就是<strong>越权（Privilege Escalation）</strong>漏洞。</p>
+<p>越权漏洞分为两种：</p>
+<ol>
+<li>垂直越权漏洞 Vertical Privilege Escalation：权限低的攻击者可以访问高权限用户可访问的资源和功能。</li>
+<li>水平越权漏洞 Horizontal Privilege Escalation：攻击者可以访问与之同级别的用户的资源和功能。</li>
+</ol>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/pe.png" alt="pe"></p>
+<p>举一个简单的例子：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/2.png" alt="2"></p>
+<p>上面这三段代码，<strong>Listing 1</strong>中定义了用户验证函数<code>verifyUser</code>，在<strong>Listing 2</strong>和<strong>Listing 3</strong>中需要插入post或是删除post都需要先对用户进行session验证来确保用户已经登录，并且会对用户的权限的进行check，比如插入post，需要<code>$permission[&#39;canWrite&#39;]</code>为<code>true</code>，方可进行后续的数据库敏感操作。</p>
+<p>但是在有一些时候，开发者可能在用户的权限检查方面并没有严格的实现，就可能会造成一些越权操作的行为，从而对站点造成未知的伤害。比如下面的这几个不安全的delete操作。</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/3.png" alt="3"></p>
+<p><strong>Listing 4</strong>中，在进行删除操作之前并没有对用户的session进行验证，这其实是一种<strong>未认证账户无需认证可访问功能的垂直越权漏洞</strong>。</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/4.png" alt="4"></p>
+<p>在<strong>Listing 5</strong>中虽然确保了当前用户已经登录，但是并没有对用户的操作权限进行检查就允许用户进行删除操作。</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/5.png" alt="5"></p>
+<p>在<strong>Listing 6</strong>中，虽然对用户的session和操作权限进行了检查，但是并没有检查用户是否能够进行<code>deleteAll</code>操作，只有管理员用户才能进行该操作。属于<strong>垂直越权漏洞</strong>。</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/6.png" alt="6"></p>
+<p>这段代码的问题在于程序没有检查请求删除的用户是否是文章的所有者，这是一个<strong>平行越权漏洞</strong>。</p>
+<p>上面这4个例子中的越权漏洞其实可以分成这么几种情况：</p>
+<ol>
+<li>the absence of any authorization（缺少授权验证）</li>
+<li>improper ownership or privileges corresponding to user role（用户和用户权限之间的miss-match）</li>
+<li>untrusted session variables（不可靠的session值）</li>
+</ol>
+<h2 id="设计与实现"><a href="#设计与实现" class="headerlink" title="设计与实现"></a>设计与实现</h2><h3 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h3><p>为了挖掘Web应用程序中存在越权漏洞，作者设计并实现了一款名为<strong>MACE</strong>的工具。</p>
+<ul>
+<li>a)  <strong>Authorization state</strong></li>
+</ul>
+<p>定义了一个四元组<code>&lt;U, R, S, P&gt;</code>。这四元组分别表示：</p>
+<ul>
+<li><code>U</code>：the set of authenticated users，经过身份验证的用户；</li>
+<li><code>R</code>：the set of role defined over the users，capturing different authorizations，定义在U的基础上，表示不同的用户角色，比如admin或者是非admin角色；</li>
+<li><code>S</code>：the set of session identifiers or session variables，标识用户的session；</li>
+<li><code>R</code>：the permissions defined on the resources(e.g. read, write)，某个资源对应的限制权限。</li>
+</ul>
+<p>简而言之该四元组即为<code>&lt;user-ids, roles, session identifiers, permissions&gt;</code>。</p>
+<p>比如Listing 4中在进行删除操作之前没有对当前的用户身份进行检查，所以对应的四元组为<code>&lt;-, -, -, -&gt;</code>：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/3.png" alt="3"></p>
+<p>又比如Listing 6，当前的<code>deleteAll</code>操作应该仅限于admin用户，但是程序并没有检查当前的用户是不是admin，所以对应的四元组为<code>&lt;user, -, -, canWrite&gt;</code>：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/5.png" alt="5"></p>
+<ul>
+<li>b)  <strong>Authorization Context</strong></li>
+</ul>
+<p>基于Authorization State，作者提出了一个叫做<strong>Authorization Context</strong>，授权上下文的概念。结合Control Flow和Data Flow，可以计算某一个点的实际授权情况。比如下图是前面例子的授权上下文情况：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/20.png" alt="20"></p>
+<ul>
+<li>c)  <strong>Authorization Context Consistency</strong></li>
+</ul>
+<p>因为不知道某一个资源点的正确的授权权限应该是怎么样的，所以作者提出了<strong>Authorization Context Consistency</strong>的概念。当应用程序使用相同的授权上下文沿着不同的路径去访问相同的资源时，我们就认为该点资源的授权上下文是一致的。</p>
+<p>在下面这个例子中，利用<code>$_SESSION[&#39;userID&#39;]</code>将article和用户的身份信息关联在了一起，对应的four-tuple就是<code>&lt;$_SESSION[&#39;userID&#39;], -, -, -&gt;</code>：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/16.png" alt="16"></p>
+<p>然后是删除语句，发现在进行删除操作时，SQL语句仅需要提供被删除的post_id即可，并没有对进行删除操作的用户进行检查，对应的四元组是<code>&lt;-, -, -, -&gt;</code>，那么就可以造成一个水平越权：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/17.png" alt="17"></p>
+<p>正确的删除操作应该对文章的所有者进行检查，只有该文章的拥有者才有权限进行删除操作(<code>article_author = $_SESSION[&#39;userID&#39;]</code>)：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/18.png" alt="18"></p>
+<p>但其实从这个例子我们可以看出一些问题。MACE在判断某个资源的上下文授权一致性的时候其实是依赖于对该资源进行的INSERT操作。如果INSERT语句处的授权是存在问题的，那么可能会造成False Negative增加。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>下图是MACE的系统架构：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/7.png" alt="7"></p>
+<p>主要分为以下几个部分：</p>
+<ol>
+<li><strong>Inputs</strong></li>
+</ol>
+<p>程序的输入有两个：(a). 源代码；(b). Hints or annotation。</p>
+<p>这里的Hints是指一些全局变量，图6是论文附录中给出的hints：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/8.png" alt="8"></p>
+<ol start="2">
+<li><strong>Control Flow Analysis</strong></li>
+</ol>
+<p>MACE是基于静态分析的，先利用开源的工具<strong>Pixy</strong>和库<strong>TAPS</strong>生成CFG图，然后进行遍历，找到sink点（如query语句）。</p>
+<ol start="3">
+<li><strong>Data Dependency Analysis</strong></li>
+</ol>
+<p>在Web应用程序中，数据依赖关系通常是inter-procedural（程序间）的，比如说<strong>Listing 2</strong>中用到的用户验证函数<code>verifyUser()</code>就定义在文件<code>verifyUser.php</code>中，所以这一步的主要目的就是生成程序间的关系依赖图SSD(system dependence graph)。</p>
+<ol start="4">
+<li><strong>Slicing</strong></li>
+</ol>
+<p>这一步利用前面生成的SDG数据关系图和Hints，找到从source点sink点的所有路径，将结果放到Source-Sink Path List中。</p>
+<ol start="5">
+<li><strong>Authorization Context Analysis</strong></li>
+</ol>
+<p>这一步主要是生成带有上下文授权信息四元组的路径。</p>
+<ol start="6">
+<li><strong>Resource Access Analysis</strong></li>
+</ol>
+<p>虽然已经有了以四元组形式的上下文授权信息，但是有一些信息是隐藏在SQL查询语句之中的，比如以<strong>Listing 3</strong>为例：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/23.png" alt="23"></p>
+<p>比如第3行的query可以得到四元组<code>&lt;user, non-admin, -, canWrite&gt;</code>，但是在这个query语句中其实还有隐藏信息，需要满足两个<code>WHERE</code>语句：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">article_ID &#x3D; sanit($_GET[&#39;article_ID&#39;])	# 用户可控</span><br><span class="line">author_ID &#x3D; $userID						# 身份验证</span><br></pre></td></tr></table></figure>
+
+<p>其中当满足<code>author_ID = $userID</code>的时候，用户才能进行对应的文章删除操作，所以这是隐藏的权限校验。MACE经过symbolic execution之后得到了：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/24.png" alt="24"></p>
+<p>同时，MACE从得到的query中提取出新的约束<code>Authorization Columns</code>，对于这个例子就是<code>author_ID = $_SESSION[&#39;userID&#39;]</code>。</p>
+<ol start="7">
+<li><strong>Context Comparison</strong></li>
+</ol>
+<p>最后一步就是在每次访问资源的时候进行授权上下文的一致性比较。</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/21.png" alt="21"></p>
+<p>算法2中，先对INSERT语句进行分析。在line 2，先根据数据表名进行分类，然后进行上下文授权比对。最后的输出结果为表的authorization contexts和authorization columns。这里的输入是query语句及其authorization contexts，输出的结果是table的authorization contexts和authorization columns，并且先对INSERT语句进行了分析，因为authorization columns信息是先在INSERT语句处被定义的。接着需要对UPDATE语句和DELETE语句进行分析：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/22.png" alt="22"></p>
+<p>将INSERT语句处的authorization contexts和authorization columns与此处的进行对比，如果authorization contexts不一致，则说明存在一个Vertical Privilege Escalation；如果authorization columns不一致，则说明存在一个Horizontal Privilege Escalation。</p>
+<h2 id="实验评估"><a href="#实验评估" class="headerlink" title="实验评估"></a>实验评估</h2><h4 id="总体情况"><a href="#总体情况" class="headerlink" title="总体情况"></a>总体情况</h4><p>作者使用了开源的工具<strong>Pixy</strong>和库<strong>TAPS</strong>来生成CFG并且枚举execution path。实验并不需要很高的配置，是在一台2.4GHz Intel, 4.0 GB RAM的MacBook Pro上完成的。</p>
+<p>实验利用7个PHP CMS对MACE进行了测试，从下表Table 2可以看出，采用的CMS的代码行数跨度从1k到89k。</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/9.png" alt="9"></p>
+<p>上表最后一列是程序进行漏洞分析花费的时间，其中95%的分析时间都是花费在生成关系依赖图和列举路径上。</p>
+<h4 id="漏洞实例"><a href="#漏洞实例" class="headerlink" title="漏洞实例"></a>漏洞实例</h4><ol>
+<li><strong>phpns</strong></li>
+</ol>
+<p>phpns是一个开源的新闻系统，该系统一共有三种用户角色：(a). guest users，只能阅读一些新闻文章；(b). normal users，可以登录系统，可以访问文章管理面板，对文章进行管理；(c). admin user，可以管理整个系统，可以访问文章管理面板和用户管理面板。下面是normal users添加文章时程序进行的sql insert操作（Listing 8）以及文章删除操作（Listing 9）：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/11.png" alt="11"></p>
+<p>可以看到，在删除文章时，只需要通过post请求提供相应文章的ID即可，这将导致未授权的guest users亦可以删除权限更高的normal users的文章，这是一个垂直越权漏洞。</p>
+<ol start="2">
+<li><strong>dcp-portal</strong></li>
+</ol>
+<p>dcp-portal是一个CMS，一共有两种用户角色：(a). admin user；(b). non-admin user。该CMS使用<code>$_COOKIE[&#39;dcp5_member_admin&#39;]</code>来判断当前的用户是不是admin。</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/12.png" alt="12"></p>
+<p>当在agenda插入一个item的时候，是使用<code>$_COOKIE[&#39;dcp5_member_admin&#39;]</code>来标识<code>user_id</code>，但是在删除相应的item的时候，仅仅通过一个request请求参数<code>agid</code>来决定。所以只要是该系统中的任意yoghurt都可以根据agid来删除item，这是一个水平越权漏洞。</p>
+<ol start="3">
+<li><strong>SCARF</strong></li>
+</ol>
+<p>在<strong>SCARF</strong>中存在一个<strong>垂直越权漏洞</strong>，SCARF使用<code>$_SESSION[&#39;privilege&#39;]</code>来区分普通用户和admin。在<code>generaloptions.php</code>中，admin可以删除任意user，但是在该文件中并没有对用户的身份进行验证，就导致了非admin权限用户可以删除用户，只需要提供想要删除的用户的email：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/13.png" alt="13"></p>
+<p>正确的做法，应该在删除用户操作之前对用户的身份进行校验，只有admin用户有权限进行该操作：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/14.png" alt="14"></p>
+<h2 id="总体评价"><a href="#总体评价" class="headerlink" title="总体评价"></a>总体评价</h2><p>作者提出的通过校验上下文授权一致性来寻找Web应用程序中的越权漏洞，是一种白盒测试，需要喂给MACE应用程序的源码。而且从作者给出的Evaluation情况来看，测试的一些CMS都没有很复杂的执行逻辑，比如Drupal：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/25.png" alt="25"></p>
+<p>而且对于这种动态调用，因为是基于静态分析的，但是目前的静态分析工具是很难解决动态调用的问题的，所以MACE还是存在一些局限性的。</p>
+<h2 id="思维导图"><a href="#思维导图" class="headerlink" title="思维导图"></a>思维导图</h2><p>下面是在阅读论文时顺手整理的思维导图：</p>
+<p><img src="/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/MACE.svg" alt="MACE"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/">https://bantttian.github.io/2020/07/22/[CCS14]MACE_Privilege-Escalation-Vulnerabilities-Detecting/MACE_CCS14/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/07/12/%5B%E6%9E%81%E5%AE%A2%E5%A4%A7%E6%8C%91%E6%88%982019%5DWriteUp/">极客大挑战2019 WriteUp</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
