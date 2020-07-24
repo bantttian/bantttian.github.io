@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>CCS11 &amp; Fear the EAR-Discovering and Mitigating Execution After Redirect Vulnerabilities | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CCS11 &amp; Fear the EAR-Discovering and Mitigating Execution After Redirect Vulnerabilities</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-07-24&nbsp;&nbsp;23:56:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>原文链接：<a href="https://sites.cs.ucsb.edu/~vigna/publications/2011_CCS_EAR.pdf" target="_blank" rel="noopener">https://sites.cs.ucsb.edu/~vigna/publications/2011_CCS_EAR.pdf</a></p>
+<p>项目地址： <a href="https://github.com/adamdoupe/find_ear_rails" target="_blank" rel="noopener">https://github.com/adamdoupe/find_ear_rails</a> </p>
+<p>本文发表在CCS’11，第一作者是来自加州大学圣塔芭芭拉分校的Associate Professor , Adam Doupé，研究方向很广泛，Web、物联网等都有涉猎：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/9.png" alt="9"></p>
+<h2 id="主要内容"><a href="#主要内容" class="headerlink" title="主要内容"></a>主要内容</h2><p>在现代Web应用程序中存在一些逻辑漏洞，但是并不为开发者和安全研究人员所关注，EAR漏洞就是其中之一。所以在本篇论文中，作者对EAR漏洞进行了分类，并对9种比较流行的Web框架的重定向机制进行了分析。为了研究以Ruby on Rails为框架的Web应用程序中存在的EAR漏洞，作者开发了一款工具来检测EAR漏洞，最后在18,127个应用程序中，共发现了3,944处存在重定向后执行问题。</p>
+<p>EAR全称是<strong>Execution After Redirect</strong>，重定向后执行，以一个简单的<strong>Listing 1</strong>为例：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/1.png" alt="1"></p>
+<p>line 4判断当前用户是否为admin，如果不是就将用户重定向到首页<code>/</code>，但是并程序会继续执行，因为Ruby的<code>redirect_to</code>函数并不支持<strong>halt-on-redirect</strong>，程序向下执行，导致了<code>@topic</code>被更新。正确的做法是在line 5的后面进行return操作。但是这样也不能完全防住EAR漏洞，以<strong>Listing 3</strong>为例：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/2.png" alt="2"></p>
+<p>在<code>ensure_admin</code>函数中，判断了当前用户非admin用户，<code>redirect_to</code>重定向之后，调用了<code>return</code>返回，但是在<code>delete()</code>函数中可以看到，在第9行调用了<code>ensure_admin</code>，如果当前用户非admin用户，重定向后程序继续执行到<code>return</code>就会返回到当前<code>delete</code>函数，所以用户还是会被删除。</p>
+<p>EAR漏洞通常没有回显，这导致了很难利用黑盒测试去挖掘相关的漏洞。但如果EAR漏洞导致了信息泄露，也就是information leakage EAR，这种EAR漏洞是可以用黑盒测试去挖掘漏洞的。以<strong>Listing 3</strong>为例：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/3.png" alt="3"></p>
+<p>调用<code>header()</code>函数进行重定向之后，并没有终止程序，第6行被执行，导致了信息泄露。</p>
+<h2 id="设计与实现"><a href="#设计与实现" class="headerlink" title="设计与实现"></a>设计与实现</h2><h3 id="Detection-Algorithm"><a href="#Detection-Algorithm" class="headerlink" title="Detection Algorithm"></a>Detection Algorithm</h3><p>作者采用了静态分析来判断代码在重定向之后是否会被继续执行，流程图如下图所示：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/4.png" alt="4"></p>
+<p><strong>a. Building the Control Flow Graph</strong></p>
+<p>首先利用Furr的工具（The Ruby intermediate language.）将Ruby程序转化成Ruby Intermediate Language (RIL)，然后再生成CFG图。但生成的CFG可能是不完整的，因为这个工具不支持Ruby的动态特性，以及一些特殊语法，比如<code>eval</code>，利用eval函数生成runtime code。</p>
+<p><strong>b. Finding Redirection</strong></p>
+<p>这一步主要是寻找redirect函数及其调用redirect函数的caller，将其放到一个<code>interesting method</code>集合中，递归寻找<code>interesting method set</code>中函数的caller，知道找不到caller为止。</p>
+<p><strong>c. Prune Infeasible Paths</strong></p>
+<p>进行剪枝操作，减去一些不存在EAR漏洞的路径。比如<strong>Listing 4</strong>这个例子：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/5.png" alt="5"></p>
+<p>第4行调用了<code>redirect_to</code>进行了重定向，但是<code>return false</code>会继续执行，所以<code>ensure_logged_in</code>会返回<code>false</code>，在第11行，调用了<code>ensure_logged_in()</code>函数，因为返回的是false，所以执行了第12行的return，所以这个例子是不存在EAR漏洞的。</p>
+<p>这个例子对应的CFG为：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/6.png" alt="6"></p>
+<p><code>redirect_to()</code>重定向函数返回的值永远是true，所以返回false的那一分支（标记为虚线的<code>(1)</code>）是可以剪掉的。在<code>redirect_to</code>函数之后，继续执行<code>return false</code>，所以在<code>redirect_to</code>被调用之后，<code>ensure_logged_in</code>函数返回的值只可能是<code>false</code>，所以返回true的那一分支（标记为虚线的<code>(2)</code>）也是可以被剪掉的。</p>
+<p><strong>d. Detecting EARs</strong></p>
+<p>这一步比较简单，程序对CFG进行一个遍历，判断在调用了<code>interesting method</code>之后，后续的代码是否可能被执行。如果有，那就是潜在的EAR漏洞。</p>
+<p><strong>e. Distinguishing Between Benign and Vulnerable EARs</strong></p>
+<p>作者还设计了一种方法来判别Benign EAR和Vulnerable EAR。通过寻找从<code>interesting method</code>到修改数据库操作的函数路径来判断该EAR是benigh的还是vulnerable的，如果存在该路径，就说明是vulnerable EAR。这些数据库操作函数是作者从Rails的文档上找的14个函数。</p>
+<h3 id="Limitations"><a href="#Limitations" class="headerlink" title="Limitations"></a>Limitations</h3><ol>
+<li><p>不支持Ruby语言的一些动态特性，比如利用<code>eval</code>来调用<code>redirect_to</code>函数。比较幸运的是在Ruby on Rails框架中，使用这种特性的情况比较少。</p>
+</li>
+<li><p>可能会产生误报，有两种类型的误报：</p>
+<ul>
+<li>false EARs</li>
+</ul>
+<blockquote>
+<p>原因可能是因为</p>
+</blockquote>
+<ul>
+<li>false vulnerable EARs</li>
+</ul>
+<blockquote>
+<p>原因是因为作者在第5步进行benign/vulnerable EAR判断的时候，并没有进行深入的分析，比如找到delete函数，可能是其他对象的操作函数，并不一定就是对database进行操作的delete函数。</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="实验评估"><a href="#实验评估" class="headerlink" title="实验评估"></a>实验评估</h2><p>作者从github上收集了18,127款基于Ruby on Rails框架的Web应用程序。实验实在Intel Core i7，12GB RAM的配置上进行的，每个应用程序程序的扫描时间不超过2.5s，效率还是很高的。</p>
+<p>实验发现在1,173个项目中存在重定向后执行问题，其中343个项目中包含至少一个vulnerable EAR漏洞。在这343个应用程序中，一共发现了855个vulnerable EAR漏洞。</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/7.png" alt="7"></p>
+<p>为了验证实验结果的准确性，作者对找到的855个vulnerable EAR漏洞进行了人工分析。结果如下图所示：</p>
+<p><img src="/2020/07/24/[CCS11]Fear-the-EAR/8.png" alt="8"></p>
+<p>结果表明，在被工具判定为Vulnerable的855个EAR中，经过人工分析，发现只有485个是真的vulnerable EAR，tp=59.9%，而且其中有45个并非EAR问题。结合Limitations中提到的两种误报情况为：</p>
+<ol>
+<li>false EAR：45/855 = 5.3%</li>
+<li>false vulnerable EAR：325/855 = 40.1%</li>
+</ol>
+<h2 id="总体评价"><a href="#总体评价" class="headerlink" title="总体评价"></a>总体评价</h2><p>作者设计并实现了一款工具来寻找以Ruby on Rails为框架的Web应用程序中的Execution After Redirect漏洞。工具的基本思路就是对CFG进行遍历，递归一层一层寻找调用redirect函数的caller，将这些函数加入到一个集合中，然后判断在重定向之后，集合中的函数之后的代码是否会继续执行。这种思路其实也适用于PHP应用程序，但是PHP和Ruby一样，存在一些特殊语法和动态调用，相比在Ruby中，PHP中的动态调用情况更加普遍。</p>
+<h2 id="思维导图"><a href="#思维导图" class="headerlink" title="思维导图"></a>思维导图</h2><p><img src="/2020/07/24/[CCS11]Fear-the-EAR/EAR.svg" alt="EAR"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/07/24/[CCS11]Fear-the-EAR/">https://bantttian.github.io/2020/07/24/[CCS11]Fear-the-EAR/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        <a href="/tags/CCS/"># CCS</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/07/22/%5BCCS14%5DMACE_Privilege-Escalation-Vulnerabilities-Detecting/">CCS14 & MACE-Detecting Privilege Escalation Vulnerabilities in Web Applications</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
