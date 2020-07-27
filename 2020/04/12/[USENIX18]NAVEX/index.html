@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>USENIX18 &amp; NAVEX-Precise and Scalable Exploit Generation for Dynamic Web Application | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">USENIX18 &amp; NAVEX-Precise and Scalable Exploit Generation for Dynamic Web Application</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-04-12&nbsp;&nbsp;19:42:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>原文链接：<a href="https://www.usenix.org/system/files/conference/usenixsecurity18/sec18-alhuzali.pdf" target="_blank" rel="noopener">https://www.usenix.org/system/files/conference/usenixsecurity18/sec18-alhuzali.pdf</a></p>
+<p>项目地址：<a href="https://github.com/aalhuz/navex" target="_blank" rel="noopener">https://github.com/aalhuz/navex</a></p>
+<p>本文发表在USENIX Security’18，第一作者是来自伊利诺伊大学芝加哥分校的助理教授Abeer Alhuzali。</p>
+<h3 id="1-主要内容"><a href="#1-主要内容" class="headerlink" title="1. 主要内容"></a>1. 主要内容</h3><p>现代Web应用程序通常包含客户端、服务端和数据库三层架构，而且包含许多的动态特性，会根据用户的交互和输入动态地生成内容。这些动态特性增加了Web应用的复杂性，同时也增加了分析其安全性的难度。</p>
+<p>此前也有不少关于Web应用自动化审计的工作，但是主要存在两个问题：（i）误报率较高，需要人工检查每个报告的漏洞点是否正确；（ii）以往基于静态程序分析的审计方法无法分析程序中的一些特性，存在覆盖率问题。为了解决这个问题，作者采用动静结合的方式，以静态分析为指导，辅助动态分析构造可用的exploit来自动验证漏洞的正确性。</p>
+<p>作者实现一个名为NAVEX的工具来自动识别漏洞，并生成相应的exploit。最后作者对26个PHP CMS进行了测试，发现NAVEX一共构建了204个具体的exploit，其中195个与SQLI和XSS漏洞相关，9个与EAR（Execution After Redirect，重定向后执行）漏洞相关。</p>
+<h3 id="2-设计与实现"><a href="#2-设计与实现" class="headerlink" title="2. 设计与实现"></a>2. 设计与实现</h3><p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/1.png" alt="1"></p>
+<p>NAVEX的工作机制如上图所示，主要分为两个阶段，第一阶段是Vulnerable Sinks Identification（静态分析阶段），目的是找到候选的漏洞点及其触发漏洞的漏洞利用字符串；第二个阶段是Concrete Exploits Generation（动态分析阶段），目标是生成具体的exploit，由从公共页面到sink点所在页面会产生的一系列HTTP请求组成。</p>
+<h4 id="1-Vulnerable-Sinks-Identification"><a href="#1-Vulnerable-Sinks-Identification" class="headerlink" title="(1)  Vulnerable Sinks Identification"></a>(1)  Vulnerable Sinks Identification</h4><p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/2.png" alt="2"></p>
+<p>在静态分析阶段，作者在NAVEX中定义了一个Attack Dictionary，由四个部分组成：（i）Sinks，敏感函数；（ii）Sanitization，常见的过滤函数或是过滤方式；（iii）Traversal type，遍历方向，分为前向回溯和后向回溯；（iv）Attack Strings，触发漏洞的攻击字符串，是一个fuzz字典。 </p>
+<p>首先，对每个潜在漏洞的模块建立图模型：作者对图模型生成工具phpjoern进行了扩展，加入了节点的过滤信息。</p>
+<p>然后，对代码属性图进行遍历来寻找从source点到sink点的路径，对于注入类漏洞统一采取后向回溯的方式，根据PDG关系寻找攻击路径；对于EAR漏洞采取前向遍历的漏洞方式。</p>
+<p>最后，用符号执行生成公式后利用约束求解器求解哪些路径可以被利用，输出是触发漏洞的exploit string，在第二阶段会被使用。</p>
+<h4 id="2-Concrete-Exploits-Generation"><a href="#2-Concrete-Exploits-Generation" class="headerlink" title="(2) Concrete Exploits Generation"></a>(2) Concrete Exploits Generation</h4><p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/3.png" alt="3"></p>
+<p>从上图可以看到，动态分析阶段分为3个步骤：</p>
+<p><strong>a)</strong>   <strong>Dynamic Execution</strong></p>
+<p>这一步的目的是生成从公共页面到sink点所在页面会产生的HTTP请求，涉及到前端约束提取求解以及后端约束提取求解。</p>
+<p>前端约束提取是利用爬虫完成的，Crawler爬取HTML页面中的表单属性信息并生成约束<img src="file:///C:/Users/Bantian/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png" alt="img">)，同时爬取验证表单信息时会用到JavaScript代码并生成约束<img src="file:///C:/Users/Bantian/AppData/Local/Temp/msohtmlclip1/01/clip_image004.png" alt="img">)。最后生成最终的前端约束<img src="file:///C:/Users/Bantian/AppData/Local/Temp/msohtmlclip1/01/clip_image006.png" alt="img">，用约束求解器Z3求解生成相应的表单input。</p>
+<p>除了客户端的约束之外，服务端也会对用户的输入做一些限制，所以还需要满足服务端的约束。NAVEX会动态跟踪判断用户输入是否满足服务端约束，该判断主要基于两种方式：(i) 是否更改程序状态（有无新的session生成，是否有新变量生成等）; (ii) 是否有敏感操作被执行，如sql查询操作等。如果检测到请求没有成功，NAVEX会将后端的约束也加入到前端约束中，用约束求解器重新生成的新input进行提交，这个过程会重复多次，直到请求成功为止。</p>
+<p><strong>b)</strong>   <strong>Navigation Graph</strong></p>
+<p>NAVEX会将上一步动态执行生成的相关HTTP请求信息都存储到Navigation Graph，G = (N, E)中，该图结构如下图所示：</p>
+<p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/4.png" alt="4"></p>
+<p>上图中，每一个节点表示一个完整的HTTP请求，边表示跳转的方式（通过链接link或是表单form进行跳转）。单个节点中，ID是节点的唯一标识符，URL是HTTP请求中的URL，Form_Params存储表单的输入，Role存储爬虫时用到的登录凭证。</p>
+<p><strong>a)</strong>   <strong>Final Exploit Generation</strong></p>
+<p>最后NAVEX会结合静态分析阶段得到的漏洞模块及其对应的exploit string对Navigation Graph进行遍历，最后会得到类似下图的完整的攻击请求链接。</p>
+<p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/5.png" alt="5"></p>
+<h3 id="3-实验评估"><a href="#3-实验评估" class="headerlink" title="3. 实验评估"></a>3. 实验评估</h3><p>作者对26个PHP CMS进行了测试，数据集包含22.7K PHP文件，代码行数超过了3.2M行。针对这些CMS，NAVEX共构造了204个具体的exploit，以SQL注入漏洞为例：</p>
+<p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/6.png" alt="6"></p>
+<p>对于SQL注入漏洞，NAVEX仅关心4种敏感函数：<code>mssql_query</code>, <code>mysql_query</code>, <code>mysqli_query</code>,<code>sqlite_query</code>。</p>
+<p>最后NAVEX在37m 45s内找到了155个SQLI漏洞点，并在7m左右生成了与之对应的exploit。</p>
+<p>作者同时对NAVEX的性能进行了评估。如下图所示，作者发现在CPG中加入sanitization tag和database constraint tag之后，找到的漏洞点的误报被大幅度减少。</p>
+<p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/7.png" alt="7"></p>
+<p>除此之外，在动态分析阶段对客户端代码进行分析也在一定程度上提高了程序覆盖率，生成的exploit的数量也随之增加了。</p>
+<p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/8.png" alt="8"></p>
+<p>最后，因为Chainsaw支持SQL注入漏洞和XSS漏洞的exploit生成，作者将NAVEX与Chainsaw进行了对比，结果如下图所示。除了SchoolMate之外（NEVEX无法维持在SchoolMate中的session），对于其余参与测评的8个cms，无论是在生成exploit的数量上还是效率上，NAVEX都有更好的表现。</p>
+<p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/9.png" alt="9"></p>
+<h3 id="4-评价"><a href="#4-评价" class="headerlink" title="4. 评价"></a>4. 评价</h3><p>本文的创新点在于采用了动静结合的分析方法，扩大了程序的覆盖范围，因此相比于先前的静态审计工具能找到更多的漏洞。相较于作者先前的发表在CCS 2016的工作Chainsaw，在静态分析阶段，作者采用扩展后的代码属性图挖掘攻击路径，利用sanitization tag和database constraint tag过滤掉很多不可利用的路径来防止路径爆炸，所以在效率方面也有较大幅度的提升。同时，phpjoern生成的CPG图不支持动态函数调用的问题也导致了NAVEX会遗失一些潜在的漏洞点。</p>
+<h3 id="5-思维导图"><a href="#5-思维导图" class="headerlink" title="5. 思维导图"></a>5. 思维导图</h3><p>最后，附上在阅读论文时整理的思维导图：</p>
+<p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/NAVEX.svg" alt="NAVEX"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/04/12/[USENIX18]NAVEX/">https://bantttian.github.io/2020/04/12/[USENIX18]NAVEX/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        <a href="/tags/USENIX-Security/"># USENIX Security</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/04/18/Large_Traffic_Analysis-1/">大流量分析-1</a>
+            
+            
+            <a class="next" rel="next" href="/2020/04/11/%E5%BC%BA%E7%BD%91%E6%9D%AF2019-%E9%9A%8F%E4%BE%BF%E6%B3%A8%E4%B9%8B%E5%A0%86%E5%8F%A0%E6%B3%A8%E5%85%A5/">强网杯2019_随便注之堆叠注入</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
