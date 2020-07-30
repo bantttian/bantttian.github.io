@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>CCS16 &amp; Chainsaw-Chained Automated Workflow-based Exploit Generation | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CCS16 &amp; Chainsaw-Chained Automated Workflow-based Exploit Generation</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-07-30&nbsp;&nbsp;15:31:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>原文链接： <a href="https://sisl.rites.uic.edu/static/pics/fp0612-alhuzali.pdf" target="_blank" rel="noopener">https://sisl.rites.uic.edu/static/pics/fp0612-alhuzali.pdf</a> </p>
+<p>本文发表在CCS’16，第一作者是来自伊利诺伊大学芝加哥分校的Abeer Alhuzali。该作者还在USENIX Security’18上发表了一篇NAVEX，是对本次工作Chainsaw的改进。</p>
+<h2 id="主要内容"><a href="#主要内容" class="headerlink" title="主要内容"></a>主要内容</h2><p>Web漏洞挖掘主要有两种方式，一种是黑盒的penetration-testing，另一种是白盒的程序分析。在本文中，作者提出了一种基于静态分析的漏洞exp生成方法。主要有两个Challenge：</p>
+<ol>
+<li>路径选择（path selection）：从source点到sink点的执行路径上，可能会存在一些对参数的过滤净化等，如果选择可行的路径是难点之一；</li>
+<li>持久性的数据库存储（persistent database state）：对于二次SQL注入，存储型XSS等攻击，往往需要先将数据存入数据库，然后取出触发攻击，所以在生成exp时必须要先进行数据的存储操作。</li>
+</ol>
+<p>作者实现了一个名为CHAINSAW的工具，并且在9个PHP应用程序上进行了测试，最后生成了199个exp。</p>
+<h3 id="Running-example"><a href="#Running-example" class="headerlink" title="Running example"></a>Running example</h3><p>论文中举了一个基于PHP的聊天室应用例子，存在几个因为未充分过滤导致的SQL注入漏洞：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/1.png" alt="1"></p>
+<p>在<code>room.php</code>中，第12行对变量<code>$room_name</code>进行了过滤，过滤函数为<code>mysql_real_escape_string()</code>，在第17行将<code>$room_name</code>赋值为<code>$_SESSION[&#39;room_name&#39;]</code>。除此之外，参数<code>$_POST[&#39;category&#39;]</code>也未经过充分的过滤，会在第18行通过<code>cat_desc</code>传到<code>dashboard.php</code>中。</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/2.png" alt="2"></p>
+<p>在dashboard.php中获取传进来的<code>$cat_desc</code>，然后在第11行传到<code>addcat.php</code>中。</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/3.png" alt="3"></p>
+<p>在addcat.php中，存在两处sql调用：</p>
+<ol>
+<li>line 6，<code>$room_name</code>参数来自<code>room.php</code>，经过了<code>mysql_real_escape_string</code>函数的充分过滤，所以不存在sql注入漏洞；</li>
+<li>line 14，当<code>$accesslevel</code>为1的时候，<code>$cat_desc</code>在第11行通过$_GET请求获取，在第12行经过<code>htmlspecialchars</code>过滤，但是该函数在仅接受一个参数的情况下是不会对单引号进行过滤的，所以可以利用<code>1&#39; = &#39;1&#39; or &#39;1</code>进行sql注入。</li>
+</ol>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/4.png" alt="4"></p>
+<p>同理，在第11行也存在一个sql注入漏洞，$sql经过<code>$room_name</code>拼接得到，但是没有经过充分的过滤。</p>
+<p><strong>mysql_real_escape_string</strong>会对敏感字符全部进行过滤：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/8.png" alt="8"></p>
+<p>但是<strong>htmlspecialchars</strong>如果参数设置不正确，就可能导致过滤不充分：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/9.png" alt="9"></p>
+<h3 id="Exploit-Generation-Challenges"><a href="#Exploit-Generation-Challenges" class="headerlink" title="Exploit Generation Challenges"></a>Exploit Generation Challenges</h3><ol>
+<li><strong>Complex  Workflow</strong></li>
+</ol>
+<p>可能会有多条从source点到sink点的路径（漏洞触发路径），而且路径会包含多个模块。这些路径包含开发者预期的执行流程，也有非预期的执行流程。</p>
+<ol start="2">
+<li><strong>Data Sanitization and Path Sensitivity</strong></li>
+</ol>
+<p>从source点sink点的路径上，数据可能可能会经过了充分的过滤，也可能未经过充分过滤而导致了漏洞。比如<strong>Listing 4</strong>中，如果第6行被执行，那么就不存在sql注入漏洞。所以需要构建模型，考虑从source点到sink点的不同的过滤，并生成一些sanitization无法防御的exp。</p>
+<ol start="3">
+<li><strong>Persistent Storage Effect</strong></li>
+</ol>
+<p>数据库中存储的数据也会影响到程序的控制流和数据流，比如在<strong>Listing 3</strong>中的<code>$accesslevel</code>就是从数据库中取出来的数据，会影响到后续的执行流程。</p>
+<h2 id="实验设计"><a href="#实验设计" class="headerlink" title="实验设计"></a>实验设计</h2><p>目标：找到从source点到sink点的一串可利用的HTTP漏洞请求路径</p>
+<p>总体流程如下图所示：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/5.png" alt="5"></p>
+<p>介绍一下总体流程</p>
+<h3 id="a-Seed-Generation"><a href="#a-Seed-Generation" class="headerlink" title="a. Seed Generation"></a>a. Seed Generation</h3><p>目标：找到存在漏洞的sink点，并排除不存在漏洞的sink点。</p>
+<p>将_exploit seed_定义为<code>(S, I)</code>，其中：</p>
+<ol>
+<li><strong>S</strong>表示一个sink点；</li>
+<li><strong>I = {(i<del>1</del>, v<del>1</del>), … (i<del>n</del>, i<del>n</del>)}</strong>表示一系列的variable-value对，可以触发在S点的漏洞。</li>
+</ol>
+<p>CHAINSAW会将从source点到sink点的执行路径符号化，得到一个符号化公式F<del>p</del>，这个F<del>p</del>表示了：</p>
+<ol>
+<li>路径状态；</li>
+<li>输入在执行路径上的变化；</li>
+<li>在sink点上下文的约束。</li>
+</ol>
+<p>然后还需要一个能够触发漏洞的一个payload字符串F<del>A</del>。最后生成的符号化公式为：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/6.png" alt="6"></p>
+<p>这一步会输出应用程序各个模块中存在的exploit seed列表。</p>
+<p>在这一步还有一个问题待解决， 全局变量，比如<code>$_SESSION</code>，它可能在当前模块被赋值，也可能是其他模块，所以CHAINSAW需要找到给全局变量赋值的模块 。</p>
+<h3 id="b-Navigation-Problem"><a href="#b-Navigation-Problem" class="headerlink" title="b. Navigation Problem"></a>b. Navigation Problem</h3><p>对模块M<del>N</del>给定一个exploit seed，是否存在一个navigation sequence（M<del>1</del>, …, M<del>N</del>就是一些列的HTTP请求序列，也被称为<code>global execution path</code>，全局执行路径）满足exploit seed中的指定约束，从而触发漏洞？</p>
+<p>这其实是CHAINSAW比较难以解决的一个问题。对于每一个exploit seed，都对应着许多的global execution path，如果对这些全局执行路径都做一个遍历，那开销会很大。所以CHAINSAW的解决办法对这些navigation sequence进行排序，排序依据是全局执行路径的组合数量，据此选择最有可能的navigation sequence。</p>
+<p>具体来说分为两步，首先CHAINSAW构建了一个<strong>General Workflow Graph（通用工作流图）</strong>，表示所有的navigation sequences以及这些导航序列的优先级；接着对于每一个navigation graph构造一个<strong>Refined Workflow Graph（优化工作流图）</strong>来寻找可以成功触发漏洞的全局执行路径。</p>
+<h4 id="Workflow-Inference"><a href="#Workflow-Inference" class="headerlink" title="Workflow Inference"></a>Workflow Inference</h4><p>General Workflow Grpah（GWFG）是一个有向加权图，<strong>G=(V, E)</strong>。其中<strong>v ∈ V</strong>，表示程序的某一个模块； <strong>e = (v<del>i</del>, v<del>k</del>) ∈ E</strong>表示从<strong>v<del>i</del></strong>到<strong>v<del>k</del></strong>的导航。</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/7.png" alt="7"></p>
+<p>上图中边的权值表示从模块A跳转到模块B的全局路径数量（取log<del>2</del>值）。CHAINSAW会优先选择全局路径数量少的路径执行。比如上图中，从room.php到漏洞存在文件create.php一共有两条路径：</p>
+<ol>
+<li>room.php -&gt; dashboard.php -&gt; create.php，全局路径组合方式一共有2^10种，CHAINSAW会优先选择这条路径；</li>
+<li>room.php -&gt; check.php -&gt; create.php，全局路径组合方式一共有2^12种。</li>
+</ol>
+<h4 id="Refined-Workflow-Graph"><a href="#Refined-Workflow-Graph" class="headerlink" title="Refined Workflow Graph"></a>Refined Workflow Graph</h4><p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/10.png" alt="10"></p>
+<p>上图中，方框中表示的是一个模块，如模块L2；在每个模块中又有一些node，每个node都表示一个local execution path（本地执行路径）。与之的对应的，global execution path（全局执行路径）为<code>L2-&gt;A3-&gt;D2</code>。</p>
+<p>前面有提到，对于每一个exploit seed，都对应着许多的global execution path，如果对这些全局执行路径都做一个遍历，那开销会很大。所以CHAINSAW通过删除一些不可行的边（路径）来进行剪枝操作。</p>
+<p>具体的做法为（以上图为例）：</p>
+<ol>
+<li>首先，CHINSAW为每个顶点添加一个<strong>preconditions</strong>集合，比如上图中是模块L2，就是该模块内部执行需要满足的约束条件；</li>
+<li>同时，CHAINSAW为每个顶点添加一个<strong>summary</strong>集合，主要来记录被赋值的全局变量，比如上图中被赋值的是<code>$_SESSION[&#39;room_name&#39;]</code>；</li>
+<li>接着CHAINSAW发现A3的precondition检查<code>isset($_SESSION[&#39;room_name&#39;])</code>，而L2的summary满足A3的precondition，所以A3是可行的路径，CHAINSAW会优先选择A3进行遍历。</li>
+</ol>
+<h3 id="c-Second-Order-Exploits"><a href="#c-Second-Order-Exploits" class="headerlink" title="c. Second Order Exploits"></a>c. Second Order Exploits</h3><p>另一个需要解决的是二次攻击利用的问题，在应用程序中还存在一些二次SQL注入漏洞和存储型XSS漏洞。数据被存入数据库的状态直接影响到漏洞能否被触发。</p>
+<h4 id="Static-Input-Generation"><a href="#Static-Input-Generation" class="headerlink" title="Static Input Generation."></a><strong>Static Input Generation</strong>.</h4><p>首先是静态输入生成。在一些情况下，从source点到sink点的漏洞触发依赖于数据库的状态，比如在<strong>Listing 3</strong>中，line 13处的select语句能否被执行依赖于line 5的insert语句被成功执行。所以在触发select语句处的sql漏洞之前，还需要执行对数据库的<strong>写操作</strong>。为此，CHAINSAW建立了对同一张数据表进行读写操作语句的映射，写操作指insert语句和update语句，读操作指select语句。然后CHAINSAW会生成满足触发漏洞要求的insert语句处的输入：</p>
+<ol>
+<li>将对数据库进行写操作的query也认定为sink点，并生成从source点到该sink点的约束F<del>p</del>；</li>
+<li>在该query语句处应该插入的值，记为约束F<del>D</del>；</li>
+<li>将F<del>P</del> ∧ F<del>D</del>送到约束求解器中求解。</li>
+</ol>
+<p>对于二次攻击利用的漏洞，CHAINSAW会寻找两个sink点，第一处是写操作query语句（如insert或者update），另一个处是查询的query语句，从数据库中读取的数据没有经过正确的过滤净化导致的漏洞。</p>
+<h2 id="工具实现"><a href="#工具实现" class="headerlink" title="工具实现"></a>工具实现</h2><p>工具：作者使用Pixy和TAPS来进行静态分析，利用Z3来求解约束。</p>
+<p>输入：web application source，its database schema，the attack specifications（就是一些可以触发漏洞的字符串，比如xss就是<code>&lt;script&gt;alert(xss);&lt;/script&gt;</code>）。</p>
+<p>输出：从Public Page公共页面到触发漏洞的一系列HTTP请求序列。</p>
+<h3 id="Context-awareness"><a href="#Context-awareness" class="headerlink" title="Context awareness"></a>Context awareness</h3><h4 id="Symbolic-Parsers"><a href="#Symbolic-Parsers" class="headerlink" title="Symbolic Parsers."></a>Symbolic Parsers.</h4><p>CHAINSAW会将从source点到sink点的执行路径全部符号化，并给出一个符号化的表述。为了能够得到这些符号表达式中用户输入，作者在SQL解析器和HTML解析器上实现了两个附加的（符号）解析器。主要目的是识别在sink点的变量类型和过滤函数。</p>
+<h4 id="Context-awareness-example"><a href="#Context-awareness-example" class="headerlink" title="Context awareness example."></a>Context awareness example.</h4><p>CHAINSAW会根据上下文的语义，选择合适的攻击向量，以<strong>Listing 5</strong>为例：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/11.png" alt="11"></p>
+<p>第一行的echo对应的$input的payload应为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;&lt;script&gt;alert(’xss’)&lt;&#x2F;script&gt;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>第2行则需要闭合标签中的<code>&gt;</code>符号，所以payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;’&gt;&lt;script&gt;alert(’xss’)&lt;&#x2F;script&gt;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>CHAINSAW中符号解析器能够推断这些不同的上下文，并构建出相应的求解公式，该公式被发送给求解器求解。</p>
+<h3 id="Analysis-of-Navigation-Structure"><a href="#Analysis-of-Navigation-Structure" class="headerlink" title="Analysis of Navigation Structure"></a>Analysis of Navigation Structure</h3><p>这一步的目的是生成GWFG图和RWFG图。</p>
+<h4 id="生成通用工作流图-General-workflow-graph"><a href="#生成通用工作流图-General-workflow-graph" class="headerlink" title="生成通用工作流图 General workflow graph"></a>生成通用工作流图 General workflow graph</h4><p>CHAINSAW利用HTML Parser和CFG图提取出工作流转换的特征，入HTTP链接，表单，meta tags，iframes和PHP重定向函数。提取出这些特征之后，CHAINSAW创建两个节点，分别表示工作流特性的源（source）模块和目标（sink）模块。</p>
+<h4 id="生成优化工作流图-Refined-Workflow-graph"><a href="#生成优化工作流图-Refined-Workflow-graph" class="headerlink" title="生成优化工作流图 Refined Workflow graph"></a>生成优化工作流图 Refined Workflow graph</h4><p>在实现refined workflow graph时，CHAINSAW引入了新的机制，<strong>summary history</strong>，比如对于下面这个例子，CHAINSAW的执行流程为：</p>
+<ol>
+<li>首先，CHINSAW为每个顶点添加一个<strong>preconditions</strong>集合和<strong>summary</strong>集合；</li>
+<li>接着CHAINSAW发现D3的precondition检查<code>isset($_SESSION[&#39;rname&#39;])</code>，而R2的summary刚好满足precondition，所以接着CHAINSAW选择D3继续遍历；</li>
+<li>同时，CHAINSAW将R2和D2的summary都加入<strong>summary history</strong>；</li>
+<li>接着CHAINSAW发现<strong>summary history</strong>中的内容满足C2中的precondition，所以会继续遍历节点C2；</li>
+<li>最后整条路径就是R2-&gt;D3-&gt;C2。</li>
+</ol>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/15.png" alt="15"></p>
+<h3 id="Database-Schema-Analysis"><a href="#Database-Schema-Analysis" class="headerlink" title="Database Schema Analysis"></a>Database Schema Analysis</h3><p>在静态分析中，由于源代码中没有数据库约束，所以对持久存储的数据建立数据流依赖并不简单。所以CHAINSAW对database schema进行分析，从中提取中对于数据库的约束，比如数据表名，列名，列的类型，列值的约束（如NOT NULL，长度etc.）。</p>
+<p>以<strong>Listing 6</strong>为例，图中是一个<code>insert</code>语句，如果<code>var1</code>和<code>var2</code>在数据表TBL中的数据类型为<code>enum{1, 2}</code>，那么这条insert语句就不存在漏洞。</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/13.png" alt="13"></p>
+<p>CHAINSAW会database schema中提取出TBL表的约束，<code>($v1==1 ∨ $v1==2) and ($v2==1 ∨ $v2==2)</code>加入约束求解公式求解。数据库的分析模块支持多种数据库，如MSSQL，MySQL和Oracle等。</p>
+<h3 id="Constraint-Solving"><a href="#Constraint-Solving" class="headerlink" title="Constraint Solving"></a>Constraint Solving</h3><p>CHAINSAW利用Z3 SMT和Z3-str进行约束求解。</p>
+<h2 id="实验评估"><a href="#实验评估" class="headerlink" title="实验评估"></a>实验评估</h2><h3 id="Dataset"><a href="#Dataset" class="headerlink" title="Dataset"></a>Dataset</h3><p>作者利用CHAINSAW对9个PHP应用程序进行了测试，代码行数跨度从323行到65302不等。表中列出了PHP应用的文件数，SQL查询语句数，数据表数量以及XSS的sink点数量：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/16.png" alt="16"></p>
+<h3 id="Setup"><a href="#Setup" class="headerlink" title="Setup"></a>Setup</h3><p>实验在一台双核2.4GHz，40GB RAM的Ubuntu 12.04 LTS VM上进行。对每个应用程序，先生成exploit seed，然后再生成具体的exp，也就是一串HTTP请求序列。</p>
+<h3 id="Overview-of-Results"><a href="#Overview-of-Results" class="headerlink" title="Overview of Results"></a>Overview of Results</h3><p>下图是实验的总体结果：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/17.png" alt="17"></p>
+<p>对于9个应用程序，CHAINSAW共生成了181个exp种子和199个exp，并且不存在误报。其中149（75%）是SQLI的exp，50（25%）是XSS的exp。在所有的exp中，30（15%）是属于二次攻击的exp，其中13个exp是二次注入。</p>
+<h3 id="Selected-First-Order-Exploits"><a href="#Selected-First-Order-Exploits" class="headerlink" title="Selected First-Order Exploits"></a>Selected First-Order Exploits</h3><p>以<strong>webchess</strong>为例，模块之间的跳转为：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/18.png" alt="18"></p>
+<p>SQL注入点在<code>viewmessage.php</code>页面：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/19.png" alt="19"></p>
+<p>生成的exp为：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/20.png" alt="20"></p>
+<h3 id="Selected-Second-Order-Exploits"><a href="#Selected-Second-Order-Exploits" class="headerlink" title="Selected Second-Order Exploits"></a>Selected Second-Order Exploits</h3><p>二次注入以<strong>myBloggie</strong>为例：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/21.png" alt="21"></p>
+<p>首先在<code>adduser.php</code>中插入用户，在第2行因为对<code>$user</code>变量有不太充分的过滤导致了SQL注入漏洞，接着在<code>edituser.php</code>中取出该数据，拼接进<strong>Listing 15</strong>中的SQL查询语句进行查询：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/22.png" alt="22"></p>
+<p>exp：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/23.png" alt="23"></p>
+<h3 id="Effect-of-Database-Schema-Analysis"><a href="#Effect-of-Database-Schema-Analysis" class="headerlink" title="Effect of Database Schema Analysis"></a>Effect of Database Schema Analysis</h3><p>作者分析了对数据库schema进行分析后给CHAINSAW带来的性能提升。如下图所示：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/24.png" alt="24"></p>
+<p>对database schema进行分析并提取约束后，在生成exp种子时的误报有了一定程度的减少，尤其是<strong>WebBid</strong>，false positive rate减少了将近60%。</p>
+<h3 id="Overhead-and-Analysis-Complexity"><a href="#Overhead-and-Analysis-Complexity" class="headerlink" title="Overhead and Analysis Complexity"></a>Overhead and Analysis Complexity</h3><p>作者对CHAINSAW的运行时开销进行了分析，结果如下表Table 4所示：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/25.png" alt="25"></p>
+<p>analysis time指的是从生成exp种子开始到生成送到求解器中求解的约束为止，时间跨度从10s到600s。solving time是指求解最后的final exploit formula的时间，对于小型应用程序，如_geccbblite_的约束求解时间甚至不到1s，而相对大型的应用程序_WebBid_则花费了42s。对于_WebBid_，_schoolmate_，_webchess_，分析以及求解约束的时间都比较长，是因为对应的execution path很多，比如_WebBid_有1.09 mllion的execution paths需要分析。</p>
+<h3 id="Comparison-with-Related-Work"><a href="#Comparison-with-Related-Work" class="headerlink" title="Comparison with Related Work"></a>Comparison with Related Work</h3><p>作者对于CHAINSAW其他两种漏洞挖掘工具<strong>Ardilla</strong>和<strong>CraxWeb</strong>进行了对比，发现CHAINSAW确实是能够找到更多的漏洞，生成更多的exp：</p>
+<p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/26.png" alt="26"></p>
+<h2 id="总体评价"><a href="#总体评价" class="headerlink" title="总体评价"></a>总体评价</h2><h2 id="思维导图"><a href="#思维导图" class="headerlink" title="思维导图"></a>思维导图</h2><p><img src="/2020/07/30/[CCS16]CHAINSAW/imgs/Chainsaw.svg" alt="Chainsaw"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/07/30/[CCS16]CHAINSAW/">https://bantttian.github.io/2020/07/30/[CCS16]CHAINSAW/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        <a href="/tags/CCS/"># CCS</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/07/24/%5BCCS11%5DFear-the-EAR/">CCS11 & Fear the EAR-Discovering and Mitigating Execution After Redirect Vulnerabilities</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
