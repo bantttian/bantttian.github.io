@@ -188,8 +188,9 @@
 
         <div class="post-content">
             <p>原文链接：<a href="https://wsp-lab.github.io/papers/lee-fuse-ndss20.pdf" target="_blank" rel="noopener">https://wsp-lab.github.io/papers/lee-fuse-ndss20.pdf</a></p>
-<p>本文发表在NDSS2020，第一作者是来自韩国科学技术院的Taekjin Lee。</p>
 <p>开源项目地址： <a href="https://github.com/WSP-LAB/FUSE" target="_blank" rel="noopener">https://github.com/WSP-LAB/FUSE</a></p>
+<p>本文发表在NDSS2020，第一作者是来自韩国科学技术院的Taekjin Lee，指导老师是KAIST的Assistant Professor，Sooel Son (손수엘)，在Web领域发表过多篇论文：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/15.png" alt="15"></p>
 <h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>文件上传漏洞是一种常见的漏洞，其中可执行文件上传漏洞更是可能会对服务器造成侵害，但是学术界对于自动化文件上传漏洞的挖掘却很少。作者设计并实现了一个名为FUSE的文件上传漏洞挖掘工具，为了绕过不同的检查机制，作者提出了13种mutate操作来绕过内容过滤检查机制。最后FUSE在33个php应用中找到了30个可执行文件上传漏洞（UEFU），其中15个漏洞分配到了CVE编号。</p>
 <h3 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h3><p>假设有一个攻击者，他被远程Web应用赋予了一定的文件上传权限。但是他不能通过sftp或是scp等远程复制命令上传文件。攻击者的目标是上传能够被PHP解释器或是客户端浏览器执行的代码，并且能够通过公共链接触发。</p>
 <h3 id="两大挑战"><a href="#两大挑战" class="headerlink" title="两大挑战"></a>两大挑战</h3><p>总体来说有两大挑战：</p>
