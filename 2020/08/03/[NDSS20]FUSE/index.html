@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>NDSS20 &amp; FUSE-Finding File Upload Bugs via Penetration Testing | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">NDSS20 &amp; FUSE-Finding File Upload Bugs via Penetration Testing</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-03&nbsp;&nbsp;10:38:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>原文链接：<a href="https://wsp-lab.github.io/papers/lee-fuse-ndss20.pdf" target="_blank" rel="noopener">https://wsp-lab.github.io/papers/lee-fuse-ndss20.pdf</a></p>
+<p>本文发表在NDSS2020，第一作者是来自韩国科学技术院的Taekjin Lee。</p>
+<p>开源项目地址： <a href="https://github.com/WSP-LAB/FUSE" target="_blank" rel="noopener">https://github.com/WSP-LAB/FUSE</a></p>
+<h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>文件上传漏洞是一种常见的漏洞，其中可执行文件上传漏洞更是可能会对服务器造成侵害，但是学术界对于自动化文件上传漏洞的挖掘却很少。作者设计并实现了一个名为FUSE的文件上传漏洞挖掘工具，为了绕过不同的检查机制，作者提出了13种mutate操作来绕过内容过滤检查机制。最后FUSE在33个php应用中找到了30个可执行文件上传漏洞（UEFU），其中15个漏洞分配到了CVE编号。</p>
+<h3 id="攻击模型"><a href="#攻击模型" class="headerlink" title="攻击模型"></a>攻击模型</h3><p>假设有一个攻击者，他被远程Web应用赋予了一定的文件上传权限。但是他不能通过sftp或是scp等远程复制命令上传文件。攻击者的目标是上传能够被PHP解释器或是客户端浏览器执行的代码，并且能够通过公共链接触发。</p>
+<h3 id="两大挑战"><a href="#两大挑战" class="headerlink" title="两大挑战"></a>两大挑战</h3><p>总体来说有两大挑战：</p>
+<ol>
+<li>FUSE需要生成成功的文件上传请求，需要绕过各种检查机制；</li>
+<li>上传的文件应该能够被目标服务器上的PHP解释器解析或是被客户端浏览器执行。</li>
+</ol>
+<p>细致来说明：</p>
+<ol>
+<li><strong>Application-specific checks</strong>，不同的web应用程序都实现了自己的文件检查机制。</li>
+</ol>
+<p>Monstra CMS通过检查上传文件的后缀名来判断该上传操作是否合法：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/1.png" alt="1"></p>
+<p>相比于Montras CMS，WordPress有相对复杂的文件验证机制：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/2.png" alt="2"></p>
+<p>为了解决这个问题，作者提出了13种对http请求进行mutate的方式，同时保持原文件的执行语义。</p>
+<ol start="2">
+<li><p><strong>Executable uploaded files</strong>，另一个难题就是如何使上传的文件能够被php解释器或是浏览器解析执行。作者将该问题转化为：</p>
+<blockquote>
+<p>在上传的文件中应该保留哪些约束，使其可以由Web服务器或浏览器执行？</p>
+</blockquote>
+</li>
+</ol>
+<p>为了解决这个问题，作者分析了Chrome、Firefox、Apache和PHP引擎的源代码，以确定可执行文件所需的约束条件。 在生成上传请求时，确保这些约束保存在上传请求中的攻击文件中。</p>
+<h2 id="设计与实现"><a href="#设计与实现" class="headerlink" title="设计与实现"></a>设计与实现</h2><p>FUSE的总体架构如下图所示：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/3.png" alt="3"></p>
+<p>FUSE接受两个输入：</p>
+<ol>
+<li>一个是seed files，种子文件，是四种可执行文件：PHP、js、(X)HTML。</li>
+<li>包含目标站点信息的配置文件。</li>
+</ol>
+<p>FUSE接受的目标站点配置文件是这样的：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/7.png" alt="7"></p>
+<p>其中必须提供的信息为：</p>
+<ol>
+<li>登录页面信息（login_page）；</li>
+<li>登录网站所需要的凭证（credential）；</li>
+<li>文件上传页面的url（upload_page）；</li>
+<li>验证用户操作所需的token（token_re）</li>
+</ol>
+<p>可选的信息为：</p>
+<ol>
+<li>文件成功上传的提示（success_re）;</li>
+<li>文件上传后的保存位置，即URL（response_re，url_prefix），如不提供，作者会在目标站点上部署FIle Monitor来监控上传的文件的保存位置（个人认为该前提不太合适）</li>
+</ol>
+<p>作者认为提供这些信息都是所必须的，考虑到像SQLmap之类的工具，都需要用户提供一些cookie，目标url等信息。</p>
+<p>FUSE由三个模块构成：</p>
+<p>（1）<strong>CHAIN COORDINATOR</strong>，该模块的主要任务是给出对seed file进行mutate（变形）的策略（但是最后的mutate操作是对http请求进行的），该策略是一个list，包含了一系列的mutate操作。CHAIN COORDINATOR先为每个种子请求创建一个chain list。比如对于HTML种子，对应的变形测策略是<code>M1</code>，<code>M2</code>，<code>M3</code>，那么初始的chain list就是（变形操作之间可以进行组合操作）：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/4.png" alt="4"></p>
+<p>当然一些变形策略彼此之前可能会存在冲突，那么CHAIN COORDINATOR就会从chain list中移除这些有冲突的变形组合，比如策略<code>M1</code>和<code>M2</code>发生了冲突，则删除<code>M1M2</code>和<code>M1M2M3</code>：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/5.png" alt="5"></p>
+<p>CHAIN COORDINATOR的另一个功能是根据先前从第三阶段获得的上传尝试结果删除链，以进行有效的渗透测试。如果一个变形<code>M1</code>之后的链被发现能够成功上传文件，CHAIN COORDINATOR就清除所有其他链（包含<code>M1</code>操作的链），包括成功的链。 因为链表是根据其链长排序的，FUSE会永远选择一个短链：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/6.png" alt="6"></p>
+<p>（2）<strong>UPLOAD AGENT</strong>，该模块的主要任务是为给定的seed file生成文件上传请求，并且根据前一阶段CHAIN COORDINATOR生成的chain list对<strong>http请求进行mutate操作</strong>。</p>
+<p>该阶段的算法如下图所示：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/8.png" alt="8"></p>
+<p>接受三个输入，分别是conf（配置文件），seed（seed file），chain（从CHAIN COORDINATOR获取的chain list变形操作）。</p>
+<p>在第2行可以看到会生成一个标识符unique，在第三阶段验证环节会使用到。</p>
+<p><strong>ExtractTokens</strong>会从upload_page提取出token，接着在<strong>ContrustRequest</strong>中生成上传请求，并将token加入到请求中。<strong>MutateRequest</strong>会对请求按照chain list进行变形。</p>
+<p>第8行利用<strong>PostProcess</strong>再对请求进行一些处理，以方便以后的验证过程。 具体来说，它会更改上传文件名，给它分配了一个唯一的值，就是第2行生成的标识符_unique_。</p>
+<p>最后利用<strong>SendRequest</strong>向目标服务器发送请求。</p>
+<p>（3）<strong>UPLOAD VALIDATOR</strong>，该模块会检查文件上传请求是否成功，如果成功则获取访问该shell文件的路径URL。然后访问该URL来判断该文件是否可执行，即是否存在一个UEFU（可执行文件上传）漏洞。UPLOAD VALIDATOR可以利用配置文件中的success_re来推断上传是否成功。</p>
+<p>对于如何获取上传后的文件的URL地址，作者提出了三种方案：</p>
+<ol>
+<li><p><strong>Common prefifix of URLs</strong>，第一是直接通过config文件中使用者提供的<strong>url_prefix</strong>，如果该参数被提供，则FUSE会直接使用该参数来匹配上传的URL。</p>
+</li>
+<li><p><strong>Upload response and summary webpage</strong>，有一些应用程序会在上传之后返回的response中给出文件的url路径，所以使用者可以先预先收集该信息，然后提供给FUSE一个<strong>response_re</strong>。</p>
+</li>
+<li><p><strong>File Monitor</strong>，前面的两种方式都依赖于用户提供的输入来匹配，但是一些情况下文件名可能是随机的，这种情况下依赖于安装在目标服务器上的File Monitor来获取文件路径（但是这种方式不太合常理）。</p>
+</li>
+</ol>
+<p>除了四种类型的seed file之外，FUSE在最后还会尝试上传<code>.htaccess</code>文件，检验的标准就是上传一张图片马，访问图片马检查代码是否被执行。</p>
+<h2 id="MUTATION操作"><a href="#MUTATION操作" class="headerlink" title="MUTATION操作"></a>MUTATION操作</h2><p>对seed file进行mutate操作最重要的一点是生成能绕过检查机制的上传请求，同时保持seed file的执行语义。</p>
+<p>下图是一个HTTP上传请求体：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/9.png" alt="9"></p>
+<p>FUSE会尝试去修改请求中的<code>Extension</code>，<code>Content-Type</code>和<code>Content</code>，这三部分被统一称为<strong>Mutation vectors</strong>。</p>
+<p>FUSE进行Mutate的目标为：</p>
+<ol>
+<li><p><em>Checking the absence of content-filtering checks</em>，因为有一些应用程序在处理上传文件时没有任何安全检查机制，所以FUSE会先尝试发送没有任何mutate操作的请求。</p>
+</li>
+<li><p><em>Eliciting incorrect type inferences based on</em> <strong>Content</strong>，web应用程序可以利用php内置的函数，如<code>finfo_file</code>和<code>mime_content_type</code>来推断文件的类型。</p>
+</li>
+<li><p><em>Exploiting incomplete whitelists or blacklists based on</em> <strong>Extension</strong>，例如Fig 1.中就是利用黑名单检查上传的文件<strong>后缀</strong>，但是一些应用程序可能未进行充分的过滤。</p>
+</li>
+<li><p><em>Bypassing keyword filtering logic based on</em> <strong>Content</strong>，绕过应用程序对http请求中文件内容的检查，一些情况下可能检查上传的文件中是否包含<code>&lt;?php</code>，<code>&lt;html&gt;</code>等敏感字符。</p>
+</li>
+<li><p><em>Bypassing filtering logic based on</em> <strong>Content-Type</strong>，绕过http请求头中的Content-Type校验，可以将该类型修改为<code>image/png</code>，<code>image/gif</code>等。</p>
+</li>
+</ol>
+<p>作者总结了以下13种mutate策略来解决这个问题：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/10.png" alt="10"></p>
+<p>比如：</p>
+<p><code>M3</code>修改http请求中的Content-Type；</p>
+<p><code>M4</code>尝试不同的文件后缀，比如.php，.php5，.phtml等；</p>
+<p><code>M5</code>是替换一些敏感字符，比如将<code>&lt;?php</code>替换成<code>&lt;?</code>（但是该设置生效的前提是在php.ini中，<code>short_open_tag = On</code>）；</p>
+<p><code>M8</code>是将html代码嵌入到svg文件中；</p>
+<p><code>M13</code>会在文件中加入png或是jpg等格式的文件头。</p>
+<h2 id="实验评估"><a href="#实验评估" class="headerlink" title="实验评估"></a>实验评估</h2><p>作者对33个PHP应用程序进行了评估，实验的数据集涵盖了NAVEX工作中的数据集。将FUSE部署在一台i7-7700（3.6GHz），32GB内存的Linux工作站上；将待测试的应用程序部署在i7-8700（3.2GHz），32GB内存的Ubuntu16.04 服务器上，并且默认开启了<code>short_open_tags</code>。</p>
+<p>实验结果如下图所示：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/11.png" alt="11"></p>
+<p>第2列表示对于该应用程序FUSE尝试的请求次数；第3列表示通过上传PHP、HTML和XHTML的变体成功地找到UEFU漏洞的请求数量；第4列表示通过上传PHP、JS的变体成功地找到潜在的UEFU漏洞的请求数量；第8列表示是否允许上传一个<code>.htaccess</code>文件；第9列表示应用程序是否需要安装File Monitor；最后一列是FUSE的执行时间。</p>
+<p>FUSE在23个app中，发现了30个UEFU漏洞，对应176个不同的upload exp，这23个app中不乏一些知名的cms，比如wordpress，ZenCart。除此之外，FUSE在30个app中发现了55个UFU漏洞，对应630个不同的upload exp。</p>
+<p>作者将FUSE和其他文件上传漏洞挖掘工具fuxploider和UploadScanner进行了对比：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/14.png" alt="14"></p>
+<p>在找到的漏洞数量上还是FUSE更有优势。</p>
+<p>接着作者对mutate的效果进行了评估，结果如下图所示：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/12.png" alt="12"></p>
+<p>每个mutate操作都被用来生成至少五个引发UFU漏洞的上传请求，这表明了每一个mutate操作都是不可缺少的。其中M4（尝试不同的文件后缀）的频率最高，这也表明了许多web应用利用文件后缀来判断上传文件的合法性，并且过滤的后缀名还不够充分。</p>
+<p>作者还对Chain的长度进行了评估，结果表明相比长度0，2，3，在长度为1时效果最好，这也说明了每种mutate在绕过内容过滤检查方面都是相当有效的：</p>
+<p><img src="/2020/08/03/[NDSS20]FUSE/imgs/13.png" alt="13"></p>
+<h2 id="总体评价"><a href="#总体评价" class="headerlink" title="总体评价"></a>总体评价</h2><p>FUSE工具需要再结合用户的白盒审计，需要FUSE的config文件中所必须的一些信息。该工具其实是结合了通过白盒+黑盒的方式来挖掘php应用程序中存在的文件上传漏洞。</p>
+<p>可能在挖掘文件上传漏洞这一块最难解决的还是确定文件上传之后的位置，在现实的场景下，我们是不可能在上传文件之后通过在目标服务器上使用File Monitor来获取shell的位置。这种情况只能说明攻击者已经获取了目标主机的控制权，和现实场景肯定存在出入。</p>
+<h2 id="思维导图"><a href="#思维导图" class="headerlink" title="思维导图"></a>思维导图</h2><p><img src="/2020/08/03/[NDSS20]FUSE/imgs/FUSE.svg" alt="FUSE"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/03/[NDSS20]FUSE/">https://bantttian.github.io/2020/08/03/[NDSS20]FUSE/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        <a href="/tags/NDSS/"># NDSS</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/01/WebShell-1/">Web Shell入门学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
