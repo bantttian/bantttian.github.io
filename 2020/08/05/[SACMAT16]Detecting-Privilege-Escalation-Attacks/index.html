@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>SACMAT16 &amp; Detecting Privilege Escalation Attacks through Instrumenting Web Application Source Code | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">SACMAT16 &amp; Detecting Privilege Escalation Attacks through Instrumenting Web Application Source Code</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-05&nbsp;&nbsp;20:58:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>原文链接：<a href="https://twin.sci-hub.tw/5813/1d94a680974a94dd20b6e8fa7196851f/zhu2016.pdf#view=FitH" target="_blank" rel="noopener">https://twin.sci-hub.tw/5813/1d94a680974a94dd20b6e8fa7196851f/zhu2016.pdf#view=FitH</a></p>
+<p>本文发表在SACMAT’16。</p>
+<h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>在Web安全领域中，越权漏洞是一种比较常见的漏洞。尽管经验表明许多应用程序容易受到此类攻击，但是攻击者很难在第一次就成功攻击。所以本文提出了一种通过分析应用程序源代码的方式来检测一些访问控制攻击之间。并且作者测试了两个开源的Web应用程序来评估方法的误报（false positive and negative）。</p>
+<p><strong>Listing 1</strong>所示的是一个网上银行程序的资金转移函数。如果if条件语句执行失败，就说明用户正在尝试从一个账户中转移不属于ta的资金：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/1.png" alt="1"></p>
+<p>作者认为，对于大多数网上银行应用程序来说，这是攻击的有力证据，因为它不太可能是由用户的无意操作造成的。</p>
+<p>所以作者提出了一种运行时检测越权攻击行为的保护机制，通过在应用程序源代码中插入检测的代码来实现，如<strong>Listing 2</strong>所示：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/2.png" alt="2"></p>
+<p>实现<strong>Listing 2</strong>中的检测逻辑需要保证三件事：</p>
+<ol>
+<li>该检测代码应该能够自动化插入；</li>
+<li>不改变原程序的执行语义；</li>
+<li>对程序性能的影响应该忽略不计。</li>
+</ol>
+<p>为了解决这个问题，一个重要的问题就是什么情况下应该判定用户的一个访问行为是潜在的越权攻击行为？为此，作者将通过非可见的链接对某网页进行强制访问的行为定义为<strong>Forced Browsing</strong>。</p>
+<p>但是在一些情况下，一些forced browsing行为也可能是用户的无危害行为，比如对一个受权限验证保护的页面，在用户的session过期之后，用户可能会进行一个refresh操作，那在这种情况下，就不能说这个行为是存在恶意的攻击行为。这种时候其实可以通过检查用户的访问次数来判定该行为的性质，因为在绝大多数的情况下攻击者会尝试多次攻击。</p>
+<p>所以本文的目标就是找到潜在的forced browsing事件，并且在源代码中插入检测代码来保护并提醒网站维护人员。</p>
+<h2 id="设计与实现"><a href="#设计与实现" class="headerlink" title="设计与实现"></a>设计与实现</h2><p>本文的主要思路分为以下四步：</p>
+<ol>
+<li>首先要确定源代码中属于访问控制检测部分的代码；</li>
+<li>建立一个网站的导航图，node表示一个网页，edge表示连接页面之间的URL；</li>
+<li>识别那些受访问控制逻辑的页面，这些页面只有在通过了访问权限检查之后才能显示；</li>
+<li>这些页面肯定会实现访问失败时的执行逻辑，所以我们要在这些访问失败时执行的逻辑里添加保护代码去报告该类forced browsing事件。</li>
+</ol>
+<h3 id="识别访问控制逻辑"><a href="#识别访问控制逻辑" class="headerlink" title="识别访问控制逻辑"></a>识别访问控制逻辑</h3><p>首先需要确定敏感操作，作者在论文中将敏感操作称为Security Sensitive Operation（SSO），并且认为SQL操作为SSO。</p>
+<p>对于这类敏感操作，应用程序肯定会对用户进行验证来确保当前用户有操作权限（验证机制是否充分不在考虑范围之内），所以对于一个给定的SSO，access control check一定满足这些要求：</p>
+<ol>
+<li><p>access control check一定在程序的入口点到SSO的执行路径上；</p>
+</li>
+<li><p>当权限验证失败时，必须能够更改执行路径以拒绝对SSO的访问，一般有两种情况，一种是if条件分支，如<strong>Lising 1</strong>所示；另一种是通过抛出异常或是终止程序执行：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/3.png" alt="3"></p>
+</li>
+</ol>
+<h3 id="识别可能被强制访问的页面"><a href="#识别可能被强制访问的页面" class="headerlink" title="识别可能被强制访问的页面"></a>识别可能被强制访问的页面</h3><h4 id="构建粗略的导航图"><a href="#构建粗略的导航图" class="headerlink" title="构建粗略的导航图"></a>构建粗略的导航图</h4><p>首先需要构建程序的导航图，下图是Wheatblog的部分导航图：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/4.png" alt="4"></p>
+<p>上图的边有两种情况：</p>
+<ol>
+<li>_conditional link_，指那些只有通过了访问控制检查才会显式出现的链接，在上图中是虚线的边；</li>
+<li>_unconditional link_，指那些不需要通过访问控制检查就能访问的链接，在上图中是实线的边。</li>
+</ol>
+<p>图2中虚线框中的页面指那些只有以管理员身份登录时才能正常访问的页面，这些页面是可能被用户强制访问的，即对这些页面的访问是涉及权限检查的。</p>
+<p>为了构建这样的导航图，作者从源代码中提取链接，其中最难解决的是动态生成url的问题，如下图所示，可以看到Listing 4中的链接就是静态的，是可以从源代码中提取的，但是<strong>Listing 5</strong>的链接就是动态的，由$lang变量决定，在一些更复杂的情况下，可能由if条件语句控制生成：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/5.png" alt="5"></p>
+<p>本篇论文中，作者并没有尝试去解决这个问题，仅仅提取了静态链接。作者采取的方法很简单，定义一个worklist queue，然后从index.php页面开始访问，提取出其中的静态链接，比如admin/edit_post.php，那就记为二元组<code>(index.php, admin/edit_post.php)</code>并将admin/edit_post.php加入worklist queue，如果页面中没有指向下一个页面的链接，则记为<code>(index.php, _)</code>，如果静态链接是指向外部网站的外链，则丢弃。接着从worklist queue中pop出index.php，将index.php比较为已访问，从worklist queue中取出下一个节点接着访问。</p>
+<h4 id="识别conditional-links"><a href="#识别conditional-links" class="headerlink" title="识别conditional links"></a>识别conditional links</h4><p>作者定义了两个集合：</p>
+<ol>
+<li><strong>critical global variables</strong>，简记为CV，是从if条件语句和抛出异常的函数中提取出来的；</li>
+<li><strong>security critical global variables</strong>，简记为SCV，参与访问控制权限决策的CV。</li>
+</ol>
+<p>比如对于下图有：<code>CV = { $_SESSION[&#39;privilege&#39;] }</code>，<code>SCV = { $_SESSION[&#39;privilege&#39;] }</code>。</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/6.png" alt="6"></p>
+<p>为了找出导航图中的conditional links，文中是这样做的：</p>
+<ol>
+<li><p>为SSO找出相关的SCV，记为<code>SCV_ssos</code>；</p>
+</li>
+<li><p>对于粗略导航图中的每一条边l（链接），将其作为一条候选的conditional link</p>
+<p>a. 为边l提取出相关的CV，记为<code>CV_link_l</code>；</p>
+<p>b. 将两个集合<code>SCV_ssos</code>和<code>CV_link_l</code>进行比较，如果有交集，则说明边l是conditional link。</p>
+</li>
+</ol>
+<h4 id="识别候选页面"><a href="#识别候选页面" class="headerlink" title="识别候选页面"></a>识别候选页面</h4><p>接着需要找出插入检测代码的候选页面，需要满足两个要求：</p>
+<ol>
+<li>该页面必须包含至少一个SSO操作；</li>
+<li>该页面只能通过conditional link进行访问。</li>
+</ol>
+<h2 id="检测代码生成"><a href="#检测代码生成" class="headerlink" title="检测代码生成"></a>检测代码生成</h2><p>在对控制权限检查通过之后，就可以执行一些敏感操作，如果检测失败，则说明存在越权行为，所以代码应该插入在检测失败的逻辑，Listing 9是作者给出的一个例子（但是这个例子是不是不太合适，因为检测通过，执行了SSO操作之后还是会继续执行后面的代码的，如果在后面插入sensor，可能需要额外的检测？）：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/7.png" alt="7"></p>
+<p>if-else逻辑很好理解，检测代码应在else逻辑中：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/8.png" alt="8"></p>
+<p>switch语句：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/9.png" alt="9"></p>
+<p>对于函数内的抛出异常和异常终止的情况，则应该在终止程序或是抛出异常之前插入检测代码：</p>
+<p><img src="/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/imgs/10.png" alt="10"></p>
+<h2 id="总体评价"><a href="#总体评价" class="headerlink" title="总体评价"></a>总体评价</h2><p>本篇工作的目的是对PHP应用程序进行一个runtime的防御，检测用户的可疑行为，总的思路并不复杂。在实验评估环节，作者仅仅对两个适配性比较高的PHP应用程序进行了测评，还是比较tricky的。实验中存在一些误报，主要分为两类：</p>
+<ol>
+<li>false positive，将用户的正常行为误报为恶意的越权行为，作者认为主要是因为将一些unconditional边误认为conditional边了；</li>
+<li>false negative，漏报了一些恶意的越权行为，这主要是因为将conditional边漏掉了。</li>
+</ol>
+<p>而且作者在构造粗略的导航图时只提取了静态的链接，丢弃了那些动态链接，这样会造成一些恶意行为的漏报。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/">https://bantttian.github.io/2020/08/05/[SACMAT16]Detecting-Privilege-Escalation-Attacks/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/03/%5BNDSS20%5DFUSE/">NDSS20 & FUSE-Finding File Upload Bugs via Penetration Testing</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
