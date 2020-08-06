@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>W2SP15 &amp; No SQL, No Injection？Examining NoSQL Security | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">W2SP15 &amp; No SQL, No Injection？Examining NoSQL Security</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-06&nbsp;&nbsp;17:28:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>原文链接：<a href="https://arxiv.org/pdf/1506.04082" target="_blank" rel="noopener">https://arxiv.org/pdf/1506.04082</a></p>
+<p>发表在W2SP 2015，In Proceedings of the 9th Workshop on Web 2.0 Security and Privacy (W2SP) 2015 </p>
+<h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>保证数据库安全一直是保证系统安全的重要方面，对企业数据库的访问会使攻击者可以控制企业的一些隐私数据。例如攻击者可以将恶意代码插入到数据库中，这使攻击者几乎可以对数据执行任何操作，包括访问未经授权的数据及更改、删除和插入新数据。尽管由于安全框架的使用和开发者对SQL注入防御意识的提高，SQL注入的利用多年来一直在稳步下降，但是SQL注入一直是最流行的攻击手段之一。而NoSQL数据库的出现，比如MongoDB，Redis和Cassandra，因为使用不同的查询语言，使传统的SQL注入方式变得不再可用。但是作者发现，这并不意味着NoSQL数据库就不会受到SQL注入漏洞的影响了。在本篇文章中，作者介绍了几种新的注入技术，比如：</p>
+<ul>
+<li>PHP数组注入攻击（PHP array injection attack）；</li>
+<li>MongoDB OR注入（MongoDB OR injection）；</li>
+<li>任意JavaScript注入（arbitrary JavaScript injection）。</li>
+</ul>
+<h2 id="NoSQL注入方式"><a href="#NoSQL注入方式" class="headerlink" title="NoSQL注入方式"></a>NoSQL注入方式</h2><h3 id="1-NoSQL语法简介"><a href="#1-NoSQL语法简介" class="headerlink" title="1. NoSQL语法简介"></a>1. NoSQL语法简介</h3><p>以比较流行的NoSQL数据库MongoDB为例，MongoDB是一个面向文档的数据库，被许多的大公司采用，比如EBay，Foursquare和LinkedIn等。</p>
+<p>MongoDB的查询语句和数据都表现为JSON格式，这比传统的SQL语句更加安全。以下为MongoDB的insert语句：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db.books.insert(&#123;</span><br><span class="line">    title: 'The Hobbit',</span><br><span class="line">    author: 'J.R.R. Tolkien'</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>查询语句为：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">db.books.find(&#123;</span><br><span class="line">    title: 'The Hobbit'</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-PHP数组注入攻击"><a href="#2-PHP数组注入攻击" class="headerlink" title="2. PHP数组注入攻击"></a>2. PHP数组注入攻击</h3><p>下图所示的是PHP Web应用程序的一个架构：</p>
+<p><img src="/2020/08/06/[W2SP15]Examining-NoSQL-Security/imgs/1.png" alt="1"></p>
+<p>PHP的<code>array</code>方法可以直接将数组转变成JSON：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">array</span>(<span class="string">'title'</span> =&gt; <span class="string">'The hobbit'</span>, <span class="string">'author'</span> =&gt; <span class="string">'J.R.R. Tolkien'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>结果为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"title"</span>: <span class="string">"The hobbit"</span>,</span><br><span class="line">    <span class="attr">"author"</span>: 'J.R.R. Tolkien'</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但在PHP应用程序中，我们经常会通过HTTP GET/POST请求传递参数，比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username&#x3D;tolkien&amp;password&#x3D;hobbit</span><br></pre></td></tr></table></figure>
+
+<p>后端对应的数据库查询语句可能是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db-&gt;logins-&gt;find(<span class="keyword">array</span>(<span class="string">"username"</span>=&gt;$_POST[<span class="string">"username"</span>],<span class="string">"password"</span>=&gt;$_POST[<span class="string">"password"</span>]));</span><br></pre></td></tr></table></figure>
+
+<p>对应的MongoDB原生数据库语义为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.logins.find(&#123; username: &#39;tolkien&#39;, password: &#39;hobbit&#39; &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>但是PHP有一个内置的关联数组机制，允许攻击者发送以下恶意payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username[$ne]&#x3D;1&amp;password[$ne]&#x3D;1</span><br></pre></td></tr></table></figure>
+
+<p>PHP会将该payload转变为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">array</span>(</span><br><span class="line">	<span class="string">"username"</span> =&gt; <span class="keyword">array</span>(<span class="string">"$ne"</span> =&gt; <span class="number">1</span>),</span><br><span class="line">    <span class="string">"password"</span> =&gt; <span class="keyword">array</span>(<span class="string">"$ne"</span> =&gt; <span class="number">1</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>对应的MongoDB原生查询语句为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.logins.find(&#123; username: &#123; $ne: 1 &#125;, password: &#123; $ne: 1 &#125; &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>但是在MongoDB的语法中，<code>$ne</code>表示_not equal_，所以这条语句就相当于：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> logins <span class="keyword">WHERE</span> username &lt;&gt; <span class="number">1</span> <span class="keyword">AND</span> <span class="keyword">password</span> &lt;&gt; <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>在这样的场景下，攻击者根本不需要提供正确的用户名和密码就能很轻松的登录目标站点了。</p>
+<p>除了<code>$ne</code>之外，MongoDB中还存在其他的符号，比如：<code>[$lt]</code>，<code>[$gt]</code>和<code>[$regex]</code>等。</p>
+<h3 id="3-NoSQL-OR注入"><a href="#3-NoSQL-OR注入" class="headerlink" title="3. NoSQL OR注入"></a>3. NoSQL OR注入</h3><p>SQL注入漏洞的一个常见原因是从字符串文本构建查询，其中包括未使用适当编码的用户输入。虽然这种注入方式因为JSON查询而变得更难实现，但是也不是完全没有可能的。</p>
+<p>一些开发者可能采取这样的方式将用户输入转成JSON，而不是使用PHP自带的array函数：</p>
+<p><img src="/2020/08/06/[W2SP15]Examining-NoSQL-Security/imgs/3.png" alt="3"></p>
+<p>在正常情况下，拼接后可以得到：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; username: 'tolkien', password: 'hobbit' &#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果攻击者构造这样的恶意输入：</p>
+<p><img src="/2020/08/06/[W2SP15]Examining-NoSQL-Security/imgs/2.png" alt="2"></p>
+<p>拼接后的结果为：</p>
+<p><img src="/2020/08/06/[W2SP15]Examining-NoSQL-Security/imgs/4.png" alt="4"></p>
+<p><code>$or</code>就表示对后面的<code>[]</code>中的内容进行OR语句操作，而一个<code>{}</code>查询语句永远返回<code>TRUE</code></p>
+<p>所以这条语句就相当于：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> logins <span class="keyword">WHERE</span> username = <span class="string">'tolkien'</span> <span class="keyword">AND</span> (<span class="literal">TRUE</span> <span class="keyword">OR</span> (<span class="string">'a'</span> = <span class="string">'a'</span> <span class="keyword">AND</span> <span class="keyword">password</span> = <span class="string">''</span>)) <span class="comment">#successful MongoDB injection</span></span><br></pre></td></tr></table></figure>
+
+<p>只要用户能够提供正确的用户名就可以直接登录，而不需要密码校验。</p>
+<h3 id="4-NoSQL-JavaScript注入"><a href="#4-NoSQL-JavaScript注入" class="headerlink" title="4. NoSQL JavaScript注入"></a>4. NoSQL JavaScript注入</h3><p>NoSQL数据库的另一个特性是可以执行JavaScript语句。如果用户的输入为转义或未充分转义，则Javascript执行会暴露一个危险的攻击面。 例如，一个复杂的事物可能需要javascript代码，其中包括一个未转义的用户输入作为查询中的一个参数。</p>
+<p>比如以一个商店为例，商店中有一系列商品，每个商品都有价格和金额。开发人员想要获取这些字段的总和或者平均值，开发者编写了一个map reduce函数，其中<code>$param</code>参数接受用户的输入：</p>
+<p><img src="/2020/08/06/[W2SP15]Examining-NoSQL-Security/imgs/5.png" alt="5"></p>
+<p>因为没有对用户的输入进行充分的过滤，所以攻击者可以构造这样的payload：</p>
+<p><img src="/2020/08/06/[W2SP15]Examining-NoSQL-Security/imgs/6.png" alt="6"></p>
+<p>上面代码中绿色的部分的作用是闭合function()函数；红色的部分是攻击者希望执行的任意代码。最后最一部分蓝色的代码调用一个新的map reduce函数，以平衡注入到原始语句中的代码。</p>
+<p>得到的效果为：</p>
+<p><img src="/2020/08/06/[W2SP15]Examining-NoSQL-Security/imgs/7.png" alt="7"></p>
+<p>如果要防止JavaScript注入攻击，可以直接禁止数据库语句中JavaScript语句的执行（在_mongod.conf_中将<code>javascriptEnabled</code>设为<code>false</code>）或者是加强对用户输入的过滤。</p>
+<h3 id="5-防御措施"><a href="#5-防御措施" class="headerlink" title="5. 防御措施"></a>5. 防御措施</h3><p>作者主要提出了以下几种防御措施：</p>
+<ol>
+<li>可以对程序的源代码进行静态分析或是Dynamic Application Security Testing，找出潜在的NoSQL注入漏洞点；</li>
+<li>实现完备的访问控制来防御越权攻击。因为一些NoSQL数据库没有实现正确的用户验证authentication和用户授权验证RBAC authorization，这也会导致数据库中的数据受到危害。</li>
+</ol>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><p><a href="https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/NoSQL%20Injection" target="_blank" rel="noopener">https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/NoSQL%20Injection</a></p>
+</li>
+<li><p><a href="https://www.acunetix.com/blog/web-security-zone/nosql-injections/" target="_blank" rel="noopener">https://www.acunetix.com/blog/web-security-zone/nosql-injections/</a> </p>
+</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/06/[W2SP15]Examining-NoSQL-Security/">https://bantttian.github.io/2020/08/06/[W2SP15]Examining-NoSQL-Security/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/05/%5BSACMAT16%5DDetecting-Privilege-Escalation-Attacks/">SACMAT16 & Detecting Privilege Escalation Attacks through Instrumenting Web Application Source Code</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
