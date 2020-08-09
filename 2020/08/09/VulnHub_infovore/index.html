@@ -12,7 +12,7 @@
 
 
 
-<title>VulnHub_infovore | Bantian</title>
+<title>从VulnHub_infovore靶机学习lfi+phpinfo=&gt;RCE | Bantian</title>
 
 
 
@@ -169,7 +169,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">VulnHub_infovore</h1>
+            <h1 class="post-title">从VulnHub_infovore靶机学习lfi+phpinfo=&gt;RCE</h1>
             
                 <div class="post-meta">
                     
@@ -178,7 +178,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">2020-08-09&nbsp;&nbsp;17:02:23</a>
+                        Date: <a href="#">2020-08-09&nbsp;&nbsp;17:08:00</a>
                         </span>
                     
                     
@@ -187,7 +187,7 @@
         </header>
 
         <div class="post-content">
-            <h1 id="从VulnHub-infovore靶机学习lfi-phpinfo-gt-RCE"><a href="#从VulnHub-infovore靶机学习lfi-phpinfo-gt-RCE" class="headerlink" title="从VulnHub_infovore靶机学习lfi+phpinfo=&gt;RCE"></a>从VulnHub_infovore靶机学习lfi+phpinfo=&gt;RCE</h1><h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>local file inclusion + phpinfo =&gt; RCE</p>
+            <h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>local file inclusion + phpinfo =&gt; RCE</p>
 <h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>靶机： <a href="https://www.vulnhub.com/entry/infovore-1,496/" target="_blank" rel="noopener">https://www.vulnhub.com/entry/infovore-1,496/</a></p>
 <p>上nmap收集目标主机的ip地址：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kali@kali:~$ nmap -sP 192.168.247.1/24</span><br><span class="line">Starting Nmap 7.80 ( https://nmap.org ) at 2020-08-08 03:09 EDT</span><br><span class="line">Nmap scan report for 192.168.247.1</span><br><span class="line">Host is up (0.0012s latency).</span><br><span class="line">Nmap scan report for 192.168.247.2</span><br><span class="line">Host is up (0.0010s latency).</span><br><span class="line">Nmap scan report for 192.168.247.210</span><br><span class="line">Host is up (0.00019s latency).</span><br><span class="line">Nmap scan report for 192.168.247.224</span><br><span class="line">Host is up (0.0015s latency).</span><br><span class="line">Nmap done: 256 IP addresses (4 hosts up) scanned in 2.93 seconds</span><br></pre></td></tr></table></figure>
@@ -324,6 +324,14 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        <a href="/tags/Vulnhub/"># Vulnhub</a>
+                    
+                        <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"># 渗透测试</a>
+                    
+                        
                 </span>
             </div>
             <div>
