@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>CCS17 &amp; Deemon-Detecting CSRF with Dynamic Analysis and Property Graphs | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CCS17 &amp; Deemon-Detecting CSRF with Dynamic Analysis and Property Graphs</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-14&nbsp;&nbsp;16:49:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="主要内容"><a href="#主要内容" class="headerlink" title="主要内容"></a>主要内容</h2><p>CSRF一直是OWASP漏洞中的top10之一，分为login CSRF和authenticated CSRF，本篇论文的研究对象则是关注后者authenticated CSRF，简称aCSRF。在aCSRF中，攻击者已经通过了目标网站的身份验证，攻击者可以在HTML页面中嵌入一些恶意的代码。比用户A已经登陆了站点B，并且访问某个页面，而该页面被攻击者插入了恶意代码。当用户A访问该恶意页面时，用户A的浏览器就会发起一个跨域请求，用户A会访问攻击者事先准备好的站点，然后攻击者将用户重定向到修改密码的页面，该请求中会包含用户的session或是cookie等敏感信息，可以让受害者在不知情的情况下修改自己的密码。</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/15.png" alt="15"></p>
+<p>当前对于CSRF的自动化漏洞挖掘比较困难，而作者通过建立完善的标签属性图解决了这个难题，设计并实现了工具Deemon，项目地址为： <a href="https://github.com/tgianko/deemon" target="_blank" rel="noopener">https://github.com/tgianko/deemon</a> 。</p>
+<h2 id="实验挑战"><a href="#实验挑战" class="headerlink" title="实验挑战"></a>实验挑战</h2><p>作者在解决自动化挖掘CSRF漏洞的问题时主要遇到了两个挑战，detection challenges和operational challenges。</p>
+<h3 id="1-Detection-Challenge"><a href="#1-Detection-Challenge" class="headerlink" title="1. Detection Challenge"></a>1. Detection Challenge</h3><p>检测aCSRF需要对应用程序的状态、请求参数的角色role和状态以及观察到的状态转换序列之间的关系进行推理。</p>
+<h4 id="C1-State-Transitions"><a href="#C1-State-Transitions" class="headerlink" title="(C1) State Transitions"></a>(C1) State Transitions</h4><p>第一个需要解决的问题是确定服务端的状态在什么时候发生了改变，比如用户浏览商品的页面不会引起server-side的状态变化，但是用户改变密码的请求就一定会造成服务器端的状态发生变化，数据库中的信息需要更新：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/1.png" alt="1"></p>
+<p>目前绝大部分的web扫描工具都是采用黑盒的检测方式，只能从服务器端返回的response检测漏洞，经常用在检测xss和sqli漏洞上。所以此类工具并不适用与aCSRF检测，因为aCSRF依赖于server-side的状态转变。</p>
+<h4 id="C2-Security-Relevant-State-Changes"><a href="#C2-Security-Relevant-State-Changes" class="headerlink" title="(C2) Security-Relevant State Changes"></a>(C2) Security-Relevant State Changes</h4><p>第2个需要解决的detection难题是，并不是所有的状态改变都是和security相关的。比如一个在线商城可能为了获取商品的流行度，在用户浏览之后，会将商品的浏览次数+1，这也会导致server-side有一个状态的改变：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/2.png" alt="2"></p>
+<p>我们人很容易能够区分这些差别，但是对于工具来说区分这些很难。</p>
+<h4 id="C3-Relationships-of-Request-Parameters-and-State-Transitions"><a href="#C3-Relationships-of-Request-Parameters-and-State-Transitions" class="headerlink" title="(C3) Relationships of Request Parameters and State Transitions"></a>(C3) Relationships of Request Parameters and State Transitions</h4><p>另一个需要解决的detection难题是确定请求参数和状态转换之间的关系。比如一个请求参数为token，那么这个参数就非常有可能是一个随机数，用户想要自己构造是不可能的：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/3.png" alt="3"></p>
+<p>但是如果是一个用户的输入，比如username或是password，那么就有可能会引起用户的账号密码被攻击者篡改。这种情况下是有可能引起server-side的状态变化。</p>
+<h3 id="2-Operational-Challenge"><a href="#2-Operational-Challenge" class="headerlink" title="2. Operational Challenge"></a>2. Operational Challenge</h3><h4 id="C4-Transitions-in-Non-Trivial-Application-Workflows"><a href="#C4-Transitions-in-Non-Trivial-Application-Workflows" class="headerlink" title="(C4) Transitions in Non-Trivial Application Workflows"></a>(C4) Transitions in Non-Trivial Application Workflows</h4><p>第4个challenge是如何在发起能够使复杂的应用程序状态改变的请求，或者说，如何在复杂的web应用程序工作流中找到导致状态变化的请求。</p>
+<h4 id="C5-Side-Effect-Free-Testing"><a href="#C5-Side-Effect-Free-Testing" class="headerlink" title="(C5) Side-Effect-Free Testing"></a>(C5) Side-Effect-Free Testing</h4><p>第5个需要解决的问题是如何进行对后续测试没有影响的测试实验。比如有一个在线商城，购物车中的商品被提交之后，后面再向对购物车进行测试就麻烦了，因为购物车已经被清空了。</p>
+<h4 id="C6-Comprehensive-Reusable-Representation-of-Application-Functionality"><a href="#C6-Comprehensive-Reusable-Representation-of-Application-Functionality" class="headerlink" title="(C6) Comprehensive, Reusable Representation of Application Functionality"></a>(C6) Comprehensive, Reusable Representation of Application Functionality</h4><p>为了检测与security有关的状态改变，其实需要对应用程序进行建模，但是如何对程序建立一个全面的、可重用的应用程序功能表示模型是一个难题。</p>
+<h2 id="设计与实现"><a href="#设计与实现" class="headerlink" title="设计与实现"></a>设计与实现</h2><p>作者实现了一个名为Deemon的工具来解决上述的几个Challenge。</p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><h4 id="Challenge-C1-amp-C3"><a href="#Challenge-C1-amp-C3" class="headerlink" title="Challenge C1 &amp; C3"></a>Challenge C1 &amp; C3</h4><p>对于C1和C3，从程序执行观察中推断出状态转换和数据流信息的模型。对于C3，要确定请求参数和状态转换之间的关系，这个问题使用数据流模型（Data Flow Model，DFM）来解决，作者将HTTP的请求参数分为两种，一种是随机的，是用户不可猜测的，另一种是用户可以猜测的，就认为它是user input。DFM将状态表示为一组变量，并可以捕获数据项从HTTP请求到SQL查询的传播路径。</p>
+<h4 id="Challenge-C2"><a href="#Challenge-C2" class="headerlink" title="Challenge C2"></a>Challenge C2</h4><p>利用图遍历的方式对属性图进行一种programmatic的访问，以此确定与安全相关的状态转移。</p>
+<h4 id="Challenge-C4"><a href="#Challenge-C4" class="headerlink" title="Challenge C4"></a>Challenge C4</h4><p>增强了Web应用程序的执行环境，主要是通过向应用程序容器插入一些sensor，来跟踪服务器端程序执行和数据库操作顺序等。</p>
+<h4 id="Challenge-C5"><a href="#Challenge-C5" class="headerlink" title="Challenge C5"></a>Challenge C5</h4><p>依靠虚拟化环境来测试web应用程序， 通过获取和恢复快照来完全控制Web应用程序。</p>
+<h4 id="Challenge-C6"><a href="#Challenge-C6" class="headerlink" title="Challenge C6"></a>Challenge C6</h4><p>使用属性图来表示模型，属性图是一种统一和可重复使用的模型表达方式，且可以通过标记边的方式来定义模型间的精确关系。</p>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><p>Deemon的输入有两个：（1）a set of user actions；（2）an application container of the web application under test，是一个runtime环境，包括程序本身、程序运行所需要的依赖和一些相关配置。</p>
+<p>Deemon挖掘aCSRF的步骤可以分为两大阶段：</p>
+<ol>
+<li>_instrumentation_，在这一阶段，Deemon会通过安装一些sensor来记录网络的trace、服务器端的程序执行trace和一些数据库的操作等，比如对于PHP应用程序，可以用Xdebug来追踪程序的执行流程，用HTTP代理来拦截server和browser之间的请求。</li>
+<li>_detection_，在第二阶段，Deemon会自动重新生成用户操作，并且根据这些跟踪后得到的trace来推断模型，然后以此探测Web应用程序中的aCSRF漏洞。具体流程如下图所示：</li>
+</ol>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/4.png" alt="4"></p>
+<p>（a）重放用户输入；</p>
+<p>（b）在instrumentation阶段安装的sensor产生执行跟踪trace，其中包括网络跟踪（network trace）和函数调用跟踪（function call trace），在这一步Deemon会运行两次，以观察诸如生成伪随机数据项等不确定性数据的来源；</p>
+<p>（c）从上一步的这些trace中，Deemon会先生成一个简单的模型（有限状态机和数据流模型）的组合模型，称其为属性图；</p>
+<p>（d）Deemon使用该模型来挖掘潜在的漏洞（security test）和一个oracle（出度等于1的SQL查询的抽象分析树根的集合，用于确定是否发生了与安全有关的状态转换）；</p>
+<p>（e）在web程序中运行找到的security test；</p>
+<p>（f）根据oracle预测测试结果来检测aCSRF漏洞。</p>
+<p>最后，Deemon会返回一个vulnerability report，其中会列出造成aCSRF的HTTP请求序列。</p>
+<h3 id="标签属性图概念"><a href="#标签属性图概念" class="headerlink" title="标签属性图概念"></a>标签属性图概念</h3><p>作者在文中提出了标签属性图（Labeled Property Graph，简称LPG）的概念。标签属性图是边和节点都带有标签的有向图，下图是一个简单的LPG图：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/5.png" alt="5"></p>
+<p>节点属性：节点n1和n3都有一个属性，n1是<code>k1: v1</code>，n3是<code>k2: v2</code>。</p>
+<p>节点标签：节点有一个标签，n1、n2和n3的标签分别为<code>L&#39;</code>，<code>L&#39;</code>和<code>L&#39;&#39;</code>。</p>
+<p>边标签：边也存在标签，e1和e2的标签都为<code>R&#39;</code>，e3的标签为<code>R&#39;&#39;</code>。</p>
+<p>为了构建完整的属性图，需要将sensor跟踪到的trace、FSM和DFM都映射到属性图中。</p>
+<ul>
+<li><strong>Traces and Parser Trees</strong></li>
+</ul>
+<p>trace是sensor记录下来的比如HTTP请求或是SQL查询之类的信息。在属性图中，一个节点表示一个Event，每个Event之间用边连接起来，边会有一个标签next，表示Event之间生成的前后关系。</p>
+<p>下图是更新用户密码对应的属性图（为了可读性，其中不包括用户操作）：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/6.png" alt="6"></p>
+<p>比如在上图3.d中，<code>e&#39;</code>表示一个HTTP请求：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/7.png" alt="7"></p>
+<p>Deemon会解析HTTP请求，并将得到的解析树存储在属性图中，一个解析树中不包括Host，Content-Type和Content-Length等无用的HTTP请求头信息。解析树的节点有三种node lable：</p>
+<ol>
+<li>Root，解析树的父节点；</li>
+<li>NTerm，该节点有后继节点；</li>
+<li>Term，该节点没有后继节点。</li>
+</ol>
+<p>节点之间用child边标签连接。</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/8.png" alt="8"></p>
+<ul>
+<li><strong>Finite State Machines</strong></li>
+</ul>
+<p>为了对HTTP请求引起的程序状态之间的转变进行建模，作者使用有限状态机来解决这个问题，因为目前的模型中，HTTP请求被表示为一个节点，但是属性图不支持在节点(例如HTTP请求)和边（例如转换）之间构建一条关系边。所以，作者将两个状态之间的转变堪称一个整体，作为一个node，这个node有三条边：</p>
+<ol>
+<li>第一条边是和HTTP请求节点之间的边；</li>
+<li>第二条边是从上一个状态到当前状态的边；</li>
+<li>第三条边是到下一个新的状态的边。</li>
+</ol>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/9.png" alt="9"></p>
+<ul>
+<li><strong>Dataflow Information and Types</strong></li>
+</ul>
+<p>作者使用DFMs来描述HTTP请求参数和状态转变之间的关系，对某个变量进行建模。比如一个HTTP请求有参数<code>password=pwnd</code>，该参数是一个node，node中会记录参数名和参数值，以及参数的标签，syn_type和sem_type，syn_type是句法类型，表示该参数的类型，如string或int；sem_type是语义类型，如UG表示user-generated，SU表示user session。</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/10.png" alt="10"></p>
+<p>DFM的节点和FSM的节点之间通过has边联系起来，表示请求参数和状态改变之间的关系。</p>
+<h2 id="实验评估"><a href="#实验评估" class="headerlink" title="实验评估"></a>实验评估</h2><p>Deemon对10种Web应用程序进行了测试：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/11.png" alt="11"></p>
+<p>Deemon会首先通过user action捕获数据流，主要分为3种类型：</p>
+<ol>
+<li>仅收集新的执行流程，不追踪用户；</li>
+<li>对执行流程和用户同时进行追踪；</li>
+<li>执行相同的执行流程但是更换用户角色。</li>
+</ol>
+<p>对于每个应用程序，Deemon大概需要13m的时间输出最后的结果，结果如下图所示，第3列表示生成trace的时间，第4列表示建模的时间，最后一列表示测试的时间：</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/12.png" alt="12"></p>
+<p>在下图中，Reqs表示所有的请求数量，SC Reqs表示引起状态变化的请求，Rel. SC Reqs表示与安全相关的状态改变的请求。从结果中知道，几乎所有的请求都会引起程序状态的改变，但是和security相关的又不多。</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/13.png" alt="13"></p>
+<p>为了防止应用程序受到CSRF的攻击，开发者会对一些功能做anti-CSRF的措施，下图可以看到有CSRF防护和没有CSRF防护的攻击效果，显然前者存在的漏洞更少，但是即使进行了anti-CSRF，仍然可能会存在CSRF漏洞。</p>
+<p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/14.png" alt="14"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇论文主要的贡献在于：</p>
+<ol>
+<li>设计并实现了Deemon来挖掘web应用程序中的aCSRF漏洞；</li>
+<li>Deemon的核心就是使用属性图来建模；</li>
+<li>利用Deemon对10个应用程序进行了测试，发现了14个CSRF漏洞。</li>
+</ol>
+<h2 id="思维导图"><a href="#思维导图" class="headerlink" title="思维导图"></a>思维导图</h2><p><img src="/2020/08/14/[CCS17]Deemon-CSRF/imgs/Deemon.svg" alt="Deemon"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/14/[CCS17]Deemon-CSRF/">https://bantttian.github.io/2020/08/14/[CCS17]Deemon-CSRF/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        <a href="/tags/CCS/"># CCS</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/12/%5BWMCTF2020%5DWeb_Checkin2-PHP%E7%BB%95%E8%BF%87exit/">WMCTF2020_Web_Checkin2之PHP利用filter过滤器绕过exit</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
