@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>CCS15 &amp; FlowWatcher-Defending against Data Disclosure Vulnerabilities in Web Applications | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CCS15 &amp; FlowWatcher-Defending against Data Disclosure Vulnerabilities in Web Applications</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-20&nbsp;&nbsp;15:41:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>本文发表在CCS’15，原文链接：<a href="http://www.doc.ic.ac.uk/~cp3213/files/15-ccs-fw.pdf" target="_blank" rel="noopener">http://www.doc.ic.ac.uk/~cp3213/files/15-ccs-fw.pdf</a></p>
+<h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>Data disclosure vulnerabilities，数据泄露漏洞，会将某个用户的数据泄露给攻击者，但是这种漏洞难以防御，原因是因为该漏洞绝大多数都是因为程序在逻辑实现上存在问题而造成的漏洞。</p>
+<p>现在的Web程序，如WordPress，Drupal都实现了自己的访问控制策略，而且访问控制策略在Web程序中应该是无处不在的，比如如下的Durpal数据库查询操作片段：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/1.png" alt="1"></p>
+<p>在第4行，通过addTag(‘node_access’)对用户的访问权限进行检查。</p>
+<p>Data Disclosure漏洞通常可能由以下几种bugs导致：</p>
+<ol>
+<li>Missing check，缺少对资源的检查，如Drupal，CVE-2012-2081</li>
+<li>Avoided check，攻击者可以通过触发避免现有检查的代码路径来访问未经授权的数据，如phpBB，CVE-2010-1627</li>
+<li>Incorrect check，访问控制检查可能没有被正确地实现，这种情况在应用程序的插件中发生的比较多，插件的开发人员可能误解了应用程序的访问控制模型，或是程序的API接口导致了漏洞，比如一个EAR漏洞，仅仅将用户定向到了新的页面，但是程序继续执行，仍旧导致了信息的泄露。</li>
+</ol>
+<p>现在在检测Data disclosure漏洞方面存在这么几种方式：</p>
+<ol>
+<li>程序分析（program analysis），但是这种方式首先需要获得程序的源码，而且绝大多数的工具都只能分析特定的语言。</li>
+<li>输入校验（input validation），这种方法容易遗漏一些逻辑上的漏洞。</li>
+<li>异常检测（anomaly detection），分为Execution anomaly detection和Traffic anomaly detection。前者主要关注运行时的程序状态，后者关注网络流量。但是这两种方式首先要定义什么是异常行为，对于许多的web程序，我们其实很难给出关于异常行为的精准定义。</li>
+</ol>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/2.png" alt="2"></p>
+<p>作者发现，诸如WordPress、Drupal、Evernote、phpMyAdmin和phpBB之类的Web应用程序都是基于访问控制列表来决定访问控制策略的：它们将主体（如用户和用户组）与数据对象（如文章、帖子和评论）的访问权限关联起来。这使得只要能够了解访问控制模型的状态，就能使在应用程序之外进行访问控制的校验成为可能。</p>
+<p>在本文中，作者提出了使用一个名为<strong>FlowWatcher</strong>的Web proxy来检测和校验未经授权的数据泄露，proxy会根据对应用程序预期的访问控制策略理解来解释进出应用程序的网络流量。使用HTTP proxy的好处在于：</p>
+<ul>
+<li>不需要修改应用程序本身或是它们的语言解释器</li>
+<li>不会对应用程序的performance有什么影响，或者说该影响可以忽略不计</li>
+</ul>
+<p>此外，FlowWatcher只关注对数据机密性的威胁，而不是数据的完整性。比如FlowWatcher不能阻止攻击者利用一些漏洞去修改其他用户的数据，因为应用程序可以在后端数据存储中进行更新，而不需要代理知道，只有当数据返回给用户时，代理才能进行介入。</p>
+<h2 id="主要挑战"><a href="#主要挑战" class="headerlink" title="主要挑战"></a>主要挑战</h2><p>本文主要面对两个挑战：</p>
+<ol>
+<li><p>代理该如何表示应用程序的访问控制策略，并且随着新用户、用户组和数据对象的更新而更新自己的策略（该策略是动态发生变化的）。例如，当属于组G的用户U在WordPress中创建一个新的帖子P时，代理必须将这个新的数据对象P与允许访问它的用户U和组G关联起来。</p>
+</li>
+<li><p>代理如何通过HTTP请求和响应来有效地跟踪用户数据，以检查违反访问控制策略的行为。</p>
+</li>
+</ol>
+<h3 id="访问控制策略"><a href="#访问控制策略" class="headerlink" title="访问控制策略"></a>访问控制策略</h3><p>对于Challege 1，作者提出的解决办法是设计新的_user-data-access(UDA) policy language_，它允许应用程序开发人员将主体（用户或用户组）与允许他们访问的数据对象关联起来，为他们的应用程序指定预期的访问控制模型。</p>
+<p>这里需要满足两个要求：</p>
+<ul>
+<li>因为web proxy只能够获取到client-server的HTTP信息，所以该语言只能使用HTTP请求和响应中包含的信息来表示访问控制策略。访问控制模型中的实体（即要保护的数据对象以及用户和用户组），必须用HTTP请求或是响应中的url和表单等信息来实现web proxy中的访问控制策略。在UDA策略中指的是_definition rules_。</li>
+<li>该语言必须能够对策略的更改（如访问控制列表或是组成员关系的更新）做出反应来支持访问控制策略的动态演变，因此该语言必须能够将HTTP请求和策略的更新联系起来。在UDADA策略中指的是_update rules_。</li>
+</ul>
+<p>UDA policy主要包含两部分内容：实体（Entities）和规则（Rules），先分别介绍下这两部分内容。</p>
+<h4 id="实体-Entities"><a href="#实体-Entities" class="headerlink" title="实体 Entities"></a>实体 Entities</h4><p>在UDA policy中的实体指的是数据对象（Data objects）和主体（Users and groups）。</p>
+<ul>
+<li>Data objects，一个数据对象o<del>i</del>包含一些数据项，用<em>D</em>(<em>o</em><del>i</del>) = _{d<del>1</del>,d<del>2</del>,…}_，是从HTTP请求中提取。以Drupal为例，可以从请求的表单信息中提取出title和body作为数据项来标记一个article数据对象，要求数据项组合能够唯一表示一个数据对象。</li>
+<li>Users and groups，一般来说，当用户通过了身份验证之后的session能够唯一标识一个用户，而对于用户组信息，在HTTP请求中也应该有一个g<del>i</del>来唯一表示一个用户组。</li>
+</ul>
+<p>总而言之，无论是数据对象还是用户或是用户组，都需要对它们进行唯一标识。</p>
+<h4 id="规则-Rules"><a href="#规则-Rules" class="headerlink" title="规则 Rules"></a>规则 Rules</h4><p>在UDA policy中有两种类型的规则：</p>
+<ol>
+<li>definition/removal rules (+ or -)，这种类型的规则主要管理Entities的创建或是删除，即数据对象，用户或是用户组。该规则会提取有关新的Entities的必要信息（这些提取主要都是通过正则表达式匹配），以便将这些新实体添加到访问控制策略中。</li>
+<li>update rules (* or -&gt; or -/&gt;)，该规则与访问控制策略的更新有关，例如更新现有的数据对象、在数据对象的访问控制列表中添加允许访问的用户组或禁止某个用户组的用户访问该资源。</li>
+</ol>
+<p>每条规则都有一个规则头和规则正文，结构如下图所示：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/3.png" alt="3"></p>
+<p><code>&lt;type&gt;</code>：是definition/removal rules还是update rules；</p>
+<p><code>&lt;URL spec&gt;</code>指的是会触发该条规则的URL；</p>
+<p><code>&lt;constraint&gt;</code>指的是触发该条规则的其他限制条件；</p>
+<p>而rule body中是规则主体，包含一组赋值或映射语句，这些语句将会更新由代理维护的访问控制策略。</p>
+<p>对于每个HTTP请求，FlowWatcher会根据规则头（rule preamble）中的内容进行匹配，如果匹配通过则执行规则body中的内容。</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/4.png" alt="4"></p>
+<p>以25行的这条规则为例：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/5.png" alt="5"></p>
+<p>该条规则的作用是update rule，如果URL前面有<code>re</code>关键字，那么就会按照正则规则匹配URL，该条规则还需要满足要求，即存在表单（formfield关键字表示表单），并且表单中的<code>og_private</code>字段的值为<code>1</code>。</p>
+<h4 id="创建和删除规则"><a href="#创建和删除规则" class="headerlink" title="创建和删除规则"></a>创建和删除规则</h4><p>UDA policy会通过<strong>definition/revomal rules</strong>维护用户、用户组和数据对象的访问控制策略。比如下面这个例子会创建某个用户的访问控制权限：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/6.png" alt="6"></p>
+<p>当用户通过了身份验证之后，HTTP返回的响应（res_hdr）中包含SESSION信息时，就从表单中提取用户名作为id，从Set-Cookie字段中提取出session作为token，Web proxy将利用id和token信息来唯一标识一个用户。</p>
+<h4 id="更新规则"><a href="#更新规则" class="headerlink" title="更新规则"></a>更新规则</h4><p><strong>Update rules</strong>主要有三项任务：</p>
+<ol>
+<li>更新数据对象，在满足条件时更新该数据对象；</li>
+<li>更新用户组中的用户，添加或是移除用户；</li>
+<li>更新数据对象的访问控制列表，通过添加或是移除用户和用户组对该数据资源的访问权限。</li>
+</ol>
+<p>符号<code>*</code>表示更新数据对象，符号<code>-&gt;</code>表示添加用户到用户组或是添加用户/组对某个数据对象的访问控制列表中，符号<code>-/&gt;</code>表示从用户组中移除某个用户或是将某个用户从某个数据对象的访问控制列表删除。</p>
+<p>下图是对数据对象的更新，会根据url匹配对应的数据对象，然后又根据表单中的title和body来更新item：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/7.png" alt="7"></p>
+<h2 id="工具设计"><a href="#工具设计" class="headerlink" title="工具设计"></a>工具设计</h2><p>下图用一个例子来说明FlowWatcher的工作步骤：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/8.png" alt="8"></p>
+<ol>
+<li>Client A发起POST请求，FlowWatcher拦截下该请求（step 1A）</li>
+<li>根据request请求中的参数和内容更新对应的策略（step 2）</li>
+<li>将该请求转发给后端服务器（step 3）</li>
+<li>后端服务器做出响应response，并被FlowWatcher拦截下来（step 4）</li>
+<li>执行step 2 中的策略来决定该用户是否有访问该数据对象的权限（step 5）</li>
+<li>如果通过了检查，那么FlowWatcher会将该response放行（step 6A）</li>
+<li>反之如果Client B的请求（step 1B）中包含Data Disclosure的可能，那么FlowWatcher会对服务器的响应做出改变，移除那部分的数据内容（step 6B）</li>
+</ol>
+<p>从上图可以看出，FlowWatcher包含两大操作：</p>
+<ul>
+<li>执行shadow policy</li>
+<li>更新shadow policy</li>
+</ul>
+<h3 id="Policy执行"><a href="#Policy执行" class="headerlink" title="Policy执行"></a>Policy执行</h3><p>FlowWatcher用4个数据结构来存储访问控制状态：</p>
+<ul>
+<li><code>user_auth</code>将用户映射到他们的tokens</li>
+<li><code>group_members</code>将用户映射到他们用户组</li>
+<li><code>object_acl</code>将数据对象映射到具有访问权限的用户/组</li>
+<li><code>data_items</code>将数据对象映射到相关的数据项</li>
+</ul>
+<p>如下图所示：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/9.png" alt="9"></p>
+<p>在FlowWatcher将HTTP响应转发给用户之前会检查服务器response的内容是否和shadow UDA policy相符合：</p>
+<ol>
+<li>Indentify requesting user，FlowWatcher会从HTTP请求中提取出authencation token，然后将其与<code>user_auth</code>进行比较；</li>
+<li>Match response content，FlowWatcher将来自<code>data_items</code>的跟踪数据项与响应头和主体匹配</li>
+<li>Check access control list，FlowWatcher会根据<code>object_acl</code>查看当前的用户是否具有查看资源的权限</li>
+<li>Consult whitelist，对于没有授权访问的匹配对象，FlowWatcher检查相关数据项D(o<del>i</del>)是否能在static_data中找到</li>
+<li>Redact response，对于未授权用户UI查看的所有剩余数据对象o<del>i</del>，FlowWatcher从响应中重新生成数据项D(o<del>i</del>)，并提醒系统管理员</li>
+</ol>
+<h3 id="Policy更新"><a href="#Policy更新" class="headerlink" title="Policy更新"></a>Policy更新</h3><p>下图是一个拥有文章的用户授予新组访问权限时，Flow Watcher如何更新shadow policy的例子：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/10.png" alt="10"></p>
+<ol>
+<li>FlowWatcher拦截用户的请求（step 1）</li>
+<li>接着检查请求中的URL或是其他参数，查找被UDA中被触发的definition或是update规则（step 2）</li>
+<li>接着调用每条被触发的规则（step 3）</li>
+<li>更新相关的数据结构，如group_members，object_acl或是data_items等</li>
+</ol>
+<h2 id="实验评估"><a href="#实验评估" class="headerlink" title="实验评估"></a>实验评估</h2><p>FlowWatcher对7种比较流行的Web应用程序进行了测试：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/11.png" alt="11"></p>
+<p>因为这些cms存在一些CVE，所以通过FlowWatcher是否能拦截这些漏洞来证实其有效性。这些CVE的漏洞类型可能不同，如CVE-2010-0287是路径遍历漏洞，CVE-2009-1960是文件包含漏洞，但是最后都导致了数据泄露。</p>
+<p>下图是对WordPress生成的访问控制规则：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/12.png" alt="12"></p>
+<p>作者还进行了实验来测量FlowWatcher的运行开销。作者在搭建的Drupal上创建了6000个用户和60个用户组，然后进行登录，访问主页面，添加post，访问post和登出等操作。作者在装有FlowWatcher和不装有FlowWatcher的机器上进行实验，最后发现前者的CPU使用率不会超过10%。</p>
+<p>下图Fig 4.表明，FlowWatcher并不会造成额外的开销：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/13.png" alt="13"></p>
+<p>图Fig 5.表明，FlowWatcher也没有什么时延，可以忽略不计：</p>
+<p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/14.png" alt="14"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文作者设计并实现了一款名为FlowWatcher的web代理工具来防御Data Disclosure漏洞，主要是通过开发者编写UDA策略防御漏洞，有点类似于OpenRASP的waf工具，但是OpenRASP的防御面相对更加的广泛。这要求开发人员对网站的请求信息有充分的了解，不同的应用程序之间的UDA策略很可能不相同。另外UDA策略的一个缺点是，它们依赖于Web应用程序的URL和HTTP请求和响应的特定格式。这意味着如果应用程序更改策略中引用的URL或字段，则必须重新编写UDA策略。而FlowWatcher中的通过定义规则来更新策略的方法还是值得借鉴的。</p>
+<h2 id="思维导图"><a href="#思维导图" class="headerlink" title="思维导图"></a>思维导图</h2><p><img src="/2020/08/20/[CCS]15FlowWatcher/imgs/%5BCCS15%5DFlowWatcher.svg" alt="FlowWatcher"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/20/[CCS]15FlowWatcher/">https://bantttian.github.io/2020/08/20/[CCS]15FlowWatcher/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        <a href="/tags/CCS/"># CCS</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/16/%5BHITCON2015%5Dbabyfirst/">HITCON2015_babyfirst</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
