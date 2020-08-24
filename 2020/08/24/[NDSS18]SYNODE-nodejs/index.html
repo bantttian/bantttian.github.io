@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>NDSS2018 &amp; Synode-Understanding and Automatically Preventing Injection Attacks on Node.js | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">NDSS2018 &amp; Synode-Understanding and Automatically Preventing Injection Attacks on Node.js</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-08-24&nbsp;&nbsp;10:52:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>本文发表在NDSS2018，原文链接：<a href="https://software-lab.org/publications/ndss2018.pdf" target="_blank" rel="noopener">https://software-lab.org/publications/ndss2018.pdf</a></p>
+<p>项目地址：<a href="https://github.com/sola-da/Synode" target="_blank" rel="noopener">https://github.com/sola-da/Synode</a></p>
+<p>第一作者是来自 达姆城工业大学 的Cristian-Alexandru Staicu，发表过多篇顶会文章，主要研究方向是Web：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/1.png" alt="1"></p>
+<h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>在Node.js中，有两种API会造成注入类漏洞。一个是<code>eval</code>及其系列函数，可以接受一个string作为参数，并将其作为javascript代码执行，造成js代码执行攻击；另一个是<code>exec</code>及其系列函数，可以接受一个string作为参数并将其作为shell命令执行，造成系统命令注入漏洞。除此以外，作者还发现，开发者的安全意识还有所欠缺，面对一个潜在的漏洞，开发者可能会采取消极的态度不去修复，或者会认为该模块是其他人负责的部分。所以本文就希望寻求一种方法能在减少开发者参与度的情况下提高node.js程序的安全性。</p>
+<p>与在浏览器上执行的js不同，node.js并不会提供一个沙盒来将程序和系统隔离开来，这就导致了node.js代码可以直接与操作系统进行交互。</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/2.png" alt="2"></p>
+<p>在上图的例子中，在第7行和第10行分别存在两个不同的敏感api，exec和eval。</p>
+<p>开发者预期的调用方式是：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">backupFile(<span class="string">"f"</span>, <span class="string">"txt"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>那么在第7行执行的命令就为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp f.txt ~/.localBackup/</span><br></pre></td></tr></table></figure>
+
+<p>并在第10行将消息存入<code>mrssages.backup_other</code>文件中。</p>
+<p>但是攻击者可以构造这样的攻击字符串：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">backupFile(<span class="string">"-help || rm -rf * || echo "</span>, <span class="string">""</span>);</span><br></pre></td></tr></table></figure>
+
+<p>对应在第7行执行的命令就为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp -help || rm -rf * || echo . ~&#x2F;.localBackup&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>此时当前目录下的所有文件都会被删除：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/3.png" alt="3"></p>
+<p>研究表明，数千个模块可能容易受到命令注入攻击，并且修复它们需要很长时间，即使对于流行的项目也是如此。在这些发现的推动下，作者提出了Synode，一种自动缓解技术，它结合了静态分析和安全策略的运行时执行，以安全的方式使用脆弱的模块。</p>
+<h2 id="前期调研"><a href="#前期调研" class="headerlink" title="前期调研"></a>前期调研</h2><p>为了了解目前在node.js中潜在的注入类漏洞情况，作者对235,850个npm模块进行了调研。</p>
+<p>首先，作者调研了容易出现注入漏洞的API是否在真实的开发中得到了广泛的应用。结果如下图所示：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/4.png" alt="4"></p>
+<p>对于直接调用了exec和eval函数的模块，我们称之为injection module。直接调用exec和eval的模块分别占所有模块的3%和4%。<code>exec-level-1</code>表示间接调用该injection模块的模块，后面的1和2表示经过几次模块调用。</p>
+<p>除了危险的api函数在模块中的使用频率，在用户数据被传入到敏感api之前，作者还调研了这些数据在多大的程度上被检查了。90%的敏感api对应的执行路径上缺少对敏感数据的检查；9%的敏感api对应的执行路径上会通过正则表达式对其进行检查，如下图所示：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/5.png" alt="5"></p>
+<p>令人诧异的是，几乎很少模块会借助第三方过滤库（如shell-escape，escapeshellarg）来防止exec命令注入漏洞。</p>
+<h2 id="工具设计"><a href="#工具设计" class="headerlink" title="工具设计"></a>工具设计</h2><h3 id="工具流程"><a href="#工具流程" class="headerlink" title="工具流程"></a>工具流程</h3><p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/6.png" alt="6"></p>
+<p>先介绍下template，在synode中，template就是一串由string constants和一些holes组成的，这个hole会由一些危险的runtime data填充，从而组成一串攻击字符串。</p>
+<p>synode的总体工作流程主要分为两个阶段：</p>
+<ol>
+<li>静态分析阶段，对于经过分析后安全的程序，synode不会进行进一步的处理；对于存在漏洞的模块，synode会在对其进行检查的同时静态地重写源代码。</li>
+<li>动态运行阶段，动态地运行程序检查该安全策略是否可用。</li>
+</ol>
+<h3 id="静态分析阶段"><a href="#静态分析阶段" class="headerlink" title="静态分析阶段"></a>静态分析阶段</h3><p>定义1：Template Tree，是将传入敏感API的值汇总为一个Tree来表示</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/7.png" alt="7"></p>
+<p>定义2：Template，是形如_t = [c<del>1</del>, … , c<del>k</del>]_的序列，其中_c<del>i</del>_表示常量或是一个变量。下图是对Template Tree进行自底向上遍历转为Template之后的结果：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/8.png" alt="8"></p>
+<p>如果某injection API对应的template中的序列项全是常量字符串，那么可以肯定该injection API不会存在注入漏洞，也就无需对其进行运行时检查，如_t<del>c1</del><em>和</em>t<del>c2</del>_就是对应的eval（Figure 1中的第10行）就是安全的，而_t<del>d2</del>_对应的exec（Figure 1中的第7行）操作就是存在安全风险的。需要在动态运行阶段判断该处API调用是否存在漏洞。</p>
+<h3 id="动态运行阶段"><a href="#动态运行阶段" class="headerlink" title="动态运行阶段"></a>动态运行阶段</h3><p>首先介绍下PAST（Partical AST），是将API和其对应的template结合起来的无环有向图_(N, E)_。下图右(a)是Fig.8的PAST树：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/9.png" alt="9"></p>
+<p>为了得到如上图所示的PAST，首先使用benign的字符串填充模板的未知变量部分来实例化模板，比如下图是列出的已知填充exec和eval的一组benign值：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/10.png" alt="10"></p>
+<p>将每一个进行组合后填充到template的未知变量部分，然后交给API对应的语言解释器进行执行，如exec是命令执行API，对应的解释器是bash，当且仅当字符串被接受为该语言的合法成员时，会将该结果ASP存储到一组合法的example AST中。</p>
+<p>现在对于每一个敏感API，都有了一组example AST，接着需要将这些AST合并到一个单独的PAST中：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/11.png" alt="11"></p>
+<p>对example AST进行深度遍历，找到example AST的最近公共子节点，将所有的公共子节点都添加到PAST树中，不同的公共子节点添加为_N<del>sub</del>_，该节点其实就是未知变量对应的节点。比如对于Fig.1中的图代码生成的PAST树就是上图最后的结构。</p>
+<p>synode在进行到动态运行阶段时，会重写在敏感API附近的代码，接着将runtime值传入该敏感API时生成新的PAST树对其进行检查。该检查策略为：</p>
+<ol>
+<li><strong>P1</strong>，该PAST的结构必须和example AST生成的PAST树结构保持一致，也就是说扩展节点必须是从未知变量节点出发的。</li>
+<li><strong>P2</strong>，从未知变量节点扩展的sub-PAST树的父节点类型必须是safe node type。比如对于exec函数，作者认为仅当该节点类型为_literals_才为安全的节点类型；对于eval函数，允许所有在JSON代码中出现的类型。、</li>
+</ol>
+<p>比如下图是传入FIg.1中的runtime values：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/13.png" alt="13"></p>
+<p>第一条数据显然同时满足P1和P2。第2条不满足P1，因为该条数据对应的PAST树的扩展节点并不是从未知变量节点（即HOLE）出发的。第3条满足了P1原则，但是违反了P2原则，该template对应的API是exec，从未知变量节点扩展的sub-PAST树的父节点类型并不是safe node type。</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/12.png" alt="12"></p>
+<h2 id="实验评估"><a href="#实验评估" class="headerlink" title="实验评估"></a>实验评估</h2><p>数据集：一开始收集了所有的235,850个node.js模块，然后去除不包含任何敏感API（exec，eval）调用的模块，最后剩下的数据集是15,604个模块。</p>
+<p>部署：</p>
+<ul>
+<li>Lenovo ThinkPad T440s Laptop</li>
+<li>Intel Core i7 CPU(2.10GHz)</li>
+<li>12GB RAM</li>
+<li>Ubuntu 14.04</li>
+</ul>
+<h3 id="静态分析结果"><a href="#静态分析结果" class="headerlink" title="静态分析结果"></a>静态分析结果</h3><p>下表是静态分析生成template tree时的结果：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/14.png" alt="14"></p>
+<p>静态分析阶段一共找到了51,627处敏感API调用，其中18,924(36.66%，其中exec函数对应的静态参数占比31.05%，eval对应的静态参数占比39.29%)是静态安全的，也就是传入该敏感API的参数是用户不可控的。exec函数对应的template tree中含有未知变量节点（HOLE）的占exec API总数的49.02%，eval则是34.52%。</p>
+<p>下图是对每个敏感API可能会生成的template数量情况：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/15.png" alt="15"></p>
+<p>对于绝大多数的敏感API都只对应一个template。</p>
+<h3 id="动态运行评估"><a href="#动态运行评估" class="headerlink" title="动态运行评估"></a>动态运行评估</h3><p>为了对动态运行机制进行评估，synode测试了如下图所示的24个漏洞模块。对于每一个敏感API都有benign和malicious的用户输入。在下图的第3列Injection Vector中，(I)nterface表示我们通过模块自己提供的export接口调用；(N)etwork表示通过request请求调用api；(F)ile system表示该模块会从文件中读取数据；(C)ommand line表示将输入作为command line命令传入模块中：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/16.png" alt="16"></p>
+<p>false positive：对于56个良性输入，共发现了5个fp，fp rate=8.92%。</p>
+<p>如下图中因为synode没有对_Array.map_方法进行建模，所以在拼接cmd的dmenuArgs参数就是未知的操作，就造成了false negative：</p>
+<p><img src="/2020/08/24/[NDSS18]SYNODE-nodejs/imgs/17.png" alt="17"></p>
+<p>false negative：synode会尝试去拦截所有具有潜在风险的字符串执行，所以从这个角度来讲是不会存在false negative的，但是在一些情况下，也可能会遗漏一些潜在的sink点，比如sink点是被动态拼接的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">global[&quot;ev&quot;+&quot;al&quot;](userInput);</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇论文对235,850个node.js模块中存在的注入漏洞进行了研究。作者使用了静态分析+动态运行的方法，在静态分析阶段，推断在API处用户输入的template，若是该template中不存在未知变量，则认为该处API调用是静态安全的。对于静态分析阶段无法判断安全性的API，通过代码重写并实时运行来检测API的安全性。运行时使用PAST语法树来确保运行时传入API的值不会超出预期的值。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/08/24/[NDSS18]SYNODE-nodejs/">https://bantttian.github.io/2020/08/24/[NDSS18]SYNODE-nodejs/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Paper/"># Paper</a>
+                    
+                        <a href="/tags/NDSS/"># NDSS</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/08/20/%5BCCS15%5DFlowWatcher/">CCS15 & FlowWatcher-Defending against Data Disclosure Vulnerabilities in Web Applications</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
