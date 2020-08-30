@@ -234,7 +234,7 @@
 <p>这些数据集包括前面提到的4种NoSQL注入方式，但是其中OR Injection的payload特别少，原因是OR Injection相对其他三种方式的变种比较少。</p>
 <p>下图是injection queries的数据集样例：</p>
 <p><img src="/2020/08/08/[IEEE19]NoSQL-Injection-Detection.xmind/imgs/8.png" alt="8"></p>
-<h3 id="2-Feature-Design"><a href="#2-Feature-Design" class="headerlink" title="2. Feature Design"></a>2. Feature Design</h3><p>然后是设计需要从数据集中提取的信息特征，作者设计了19种特征，然后从中选取了信息增益和相关性最高的10种特征。值得注意的是，任何单个特征都不会单独决定分类结果，而是与其他特征相结合，它们共同决定了确定分类器的加权结果。</p>
+<h3 id="2-Feature-Design"><a href="#2-Feature-Design" class="headerlink" title="2. Feature Design"></a>2. Feature Design</h3><p>然后是设计需要从数据集中提取的信息特征，作者设计了19种特征，然后从中选取了信息增益和相关性最高的10种特征。值得注意的是，任何单个特征都不会单独决定分类结果，而是与其他特征相结合，它们共同决定了分类器的加权结果。</p>
 <p>这19种特征有：</p>
 <ol>
 <li><p>Contains Empty String，许多的NoSQL注入字符串都包含空字符串如<code>{}</code>，在MongoDB中该查询永远返回true；</p>
@@ -292,6 +292,7 @@
 <li>AdaBoost</li>
 <li>k nearest neighbor</li>
 <li>XGBoost</li>
+<li>SVM</li>
 </ul>
 <p>然后使用10-fold交叉验证，对这10份数据集轮流进行一次10-fold交叉验证。最后的结果取平均值。</p>
 <p>而且考虑到数据集的benign queries和malignant queries的分布不均，3.95：1（MongoDB）和6：1（CouchDB），所以对其进行过采样将其比例调整为1.13：1（MongoDB）和1.1：1（CouchDB）。</p>

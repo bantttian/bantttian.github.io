@@ -194,17 +194,17 @@
 <p>此前也有不少关于Web应用自动化审计的工作，但是主要存在两个问题：（i）误报率较高，需要人工检查每个报告的漏洞点是否正确；（ii）以往基于静态程序分析的审计方法无法分析程序中的一些特性，存在覆盖率问题。为了解决这个问题，作者采用动静结合的方式，以静态分析为指导，辅助动态分析构造可用的exploit来自动验证漏洞的正确性。</p>
 <p>作者实现一个名为NAVEX的工具来自动识别漏洞，并生成相应的exploit。最后作者对26个PHP CMS进行了测试，发现NAVEX一共构建了204个具体的exploit，其中195个与SQLI和XSS漏洞相关，9个与EAR（Execution After Redirect，重定向后执行）漏洞相关。</p>
 <h3 id="2-设计与实现"><a href="#2-设计与实现" class="headerlink" title="2. 设计与实现"></a>2. 设计与实现</h3><p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/1.png" alt="1"></p>
-<p>NAVEX的工作机制如上图所示，主要分为两个阶段，第一阶段是Vulnerable Sinks Identification（静态分析阶段），目的是找到候选的漏洞点及其触发漏洞的漏洞利用字符串；第二个阶段是Concrete Exploits Generation（动态分析阶段），目标是生成具体的exploit，由从公共页面到sink点所在页面会产生的一系列HTTP请求组成。</p>
+<p>NAVEX的工作机制如上图所示，主要分为两个阶段，第一阶段是Vulnerable Sinks Identification（静态分析阶段），目的是找到候选的漏洞点及其触发漏洞的漏洞利用字符串；第二个阶段是Concrete Exploits Generation（动态分析阶段），目标是生成具体的exploit，由从公共页面到sink点所在页面产生的一系列HTTP请求组成。</p>
 <h4 id="1-Vulnerable-Sinks-Identification"><a href="#1-Vulnerable-Sinks-Identification" class="headerlink" title="(1)  Vulnerable Sinks Identification"></a>(1)  Vulnerable Sinks Identification</h4><p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/2.png" alt="2"></p>
 <p>在静态分析阶段，作者在NAVEX中定义了一个Attack Dictionary，由四个部分组成：（i）Sinks，敏感函数；（ii）Sanitization，常见的过滤函数或是过滤方式；（iii）Traversal type，遍历方向，分为前向回溯和后向回溯；（iv）Attack Strings，触发漏洞的攻击字符串，是一个fuzz字典。 </p>
 <p>首先，对每个潜在漏洞的模块建立图模型：作者对图模型生成工具phpjoern进行了扩展，加入了节点的过滤信息。</p>
-<p>然后，对代码属性图进行遍历来寻找从source点到sink点的路径，对于注入类漏洞统一采取后向回溯的方式，根据PDG关系寻找攻击路径；对于EAR漏洞采取前向遍历的漏洞方式。</p>
+<p>然后，对代码属性图进行遍历来寻找从source点到sink点的路径，对于注入类漏洞统一采取后向回溯的方式，根据PDG关系寻找攻击路径；对于EAR漏洞采取前向遍历的遍历方式。</p>
 <p>最后，用符号执行生成公式后利用约束求解器求解哪些路径可以被利用，输出是触发漏洞的exploit string，在第二阶段会被使用。</p>
 <h4 id="2-Concrete-Exploits-Generation"><a href="#2-Concrete-Exploits-Generation" class="headerlink" title="(2) Concrete Exploits Generation"></a>(2) Concrete Exploits Generation</h4><p><img src="/2020/04/12/[USENIX18]NAVEX/imgs/3.png" alt="3"></p>
 <p>从上图可以看到，动态分析阶段分为3个步骤：</p>
 <p><strong>a)</strong>   <strong>Dynamic Execution</strong></p>
 <p>这一步的目的是生成从公共页面到sink点所在页面会产生的HTTP请求，涉及到前端约束提取求解以及后端约束提取求解。</p>
-<p>前端约束提取是利用爬虫完成的，Crawler爬取HTML页面中的表单属性信息并生成约束<img src="file:///C:/Users/Bantian/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png" alt="img">)，同时爬取验证表单信息时会用到JavaScript代码并生成约束<img src="file:///C:/Users/Bantian/AppData/Local/Temp/msohtmlclip1/01/clip_image004.png" alt="img">)。最后生成最终的前端约束<img src="file:///C:/Users/Bantian/AppData/Local/Temp/msohtmlclip1/01/clip_image006.png" alt="img">，用约束求解器Z3求解生成相应的表单input。</p>
+<p>前端约束提取是利用爬虫完成的，Crawler爬取HTML页面中的表单属性信息并生成约束Fhtml，同时爬取验证表单信息时会用到JavaScript代码并生成约束Fjs。最后生成最终的前端约束Fform=Fhtml ∩ Fjs，用约束求解器Z3求解生成相应的表单input。</p>
 <p>除了客户端的约束之外，服务端也会对用户的输入做一些限制，所以还需要满足服务端的约束。NAVEX会动态跟踪判断用户输入是否满足服务端约束，该判断主要基于两种方式：(i) 是否更改程序状态（有无新的session生成，是否有新变量生成等）; (ii) 是否有敏感操作被执行，如sql查询操作等。如果检测到请求没有成功，NAVEX会将后端的约束也加入到前端约束中，用约束求解器重新生成的新input进行提交，这个过程会重复多次，直到请求成功为止。</p>
 <p><strong>b)</strong>   <strong>Navigation Graph</strong></p>
 <p>NAVEX会将上一步动态执行生成的相关HTTP请求信息都存储到Navigation Graph，G = (N, E)中，该图结构如下图所示：</p>
