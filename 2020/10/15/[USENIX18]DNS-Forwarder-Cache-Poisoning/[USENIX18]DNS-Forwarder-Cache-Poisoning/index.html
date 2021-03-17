@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-10-15&nbsp;&nbsp;20:09:14</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="针对DNS转发设备的缓存投毒攻击"><a href="#针对DNS转发设备的缓存投毒攻击" class="headerlink" title="针对DNS转发设备的缓存投毒攻击"></a>针对DNS转发设备的缓存投毒攻击</h1><p>安全顶会USENIX Security 2020上收录了一篇关于DNS缓存投毒的文章：Poison Over Troubled Forwarders: A Cache Poisoning Attack Targeting DNS Forwarding Devices。文中介绍了一种新型的针对DNS Forwarder也就是DNS转发器的缓存投毒攻击。通过这种攻击方式，攻击者可以向DNS Forwarder中注入任意的受害domain，将用户指引到恶意站点，并且可以规避目前的缓存投毒防御措施。该项研究的初期成果就曾在GeekPwn 2018上现场展示过，通过路由器上的缓存投毒，劫持了赛场上的无线路由器。</p>
+<h3 id="一、基础知识"><a href="#一、基础知识" class="headerlink" title="一、基础知识"></a>一、基础知识</h3><h4 id="DNS解析传统架构"><a href="#DNS解析传统架构" class="headerlink" title="DNS解析传统架构"></a>DNS解析传统架构</h4><p>传统的DNS解析主要涉及Stub Resolver（存根解析器）、Recursive Resolver（递归解析器）和Authoritative Resolver（权威域名解析器）。</p>
+<p>权威域名解析器能够从自己的数据满足查询，而不需要引用其他来源，即能够给出DNS查询请求的权威应答，递归解析器则是通过询问其他域名服务器获取答案，递归解析器最后能够权威域名解析器得到查询响应。</p>
+<p>根据DNS协议的初始标准，当域名需要解析时，DNS客户端向递归解析器发送查询请求，递归解析器会从权威域名解析获取答案，然后将结果返回给客户端。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/2.png" alt="2"></p>
+<h4 id="IP数据包分片"><a href="#IP数据包分片" class="headerlink" title="IP数据包分片"></a>IP数据包分片</h4><p>IP（Internet Protocal）是TCP/IP协议族中的核心协议，所有TCP、UDP和ICMP等数据报都是通过IP数据报进行传输。互联网协议允许IP数据包分片，当数据包比链路最大传输单元（MTU）大的时候，就会被分解为很多的小分片，以便大数据包能够在链路上传输。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/10.png" alt="10"></p>
+<p>被分片的IP数据包是通过IP首部的一些字段进行重新组装的。这些字段有4个，首先是Identification位，简称为IPID，是IP数据包的标识字段，这些标识字段都是一个单一值，这个值在分片的时候被复制到每一个分片中。 DF(Don’t Fragment)是不分片位，置为1就表示不会对数据包进行分片操作。MF(More Fragment)是更多的分片位，除了最后一片以外，其他每个组成数据包的分片都要把这个位置为1。Fragment Offset是当前数据包分片距离原始数据包开始处的位置，偏移的字节数是字节乘以8。其中最重要的是IPID，后面论文中会用到这个标志位信息。</p>
+<h3 id="二、DNS缓存投毒历史"><a href="#二、DNS缓存投毒历史" class="headerlink" title="二、DNS缓存投毒历史"></a>二、DNS缓存投毒历史</h3><p>此前的DNS缓存攻击主要是针对递归解析器的。主要有两种方式：</p>
+<h4 id="1-伪造攻击-Forging-Attacks"><a href="#1-伪造攻击-Forging-Attacks" class="headerlink" title="1. 伪造攻击 Forging Attacks"></a>1. 伪造攻击 <strong>Forging Attacks</strong></h4><p>伪造攻击的目的是制造一个恶意DNS响应，并欺骗递归解析器去接受它。当DNS响应数据包中的一些字段和DNS请求数据包中的字段相匹配时，DNS响应数据包就会被解析器所接受，这些字段是：</p>
+<ul>
+<li>Question Section 查询问题</li>
+<li>DNS transaction ID 会话标识</li>
+<li>source/destination addresses 源地址/目标地址</li>
+<li>port numbers 端口号</li>
+</ul>
+<p>如果攻击者在经过身份验证的响应到达之前用正确的metadata伪造DNS响应，那么解析器就会接受该伪造的响应，攻击成功。攻击者要在真正的响应包返回之前，迅速发出多个伪造的响应包，以便让递归解析器接受其中某一个响应包，如果成功，那真正的相应包就会被丢弃。</p>
+<p>通过伪造DNS响应包来攻击的最知名的案例是2008年的Kaminsky攻击，它影响了几乎所有的DNS软件和设备。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/3.png" alt="3"></p>
+<p>前面说到DNS解析器会根据查询数据包中的几个字段对响应包进行匹配，会话标识对不上的、端口对不上的都会被DNS解析器抛弃，所以攻击主要存在几个难点：</p>
+<ol>
+<li>攻击者需要知道UDP报文中的源端口号才能构造响应包中的端口号。虽然攻击者不能窃听，但是在Kaminsky攻击之前，DNS报文中的大多数源端口都不是采用随机化的方式分配的，通常一些DNS解析器会直接采用53作为源端口号，或是操作系统中的一个固定值。</li>
+<li>除了端口号之外，DNS响应报文中的其他字段也需要和DNS请求包能够对应，否则就会被DNS解析器抛弃。</li>
+</ol>
+<p>针对这种攻击目前的缓解措施主要有：</p>
+<ol>
+<li>ID/端口随机化，使用随机短暂的端口号和会话标识。</li>
+<li>0x20 encoding，即随机化大小写验证技术，该技术会匹配请求包和响应包的大小写，如果大小写不匹配就会丢弃响应包。比如对于长度为8个字符串的域名，那么就会产生2^8个不同的字符串，但是这种方式也有一定的局限性，因为一些授权DNS服务器并不支持大小写混合应答。</li>
+</ol>
+<h4 id="2-碎片整理攻击-Defragmentation-Attacks"><a href="#2-碎片整理攻击-Defragmentation-Attacks" class="headerlink" title="2. 碎片整理攻击  Defragmentation Attacks"></a>2. 碎片整理攻击  Defragmentation Attacks</h4><p>最近的研究又发现了一种基于IP碎片整理的新型DNS缓存投毒攻击方法。这种攻击主要利用了这样一个事实，即被分片的DNS响应包中的第二个分片段并不包含DNS或UDP报文中的报头（header）或是问题部分（question section），所以这种攻击方式可以避开针对伪造攻击的防御措施，如ID/端口随机化措施。</p>
+<p>简要的攻击流程如下图所示：</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/4.png" alt="4"></p>
+<ol start="0">
+<li><p>首先，攻击者构造虚假的第2个分片(2nd fragment)，将这个不完整的第2个分片数据包发送给递归解析器，递归解析器缓存该记录。</p>
+</li>
+<li><p>然后攻击者发起关于受害domain的DNS查询请求，递归解析器的记录中没有相关记录，所以会再去询问权威解析器。</p>
+</li>
+<li><p>从权威解析器返回的数据包因为某些不可抗力因素被分片转发给递归解析器。然后在递归解析器这里，从权威解析器发出的第一个合法的分片数据包和之前缓存在递归解析器的第2个攻击者伪造的分片数据包重新组装，最后形成一个能被递归解析器接受的“合法”响应包。并且该响应被递归解析器缓存下来。</p>
+</li>
+</ol>
+<p>上述攻击的关键步骤就是在第2步中的权威解析器必须以分片的方式向递归解析器发送响应包。主要有两种方式：</p>
+<ul>
+<li>降低PMTU数值</li>
+<li>发送DNSSEC查询，用DNSSEC记录填充DNS响应数据包，使它们达到MTU的限制，从而迫使数据包通过分片的方式转发。DNSSEC（Domain Name System Security Extensions）是DNS安全扩展机制，是由IETF提供的一系列DNS安全认证机制，它提供一种来源鉴定和数据完整性扩展。DNSSEC依靠数字签名来保证DNS应答报文的真实性和完整性。DNSSEC服务器对DNS解析器的应答，采用DNSSEC的签名方式，然后DNS解析器使用签名来验证DNS响应，确保记录未被篡改。</li>
+</ul>
+<p>这种攻击方式也存在一些限制，主要有：</p>
+<ul>
+<li>PMTU-based碎片整理攻击需要攻击者先伪造一个发送给权威域名解析器的ICMP包，来欺骗权威域名解析器去降低PMTU数值。但是作者发现这在大多数情况下不太适用。如下图所示，对于Alexa网站上排名前100K的权威域名服务器，在构造这样的ICMP数据包之后，只有0.7%的权威域名服务器将它们的PMTU值降低到528bytes之下。<strong>由于DNS响应数据包通常小于512字节，因此它们不太可能被强制分片</strong>。</li>
+</ul>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/5.png" alt="5"></p>
+<ul>
+<li>对于DNSSEC-based碎片整理攻击，但是目前DNSSEC并没有被广泛采用，因为DNSSEC的设置比较复杂，需要升级响应的设备、系统以及服务，才能处理新协议，所以目前网络上支持DNSSEC的设备数量也受到了限制。</li>
+</ul>
+<h3 id="三、DNS转发器"><a href="#三、DNS转发器" class="headerlink" title="三、DNS转发器"></a>三、DNS转发器</h3><p>传统上，DNS解析过程涉及DNS客户端（或存根解析器，英文就是Stub Resolver）、递归解析器和权威服务器。当一个域名在客户端找不到记录，那就需要向递归解析器发起查询请求，递归解析器就会向权威域名解析器咨询答案。相较于这个最简单的模型，DNS解析设施变得越来越复杂了，通常涉及多层服务器，其中一种新的DNS基础设被就是DNS转发器，它们位于存根解析器和递归解析器之间，通常充当DNS客户端的入口服务器：</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/6.png" alt="6"></p>
+<p>当DNS转发器接收到查询请求时，它不递归地执行解析，而只是将查询转发到上游的递归解析器。比如家庭路由器就具备DNS转发器的功能。</p>
+<h4 id="DNS-Forwarder-vs-Recursive-Resolver"><a href="#DNS-Forwarder-vs-Recursive-Resolver" class="headerlink" title="DNS Forwarder vs. Recursive Resolver"></a>DNS Forwarder vs. Recursive Resolver</h4><p>Recursive Resolver：</p>
+<ol>
+<li>需要返回对dns查询请求的最后结果</li>
+<li>需要对返回的请求进行完整性检查</li>
+</ol>
+<p>相比于Recursive Resolver，DNS Forwarder的运行机制就没那么复杂 :</p>
+<ol>
+<li>无需对DNS客户端的查询请求进行递归解析，只是起转发的作用；</li>
+<li>在安全性上依赖于上游的递归解析器，不会对response进行检查，这也是DNS Forwarder的一个关键弱点，这个特性使得针对DNS Forwarder的缓存投毒攻击成为可能。</li>
+</ol>
+<h3 id="四、针对DNS-Forwarder的碎片整理攻击"><a href="#四、针对DNS-Forwarder的碎片整理攻击" class="headerlink" title="四、针对DNS Forwarder的碎片整理攻击"></a>四、针对DNS Forwarder的碎片整理攻击</h3><p>前面介绍的碎片整理攻击是针对DNS递归解析器的，因为DNS Forwarder中不会对数据包进行安全性校验的特性，作者提出了一种针对DNS Forwarder的碎片整理攻击方法。</p>
+<h4 id="1-攻击概述"><a href="#1-攻击概述" class="headerlink" title="1. 攻击概述"></a>1. 攻击概述</h4><p><strong>攻击模型</strong> 研究表明目前有大量运行在住宅网络设备上的DNS Forwarder，比如家庭路由器。 因此，在威胁模型中，作者假设攻击者位于与DNS转发器相同的局域网中，并且可以发出DNS查询。这种攻击场景可以出现在公开的Wi-Fi网络中，比如在咖啡馆或是机场这些公开场所中。</p>
+<p>在攻击之前，需要先回答一个问题：我们能够可靠和确定地使响应数据包分片吗？</p>
+<p>事实证明， 如果查询被发送到攻击者控制下的权威域名服务器，然后使被控制的权威域名服务器发送超大的响应包，就可以使响应数据包分片。乍一看，这是毫无意义的，因为控制了权威域名服务器就意味着权威域名服务器上托管的域也已经属于攻击者了。攻击者向被自己控制的域进行缓存投毒是毫无意义的。但是这篇文章的insight是，DNS Forwarder是不会进行响应包的安全校验的，它对响应包的安全性判断完全依赖于它上游的递归解析器。</p>
+<p><strong>攻击流程</strong> 下图是针对DNS Forwarder的缓存投毒攻击流程图。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/7.png" alt="7"></p>
+<ol start="0">
+<li>首先需要探测IPID（IP标识，是IP数据包头中的一个16位的字段，用于确定分片属于哪个数据报），IPID如何预测这在后面会提到，也是成功攻击的关键之一</li>
+<li>构造响应数据包的第2个分片，包含一条伪造的A记录，将IP地址指向攻击者控制的恶意IP地址，该不完整的数据包在DNS Forwarder这里被缓存</li>
+<li>攻击者发起DNS查询请求，查询a.attaker.com的IP地址，DNS Forwarder将该查询转发给递归解析器，递归解析器本地缓存中不存在对该域名的记录，所以向权威域名解析器发起查询请求</li>
+<li>权威域名解析器返回响应数据包给递归解析器，因为权威域名解析器是被攻击者控制的，所以在生成响应包的时候，向里面填入很多条CNAME记录，将响应数据包填充得很大（3a.），该数据包被返回给递归解析器，该响应数据包是能够通过递归解析器的安全性校验的，递归解析器再将该response响应转发给DNS Forwarder，因为数据包很大，所以会被分片转发（3b.），当第一片合法的分片数据包到达DNS Forwarder的时候，会和之前构造的2nd分片（缓存在DNS Forwarder中）重新组合成完成的数据包，这里能够重新组装是因为2nd分片中的IPID是预测过的，能和第一个合法的分片匹配上。因为DNS Forwarder不会对数据包进行检查，所以会直接将这个结果转发给DNS客户端（3c.）。这就是完整的攻击流程。</li>
+</ol>
+<p>可以看到和DNS伪造攻击不同，碎片整理攻击不再需要对DNS会话标识和端口号等metadata信息进行构造了，因为在2nd分片中并不包含这些信息了，这些信息仅存在于第一个分片包中  。</p>
+<h4 id="2-迫使DNS响应分片"><a href="#2-迫使DNS响应分片" class="headerlink" title="2. 迫使DNS响应分片"></a>2. 迫使DNS响应分片</h4><p>上面的攻击流程中已经知道，使递归解析器转发给DNS Forwarder的响应数据包成功分片是成功攻击的关键点之一。此前已经介绍过了，之前的研究主要有两种方式来迫使DNS响应包分片：一、通过降低PMTU值；二、用DNSSEC来填充响应包。但是这两种方式都不太可取。</p>
+<p>本文采取的方案和用DNSSEC填充是类似的，利用CNAME记录来填充DNS响应数据包。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/8.png" alt="8"></p>
+<p>攻击者控制的权威域名服务器可以有意地创建大于以太网MTU值的超大DNS响应数据包，那么递归解析器收到相应包再将其转发给DNS Forwarder的时候，会对其进行分片操作。</p>
+<p>具体的方法就是构造CNAME记录链（CNAME records chain），最后跟一个最终的A记录。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/9.png" alt="9"></p>
+<p>在伪造的2nd分片中，将最后的一条CNAME记录指向victim.com，然后最后跟一条关于victim.com的A记录，指向恶意IP地址a.t.k.r。</p>
+<p>对于上游的递归解析器来说，它们看到的是来自权威域名解析器的超大dns响应包，经过校验并不违反bailiwick规则，所以递归解析器就将这个超大响应包以分片的方式转发给DNS Forwarder了。</p>
+<p>使用这种超大DNS数据包响应需要攻击场景中的所有DNS服务器都支持<strong>DNS扩展名机制（Extension Mechanisms for DNS(EDNS(0))）</strong>。EDNS被提出来的理由之一是，当初DNS协议中设计的用UDP包传输时，将包的大小限制在512字节，但是现在很多的主机已经具备重组大数据包的能力，所以需要一种机制能够允许DNS请求方通知DNS服务器让其返回大数据包。在DNS数据包头部中添加了一个OPT字段来标记该数据包是否携带EDNS选项。</p>
+<h4 id="3-构造恶意分片"><a href="#3-构造恶意分片" class="headerlink" title="3. 构造恶意分片"></a>3. 构造恶意分片</h4><p>如果DNS数据包被分片，则只有第一个片段将具有UDP报头和DNS报头。因此，要构造第2个恶意的分片，攻击者就不需要再预测DNS和UDP报头中的端口号和会话标识（Transaction ID）等metadata信息了。然而，为了成功地碎片整理，攻击者还需要构造IP header中的Identification字段信息（后面简称为IPID），这样才能够在第1个合法的数据包分片到达DNS Forwarder的时候和构造的2nd分片成功组合，因为IP数据包分片要有相同的IPID才能够重新组装。因此，攻击者还需要预测上游的递归解析器的IPID分配。</p>
+<p>目前一共有3种IPID分配算法：</p>
+<ol>
+<li><p>global IPID counter，全局IPID计数器</p>
+<p>全局IPID计数器就是为每个数据包增加一个计数单位1，这是非常容易预测的。</p>
+</li>
+<li><p>hash-based IPID counter，基于哈希的IPID计数器</p>
+<p>想象现在有个IPID计数器数组，基于哈希的IPID计数器首先利用数据包的源ip地址和目的ip地址映射到IPID计数器数组中的某个counter，比如为A，然后将两次使用同一个counter A的系统时间间隔记为X，然后在1到X之间选一个随机数R加到A上，IPID就变为了A+R。只要发送的两次数据包即Current IPID和Predicted IPID时间够近，那么成功预测的概率很大，而且因为DNS Forwarder一次可以缓存64个分片，所以攻击者可以在很短的时间内发送多个构造的分片来提高成功率。</p>
+</li>
+<li><p>random IPID assignment，随机IPID分配，随机性变大，比较难预测。</p>
+</li>
+</ol>
+<p>在之前的研究中表明，在较早版本的Windows中（早于Windows 8）都是采用全局IPID计数器的，在最近版本的Windows和Linux中是采用基于哈希的IPID计数器。作者在虚拟机上进行了实验，证实了在Windows 10和Ubuntu 5.3.0-29-generic都是使用基于哈希的IPID计数器的。因为绝大多数的服务器都是采用Windows操作系统或是Linux操作系统，所以作者相信这两种IPID计数方式是覆盖绝大多数DNS服务器的。</p>
+<h4 id="4-成功攻击条件"><a href="#4-成功攻击条件" class="headerlink" title="4. 成功攻击条件"></a>4. 成功攻击条件</h4><p>根据前文中的攻击模型可知，成功的攻击条件有：</p>
+<p><strong>EDNS(0) support</strong></p>
+<p>EDNS(0)机制允许通过UDP传输比较大的DNS数据包，从而允许传输大于512字节的DNS消息来迫使数据包通过分片的方式从递归解析器传送到DNS Forwarder。</p>
+<p><strong>No truncation DNS response</strong></p>
+<p>尽管一些DNS Forwarder支持EDNS(0)机制，但是部分转发器还会截断大DNS响应数据包，即使一些响应数据包没有达到以太网MTU的最大值。在这种情况下，被截断的DNS响应数据包是不会被分片的，那么碎片整理攻击自然就会失败了。这里要明确的是，IP数据包截断（truncation）和分片（fragmentation）是不同的操作，如果数据包被截断之后，会被标记为是一个已截断的数据包，多余的部分会被丢弃，然后再将其转发到目的地。</p>
+<p><strong>No verification of DNS response</strong></p>
+<p>在DNS Forwarder中不能存在对DNS响应的验证，攻击原理的核心就是DNS Forwarder对数据包的验证完全来自上游的Recursive Resolver。</p>
+<p><strong>DNS caching by record</strong></p>
+<p>在DNS Forwarder中，有两种方式来缓存DNS响应结果，一种是将DNS响应作为整体缓存下来，即整个DNS响应作为一条缓存记录；另一种方式是以记录的方式缓存结果。举个例子，如下图的DNS响应：</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/11.png" alt="11"></p>
+<p>如果将DNS响应作为整体缓存下来，那么最后只有一条关于a.attacker.com的记录，对于我们的目标victim.com则完全不会被命中。反之，如果是以record的形式被缓存，那么当用户查询victim.com的时候，就会命中DNS Forwarder的缓存。</p>
+<h3 id="五、易受攻击的DNS-Forwarder设备和软件"><a href="#五、易受攻击的DNS-Forwarder设备和软件" class="headerlink" title="五、易受攻击的DNS Forwarder设备和软件"></a>五、易受攻击的DNS Forwarder设备和软件</h3><p>接下来是作者进行的实验环节，首先测量家庭路由器home routers和DNS软件中的DNS数据包转发行为，以检查这些设备和软件是否符合碎片整理攻击条件。 然后作者执行实际的碎片整理攻击来确认这一情况。</p>
+<h4 id="1-家用路由器"><a href="#1-家用路由器" class="headerlink" title="1. 家用路由器"></a>1. 家用路由器</h4><p>DNS Forwarder已经被广泛地运用在家用网路设备上，比如家庭路由器。根据一份家庭路由器的市场调查报告，作者选取了市面上比较流行的16款路由设备，如TP-Link，D-Link，NET-GEAR，Huawei等。对于每种路由器，测试它们是否满足所有的攻击条件。</p>
+<p>结果如下表所示，有8款路由器满足所有的攻击条件，也就是容易受到缓存投毒攻击的；其他8款路由器没有完全满足攻击条件，其中5款不支持以多条记录的形式进行缓存，其余3款路由器同样不受攻击的影响，因为在处理超大DNS响应方面存在问题，要么是不支持EDNS(0)，要么是会对响应包进行截断。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/17.png" alt="17"></p>
+<p>值得一提的是，与预料的结果一致，没有一款路由器存在re-query机制，也就是说没有一款路由器存在安全检查机制。</p>
+<h4 id="2-DNS软件"><a href="#2-DNS软件" class="headerlink" title="2. DNS软件"></a>2. DNS软件</h4><p>除了路由设备之外，DNS转发功能还会在很多主流DNS软件上实现，比如在Unbound软件中可以通过forward-zone关键字来设置。作者对7款主流的DNS软件进行了测试，结果如下表所示，有两款路由软件满足了所有的攻击条件：</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/18.png" alt="18"></p>
+<p>特别的是，dnsmasq还被应用在一些嵌入式系统上，比如OpenWRT，所以会影响到更多的路由设备。</p>
+<p>作者将他们的发现提交给了这些受影响的厂商并且收到了3家厂商（ASUS，D-Link和Linksys）的积极回复，ASUS和D-Link通过发布固件补丁来修复DNS缓存投毒漏洞。</p>
+<h3 id="六、受影响客户端调研"><a href="#六、受影响客户端调研" class="headerlink" title="六、受影响客户端调研"></a>六、受影响客户端调研</h3><p> 在上一个实验中，作者已经发现一些家庭路由器容易受到碎片整理攻击。那么，在现实世界中到底有多少用户正在使用这些敏感设备?   </p>
+<h4 id="1-大规模测量方法"><a href="#1-大规模测量方法" class="headerlink" title="1. 大规模测量方法"></a>1. 大规模测量方法</h4><p>出于道德层面考量，对于现实世界中的路由设备，是不能直接进行碎片整理攻击来判断一个路由器是不是容易受到此类攻击的。所以，本文采取的方法是直接判断是否满足攻击的几个条件。</p>
+<p>为了进行大规模测量实验，作者和他们为移动用户开发网络诊断软件的工业合作伙伴合作，实现了一款诊断工具来获取mobile用户设备上的更细粒度的DNS数据信息。当mobile用户进行DNS查询操作的时候，这款工具就会收集与其相对应的家用路由器上关于缓存投毒攻击条件的有关数据，然后将收集到的数据返回给公司的服务器，这些数据将会提供给作者所在的团队以供更加深入地分析。这款工具的用户绝大多数位于中国。每个mobile客户端都有一个唯一的标识ID，记为uuid。</p>
+<p>在进行大规模measurement之前，唯一要配置的是权威域名解析器，下图是作者构造的关于[uuid].attacker.com的超大响应数据包：</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/12.png" alt="12"></p>
+<p>和此前稍有不同的是，对于每一次的DNS查询，权威域名解析器构造的最后一条A记录的地址是只使用一次的。接着作者设计了4条过滤器规则来判断DNS Forwarder是不是脆弱的，能受到攻击的。</p>
+<h4 id="2-攻击条件过滤"><a href="#2-攻击条件过滤" class="headerlink" title="2. 攻击条件过滤"></a>2. 攻击条件过滤</h4><p>整个实验的流程如下图所示：</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/13.png" alt="13"></p>
+<p>主要分为3步：</p>
+<p><strong>Network configurations</strong> 因为是通过mobile来对与其通过Wi-Fi连接的家用路由器进行实验，所以要确认mobile和路由器之间的连接性，要排除那些通过移动蜂窝数据上网的mobile客户端，同时还要对一些基础的网络配置进行确认。</p>
+<p><strong>Initial DNS request</strong> 首先是初始DNS请求，每个客户端会发送对[uuid].attacker.com的DNS查询请求，查询数据包中还会带上EDNS(0)选项。如果请求超时，这表明这款家用路由器并不支持DNS转发，那么对应的mobile也会从数据集中移除（不会再对其进行后续的实验）。在这一步，可以进行两个判断：</p>
+<ol>
+<li><strong>Filter 1</strong>，上图中的EDNS record in response。当DNS响应包从上游的解析器通过DNS Forwarder转发回mobile之后，用户手机上的诊断工具会判断响应包中是否存在EDNS(0) OPT记录，如果没有则说明对应的家庭路由器并不支持ENDS(0)机制。</li>
+<li><strong>Filter 2</strong>，上图中的Response not truncated。诊断工具还会判断响应数据包是否存在截断的情况，主要是通过判断CNAME链的完整性，如果最后的A记录（记为addr_init），比如[uuid].final.attacker.com还是完好无损的,那么就认为该数据包并没有被截断。需要注意的是，如果DNS Forwarder支持缓存，那么初始的DNS查询请求就应该被写入缓存中。</li>
+</ol>
+<p><strong>DNS cache check</strong> 接下来一步是对DNS Forwarder的缓存进行检查。mobile端发送第2个DNS查询请求，这次是直接请求[uuid].final.attacker.com，然后检查返回的IP地址（记为addr_cache），在这一步又会进行两个判断：</p>
+<ol start="3">
+<li><strong>Filter 3</strong>，上图中的Address do not change。如果初始DNS请求被DNS Forwarder以record的方式缓存了，那么对于用户关于[uuid].final.attacker.com的DNS查询请求就能直接命中缓存，因此addr_init和addr_cache应当是相同的。否则因为查询不到记录，DNS Forwarder会将该请求再转发给上游的解析器，权威域名解析器会再次返回一个不同的IP地址，那么addr_init和addr_cache肯定是不同的，如果不同，那么就将该mobile和与其对应的家庭路由器从数据集中移除。</li>
+<li><strong>Filter 4</strong>，上图中的Record time。如果仅仅依赖于判断addr_init和addr_cache是否相同是不够的，我们还需要检查第2次返回的响应数据包是从recursive resolver返回的还是从DNS Forwarder返回的，也就是检查addr_cache的来源。作者采取的判断方式是通过整个DNS的查询时间来判断响应数据包是否是来自于DNS Forwarder。对于每一个客户端，诊断工具会发起10次（受限于工具的流量限制）对于[uuid].final.attacker.com的DNS查询请求，然后计算平均查询时间。</li>
+</ol>
+<p>对于响应从递归解析器返回和DNS Forwarder的时间是未知的，无法确定得到的平均查询时间是哪个解析器的返回结果，所以作者又补充了一个实验。</p>
+<h4 id="3-受影响设备数量统计"><a href="#3-受影响设备数量统计" class="headerlink" title="3. 受影响设备数量统计"></a>3. 受影响设备数量统计</h4><p>作者一共从<strong>20,113</strong>台mobile客户端获取了有效的数据，这些数据来自中国31个不同的省份，分布在300多个不同的城市中。</p>
+<p>结果表明，有79.3%的数据不符合Filters 1-3。具体来说，8,211（40.8%）的mobile客户端使用的DNS Forwarder不支持EDNS(0)机制；5,695（28.3%）的mobile客户端最后收到了被截断的DNS响应包；还有2,035（10.1%）的mobile客户端对应的DNS Forwarder不会以record的形式缓存响应结果。对于其他4,172（20.7%）通过了Filter 1-3的mobile客户端，作者还需要通过查询[uuid].final.attacker.com的平均时间来验证是否满足Filter 4。</p>
+<p>因为已经通过了Filter 3验证，所以所有的响应包结果都是来自于DNS缓存的（来自递归解析器或是转发器的缓存）。我们的目标是找到所有接收到DNS Forwarder响应数据包的mobile客户端。因此，作者进行了实验来测量Wi-Fi客户端探测其上游递归解析器的缓存所需要的时间。</p>
+<p>作者选择了中国境内的30个有优势的受控点，这些受控点和之前的大规模测试一样，都是通过Wi-Fi和家庭路由器连接的。在每一个受控点，都会直接向上游的递归解析器发送请求（该请求总是以cache的方式命中上游解析器），并记录平均时间。作者将<strong>花费超过t ms从上游的递归解析器的缓存中获得响应的客户端所占的比率</strong>称为P(t)，该数值与CDF互补。如下图所示，P(10)=0.7，P(11)=0.6：</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/14.png" alt="14"></p>
+<p> 对于通过Filter 1-3的移动客户端，下图9显示了从DNS缓存检索响应的所需平均时间。例如，共有139个mobile客户端花费了10 ms从DNS缓存(DNS转发器或上游解析器)获得响应数据。结合图8的数据可知，P(10)=0.7，这表明，在139个mobile客户端中，共70%（97）的mobile客户端需要花费超过10 ms的时间才能从递归解析器的缓存获得响应，那么这97个mobile客户端的请求响应只能是从DNS Forwarder的缓存中获得的，对应下图中黄色条纹的数据段，最后的数据只需要将黄色条纹的数据端进行求和计算，就能得到通过Filter 1-3的mobile客户端中，真正从DNS Forwarder的缓存获取响应的移动客户端数量，也就是我们所关注的容易受到攻击的DNS Forwarder。最后，实验发现，共1,346（6.6%）脆弱的移动客户端。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/15.png" alt="15"></p>
+<p>而且，作者认为，在现实世界中，可能受到攻击的DNS Forwarder会变得越来越多，因为实验结果表明，绝大多数，40.8%的mobile客户端对应的家庭路由器并不满足EDNS(0)条件，但是这种DNS新特性目前越来越受到供应商的欢迎，所以越来越多的用户可能会受到影响。</p>
+<h3 id="七、关于DNS-Forwarder的反思"><a href="#七、关于DNS-Forwarder的反思" class="headerlink" title="七、关于DNS Forwarder的反思"></a>七、关于DNS Forwarder的反思</h3><p>文中对于现实世界中DNS Forwarder的实验进一步证明了DNS Forwarder是目前DNS基础设施中的一个弱点。</p>
+<p>实际上，工业界并没有对DNS Forwarder应该在DNS生态系统中发挥的作用达成一致的意见。DNS Forwarder可以充当透明的DNS代理工具，也可以发挥一些递归解析器所具备的功能。但是，供应商并没有对DNS Forwarder的一些功能实现达成一致，比如DNS Forwarder是否应该具备缓存功能，是否应该对分片的数据包进行处理，以及是否能够自己发起请求来检查请求，比如说可以通过这种方式来验证CNAME链的合法性。</p>
+<h4 id="DNS-Forwarder规范"><a href="#DNS-Forwarder规范" class="headerlink" title="DNS Forwarder规范"></a>DNS Forwarder规范</h4><p>在查阅了DNS RFC标准文档之后，作者发现了不同的供应商对于DNS Forwarder有多种不同的功能实现可能是由于规范中模糊不清的定义导致的。在最开始的DNS标准文档（RFC 1034）中，是不存在DNS Forwarder的，但随着DNS Forwarder越来越流行，目前依旧缺少对于DNS Forwarder的清晰明确的规范。</p>
+<p>查阅RFC文档，作者发现，甚至连标准文档都对DNS Forwarder有不同的定义，他们从7条RFC标准中找到了对DNS Forwarder不同的定义。</p>
+<p><img src="/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/16.png" alt="16"></p>
+<p>作者将这些标准大致分为两大类。</p>
+<p>在早年的规范中，DNS转发设备是作为递归解析器的上游服务器，位于递归解析器和权威域名解析器之间，通常在网络上具有更好的连接性和更强大的缓存能力。</p>
+<p>其余规范认为，DNS转发设备位于客户端和递归解析器之间，主要功能是帮助客户端转发DNS查询。直到最近的RFC 8499规范才对DNS Forwarder做了一个清晰的规范，文档中描述，“DNS Forwarder是位于存根解析器和递归解析之间的DNS设备，它们会将DNS查询数据包中的RD位设置为然后转发给其他的解析服务器”。</p>
+<p>另一个问题是，DNS规范中并没有对DNS Forwarder实现的细致描述。因此，对于问题“DNS Forwarder应该做什么还是不清楚的”，比如它们如何处理DNS响应，是否应该具备缓存能力。</p>
+<p>因此，要解决DNS Forwarder存在的问题，就要先给出对DNS Forwarder的统一的清晰定义和详细的功能实现。</p>
+<h3 id="八、缓解措施"><a href="#八、缓解措施" class="headerlink" title="八、缓解措施"></a>八、缓解措施</h3><p>在前面介绍攻击原理的时候已经介绍过攻击的4个先决条件了，所以可以认为只要破坏其中的任意一个条件就可以组织攻击的产生，但是事实上，阻止DNS Forwarder进行缓存或是禁止ENDS(0)机制都是不可行的，因为这些缓解措施会损害DNS Forwarder中的一些重要的新特性新功能。</p>
+<p>所以防御措施只能从另外两个先决条件或是攻击准备条件上入手，比如预测IPID。</p>
+<p><strong>Response verification</strong></p>
+<p>第一种缓解措施是对DNS响应进行验证，比如对CNAME链中的所有域名和别名进行re-query来验证CNAME链是不是被篡改了，还可以通过进行DNSSEC验证来检查响应包是不是被篡改过。</p>
+<p><strong>DNS caching by response</strong></p>
+<p>另一种方式是以整个响应的形式将结果缓存下来，那么对于攻击者构造的最后一条伪造A记录就不可能以缓存的方式被命中。这种方式比较可取的，只需要对DNS Forwarder进行修改。</p>
+<p><strong>0x20 encoding on DNS records</strong></p>
+<p>和之前针对递归解析器缓存投毒的防御措施一样，可以通过提高响应内容的随机性来提高投毒难度。主要是通过0x20随机化大小写验证，需要递归解析器对响应数据包中的所有记录进行大小写随机化，而DNS Forwarder在接收到响应数据包之后要检查大小写是否匹配。</p>
+<p><strong>Randomizing IPID values</strong></p>
+<p>文中提出的最后一种方式是随机化分配IPID值，这种方式使得攻击者更加难以猜测第2个伪造的分片包的IPID值。这里需要指出的是，根据作者前面的实验可知，大多数的操作系统，比如Windows和Linux是不支持这个随机化IPID分配机制的。但是这种方式也不是完全可以杜绝攻击，因为随机化IPID还是可以成功猜测的，只要攻击者进行足够多的尝试。</p>
+<h3 id="九、总结"><a href="#九、总结" class="headerlink" title="九、总结"></a>九、总结</h3><p>本文的主要贡献有两点：</p>
+<ol>
+<li>New attack.  本文提出了一种针对DNS Forwarder的缓存投毒攻击，通过这种攻击，攻击者可以使用受控的域名向DNS Forwarder中注入任意的有害域名，并且可以规避目前广泛部署的DNS缓存投毒防御措施。</li>
+<li>New findings. 本文发现了几款容易受到该类攻击的家用路由器和DNS软件，其中不乏来自大型供应商的家庭路由器和软件。作者向这些供应商发送了安全报告，其中三家厂商给出了积极的回应。</li>
+</ol>
+<p>DNS Forwarder作为网络中普遍存在的设备，并且现在发现它们可以受到缓存中毒攻击。 因此，作者呼吁社区开始关注DNS Forwarder中的安全问题，能够早日完善其安全规范。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/">https://bantttian.github.io/2020/10/15/[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/">Premiere学习笔记之拉镜入门</a>
+            
+            
+            <a class="next" rel="next" href="/2020/08/24/%5BNDSS18%5DSYNODE-nodejs/">NDSS2018 & Synode-Understanding and Automatically Preventing Injection Attacks on Node.js</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

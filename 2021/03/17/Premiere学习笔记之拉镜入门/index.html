@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>Premiere学习笔记之拉镜入门 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Premiere学习笔记之拉镜入门</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2021-03-17&nbsp;&nbsp;19:02:49</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Premiere学习笔记之拉镜入门"><a href="#Premiere学习笔记之拉镜入门" class="headerlink" title="Premiere学习笔记之拉镜入门"></a>Premiere学习笔记之拉镜入门</h1><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>这几天在学习premiere的一些基础效果学习，在平时别的UP主视频剪辑中，经常能看到一些好看的拉镜效果，因此我也来学习一下来提升下自己的剪辑技术。拉镜的意义是什么呢？我们采取拉镜来转场，一般是出于增强力量感或是减小画面切换时的违和感出发的。</p>
+<h3 id="拉镜原理"><a href="#拉镜原理" class="headerlink" title="拉镜原理"></a>拉镜原理</h3><p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/10.png" alt="10"></p>
+<p>比如从左向右的拉镜，我们的视线一开始是在左边这段素材的中心，视线向右移到第二段素材的中心。</p>
+<p>因此，很清楚就可以知道，从左向右的拉镜轨迹就是<strong>将第一段素材从画面中心移动到画面的最右边，第二段素材就是从画面最左边移动到画面中心</strong>。</p>
+<h3 id="学习步骤"><a href="#学习步骤" class="headerlink" title="学习步骤"></a>学习步骤</h3><ol start="0">
+<li><p>首先来做一个基础的<strong>向右的拉镜</strong>。</p>
+</li>
+<li><p>首先添加两段素材。</p>
+</li>
+<li><p>在两段素材的上方添加一个<strong>调整图层</strong>，方便后期进行效果修改和重复使用，在两段视频中间切割调整图层。</p>
+</li>
+<li><p>接着要<strong>确定一段效果的时间</strong>，方向键右键就是前进一帧，<code>shift+方向键</code>就是前进5帧。去掉多余部分。下图是2个各5关键帧，共10个关键帧长度的调整图层：</p>
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/1.png" alt="1"></p>
+</li>
+<li><p><strong>填充空白画面</strong>，因为效果是运动的，所以需要使用到原画面之外的部分，但是外面的部分是黑色，所以需要进行画面填充。</p>
+</li>
+<li><p><strong>效果栏</strong>搜索 <strong>变换</strong>，添加到调整图层：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">变换：</span><br><span class="line">	缩放 - 50%</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/2.png" alt="2"></p>
+</li>
+<li><p>添加效果<strong>镜像</strong>，复制3份，一共4次镜像操作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">镜像：</span><br><span class="line">	向左拖动x轴，直至画面缝合</span><br><span class="line">镜像：</span><br><span class="line">	旋转180°</span><br><span class="line">	向左拖动x轴，直至画面缝合</span><br><span class="line">镜像：</span><br><span class="line">	旋转90°</span><br><span class="line">	向上拖动y轴，直至画面缝合</span><br><span class="line">镜像：</span><br><span class="line">	旋转-90°</span><br><span class="line">	向下拖动y轴，直至画面缝合</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/3.png" alt="3"></p>
+</li>
+<li><p>添加效果<strong>变换</strong>，将画面大小复原</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">变换：</span><br><span class="line">	缩放 - 200%</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/4.png" alt="4"></p>
+</li>
+<li><p><strong>打关键帧</strong>，选择最后一个变换。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a. 第一步，在调整图层的第一帧上，先打上第一个关键帧</span><br><span class="line">b. 光标移动到后面，位置任意，打上第二个关键帧</span><br><span class="line">c. 在第二个关键帧上，移动x轴，将画面的最右对齐视频右边框，这一步很重要，否则后面无法添加缓入缓出效果</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>添加<strong>缓入缓出</strong>，让转场效果更加丝滑。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a. 选中两个关键帧</span><br><span class="line">b. 右键 -&gt; 临时插值 -&gt; 添加缓入和缓出</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/5.png" alt="5"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">c. 点开 位置 前面的倒三角</span><br><span class="line">d. 调整为如下图所示的缓入和缓出效果</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/6.png" alt="6"></p>
+<p>这条曲线代表的是效果的<strong>运动速度</strong>，峰值越高表示运动速度越快。所以这条曲线的意思就是前面先慢慢拉动，然后迅速加速。这样就是一个退出的效果。</p>
+</li>
+<li><p>取消<strong>合成快门角度</strong>，将快门角度改为200。<strong>快门角度</strong>是运动模糊效果，数值在150至200之间，数值越高表示模糊效果越强。</p>
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/7.png" alt="7"></p>
+<p>到此为止，第一个调整图层的效果就完成了。</p>
+</li>
+<li><p>第2段进入的效果刚和第1段相反，第1段是<strong>先缓后快</strong>，所以第2段应该是<strong>先快后缓</strong>，注意最后一个变换上打<strong>第一个关键帧</strong>（前面是第二个关键帧）后，需要将画面<strong>最左端</strong>与视频边框对齐。</p>
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/8.png" alt="8"></p>
+<p>接着：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">取消合成快门角度，并设置快门角度为200</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/9.png" alt="9"></p>
+</li>
+<li><p>按照上述的流程进行，最后的效果如下动图所示（图像有点失真，将就着看好了…）</p>
+<p><img src="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/10.gif" alt="10"></p>
+</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>这是最简单的拉镜技术了，在操作的时候，最需要注意的就是第1段和第2段的拉镜方向是相反的。</p>
+<p>现在的拉镜还很菜，所以我也需要继续练习，最主要的还是要理解拉镜的原理。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/">https://bantttian.github.io/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/10/15/%5BUSENIX18%5DDNS-Forwarder-Cache-Poisoning/%5BUSENIX18%5DDNS-Forwarder-Cache-Poisoning/">[USENIX18]DNS-Forwarder-Cache-Poisoning/[USENIX18]DNS-Forwarder-Cache-Poisoning</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
