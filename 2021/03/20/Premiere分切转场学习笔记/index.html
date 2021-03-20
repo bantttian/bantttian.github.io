@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>Premiere分切转场学习笔记 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Premiere分切转场学习笔记</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2021-03-20&nbsp;&nbsp;14:26:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>因为这几天又突然对视频剪辑起了兴趣，所以在休息时间找了b站up主的教程来学，所以现在记录下操作过程和一些原理。</p>
+<p>我是跟着b站up主what-uncle学的，教学链接为<a href="https://www.bilibili.com/video/BV1d441167cQ" target="_blank" rel="noopener">https://www.bilibili.com/video/BV1d441167cQ</a> 。（因为up主好像发生了一点什么事情，所以他的教程被删掉了）</p>
+<h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><ol>
+<li><p><strong>动态拼贴</strong></p>
+<blockquote>
+<p>视频剪辑中，画面经常会有一个运动，比如缩放，旋转，但是这样就非常可能会导致操作之后画面中出现黑色部分，也就是<strong>露底</strong>，如下图有大片的黑色部分：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/19.png" alt="19"></p>
+<p>这是因为周围缺少画面补偿导致的。动态拼贴就是将周围的画面补偿回来。动态拼贴的制作方法在之前的<a href="https://bantttian.github.io/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/">Premiere学习笔记之拉镜入门</a>中有讲过，是很多效果的必要步骤。</p>
+</blockquote>
+</li>
+<li><p><strong>蒙版中的羽化是什么意思</strong></p>
+<blockquote>
+<p> 羽化是ps术语，羽化原理是令选区内外衔接部分虚化，起到渐变的作用从而达到自然衔接的效果。羽化值越大，虚化范围越宽，也就是说颜色递变的柔和。羽化值越小，虚化范围越窄。可根据实际情况进行调节。</p>
+</blockquote>
+</li>
+<li><p><strong>安全边距</strong></p>
+<blockquote>
+<p>安全边框是一个标准，比如不同型号品牌的电视机，显示的画面范围大小可能会有差别，超出安全框范围的内容，有些电视机可能显示不出来。</p>
+<p>打开方法：在<strong>源监视器</strong>上右键，就可以看到安全边距。</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h3><ol>
+<li><p>首先第一步，新建1920x1080的序列，将所需要的两段视频素材拖入序列轨道中，下面统称第一段素材为<strong>素材1</strong>，第二段素材为<strong>素材2</strong>。</p>
+</li>
+<li><p>这里不要新建一个调整图层，直接将动态拼贴预设添加在第1段素材上：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/1.png" alt="1"></p>
+</li>
+<li><p>在源监视器上右键调出<strong>安全边距</strong>，方便我们后续在选择蒙版区域的时候进行对齐操作：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/2.png" alt="2"></p>
+</li>
+<li><p>对准安全边距，先按一下<code>shift</code>键，然后松开就可以调整蒙版边框，为了方便调节，可以将下面源监视器的<strong>缩放级别调整为25%</strong>：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/3.png" alt="3"></p>
+<p>因为我们不需要选区附近的画面有虚化的效果，所以将<strong>蒙版羽化</strong>设置为<code>0</code>：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/4.png" alt="4"></p>
+<p>然后收起变换效果。</p>
+</li>
+<li><p>接着需要复制一份最后的变换效果，但是直接<code>Ctrl-C + Ctrl-V</code>是不行的，这里的做法是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a. Ctrl-X(剪切)一份最后的变换</span><br><span class="line">b. Ctrl-V</span><br><span class="line">c. Ctrl-V</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/6.png" alt="6"></p>
+<p>这样就能得到两份变换效果：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/5.png" alt="5"></p>
+</li>
+<li><p>选择最后一个变换，在<strong>蒙版扩展</strong>中勾选<strong>已反转</strong>，就是对蒙版选取的反选。</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/7.png" alt="7"></p>
+</li>
+<li><p>收起最后一个变换，选择倒数第2个变换效果，开始打关键帧。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a. 首先分别添加缓入缓出效果</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/9.png" alt="9"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">b. 入点位置：(960, 540)</span><br><span class="line">c. 出点位置：(960, 1080)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/10.png" alt="10"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">d. 将快门角度数值修改为360，加大运动模糊效果</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>然后是右半部分，是一样的做法，只是<strong>出点位置不同</strong>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a. 首先分别添加缓入缓出效果</span><br><span class="line">b. 入点位置：(960, 540)</span><br><span class="line">c. 出点位置：(960, 0)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/12.png" alt="12"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">d. 将快门角度数值修改为360，加大运动模糊效果</span><br></pre></td></tr></table></figure>
+
+<p>当我们将光标拉到后面的时候，已经能看到运动效果了：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/13.png" alt="13"></p>
+<p>到这里为止，左边的一个效果就完成了。</p>
+</li>
+<li><p>接下来是第2段素材的效果。因为是对称的一个效果，所以先复制一份素材1的效果到素材2上：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a. 在第1段素材上右键，复制一份效果</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/14.png" alt="14"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b. 选择第2段素材，右键，粘贴属性</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/14.png" alt="14"></p>
+<p>选择粘贴属性就能仅仅复制效果：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/16.png" alt="16"></p>
+</li>
+<li><p>然后去掉最后两个变换中的<strong>位置效果</strong>，因为我们要重新添加效果，和第一段素材的效果是对称的。</p>
+</li>
+<li><p>重新添加第2段素材的效果，首先是左半边部分效果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a. 首先分别添加缓入缓出效果</span><br><span class="line">b. 入点位置：(960, 0)</span><br><span class="line">c. 出点位置：(960, 540)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/17.png" alt="17"></p>
+</li>
+<li><p>然后是右半边部分：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a. 首先分别添加缓入缓出效果</span><br><span class="line">b. 入点位置：(960, 1080)</span><br><span class="line">c. 出点位置：(960, 540)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/18.png" alt="18"></p>
+</li>
+<li><p>最后的效果是这样的：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/20.gif" alt="20"></p>
+</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>下面这张图是进行分切转场时打关键帧所使用到的关键帧参数。</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/20.png" alt="20"></p>
+<p>在制作分切转场的时候，要点就是要<strong>保持同一边的运动方向一致</strong>，比如上面的转场效果，左半部分的运动效果都是保持向上，右半部分的运动效果保持向下，并且都是<strong>从中心位置出发，回到中心位置</strong>。</p>
+<blockquote>
+<p>左半边部分：</p>
+<ul>
+<li>第一段素材：<strong>( X: 960 Y: 540 )</strong> -&gt; ( X: 960 Y: 1080 )<ul>
+<li>运动方向：<strong>向下</strong></li>
+</ul>
+</li>
+<li>第二段素材：( X: 960 Y:0 ) -&gt; <strong>( X: 960 Y: 540 )</strong><ul>
+<li>运动方向：<strong>向下</strong></li>
+</ul>
+</li>
+</ul>
+<p>右半边部分：</p>
+<ul>
+<li>第一段素材：<strong>( X: 960 Y: 540 )</strong> -&gt; ( X: 960 Y: 0 )<ul>
+<li>运动方向：<strong>向上</strong></li>
+</ul>
+</li>
+<li>第二段素材：( X: 960 Y:1080 ) -&gt; <strong>( X: 960 Y: 540 )</strong><ul>
+<li>运动方向：<strong>向上</strong></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h3 id="踩坑小记"><a href="#踩坑小记" class="headerlink" title="踩坑小记"></a>踩坑小记</h3><p>一开始的时候，我是在两端素材上添加了调整图层，然后整个效果是加在调整图层上的，但是这样操作发现了一个问题，会存在重影问题：</p>
+<p><img src="/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/imgs/8.png" alt="8"></p>
+<p>但是具体的原因是什么还不清楚。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">https://bantttian.github.io/2021/03/20/Premiere%E5%88%86%E5%88%87%E8%BD%AC%E5%9C%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Premiere/"># Premiere</a>
+                    
+                        <a href="/tags/%E8%BD%AC%E5%9C%BA%E6%95%88%E6%9E%9C/"># 转场效果</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/03/17/Premiere%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B9%8B%E6%8B%89%E9%95%9C%E5%85%A5%E9%97%A8/">Premiere学习笔记之拉镜入门</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
