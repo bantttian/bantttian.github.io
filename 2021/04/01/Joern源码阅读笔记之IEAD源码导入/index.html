@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>Joern源码阅读笔记之IEAD源码导入 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Joern源码阅读笔记之IEAD源码导入</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2021-04-01&nbsp;&nbsp;20:53:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近因为项目需要，所以开始阅读joern工具的源码。在阅读源码之前，需要将其导入IDEA中方便我们能够更好地学习源码，因为IDEA中可以查看程序之间的跳转关系，继承关系或是重写关系等等，而且还可以进行debug调试。下面记录下踩到的坑方便后面有需要重新配置环境。</p>
+<h3 id="IDEA导入"><a href="#IDEA导入" class="headerlink" title="IDEA导入"></a>IDEA导入</h3><p>我们首先需要将Joern工程文件夹导入IDEA。直接导入最上层的文件夹<code>joern</code>即可：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/2.png" alt="2"></p>
+<p>导入的时候会遇到Gradle配置选项，这里选择第2项<code>Use grable &#39;wrapper&#39; task configuration</code>：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/3.png" alt="3"></p>
+<p>选择<code>OK</code>即可，导入的过程可能会有点漫长，因为需要远程下载所需要的组件：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/1.png" alt="1"></p>
+<p>导入完成后，项目结构之间的联系就建立起来了，否则我们可能甚至无法利用IDEA查看类之间的继承和重写关系。</p>
+<p>导入的时候可能还会遇到这样的问题：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/4.png" alt="4"></p>
+<p>解决方法：<a href="https://stackoverflow.com/questions/33727502/gradle-leftshift-operator-with-task-needed-is-it-superfluous" target="_blank" rel="noopener">https://stackoverflow.com/questions/33727502/gradle-leftshift-operator-with-task-needed-is-it-superfluous</a></p>
+<p>报错的原因就是，操作符 <code>&lt;&lt;</code> 在Gradle 4.x中被弃用（deprecated），并且在Gradle 5.0 被移除（removed）。所以相应的解决办法就是将<code>&lt;&lt;</code>改为<code>doLast</code>：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">task deploy(<span class="string">dependsOn:</span> build) &lt;&lt; &#123;</span><br><span class="line">    copy &#123;</span><br><span class="line">        into <span class="string">"projects/octopus/plugins"</span></span><br><span class="line">        from fileTree(<span class="string">"projects/plugins"</span>).files</span><br><span class="line">        include <span class="string">'**/*.jar'</span></span><br><span class="line">        exclude <span class="string">'**/*-plain.jar'</span></span><br><span class="line">        includeEmptyDirs = <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    copy &#123;</span><br><span class="line">        into <span class="string">"projects/octopus/extensions"</span></span><br><span class="line">        from fileTree(<span class="string">"projects/extensions"</span>).files</span><br><span class="line">        include <span class="string">'**/*.jar'</span></span><br><span class="line">	exclude <span class="string">'**/lucene-core-3.6.2.jar'</span></span><br><span class="line">	exclude <span class="string">'**/*-plain.jar'</span></span><br><span class="line">        includeEmptyDirs = <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>改为：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">task deploy(<span class="string">dependsOn:</span> build) doLast &#123;</span><br><span class="line">    copy &#123;</span><br><span class="line">        into <span class="string">"projects/octopus/plugins"</span></span><br><span class="line">        from fileTree(<span class="string">"projects/plugins"</span>).files</span><br><span class="line">        include <span class="string">'**/*.jar'</span></span><br><span class="line">        exclude <span class="string">'**/*-plain.jar'</span></span><br><span class="line">        includeEmptyDirs = <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    copy &#123;</span><br><span class="line">        into <span class="string">"projects/octopus/extensions"</span></span><br><span class="line">        from fileTree(<span class="string">"projects/extensions"</span>).files</span><br><span class="line">        include <span class="string">'**/*.jar'</span></span><br><span class="line">	exclude <span class="string">'**/lucene-core-3.6.2.jar'</span></span><br><span class="line">	exclude <span class="string">'**/*-plain.jar'</span></span><br><span class="line">        includeEmptyDirs = <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/5.png" alt="5"></p>
+<h3 id="Debug环境配置"><a href="#Debug环境配置" class="headerlink" title="Debug环境配置"></a>Debug环境配置</h3><h4 id="IDEA版本选择"><a href="#IDEA版本选择" class="headerlink" title="IDEA版本选择"></a>IDEA版本选择</h4><p>为了方便debug，我直接在虚拟机中安装了IDEA，这里我使用的IDEA版本是2019的，没有使用最新版的IDEA是因为我发现使用2020.3版本的IDEA在打开gradle项目的时候会crash：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/6.png" alt="6"></p>
+<p>网上搜索发现了这篇文章<a href="https://youtrack.jetbrains.com/issue/IDEA-248140" target="_blank" rel="noopener">https://youtrack.jetbrains.com/issue/IDEA-248140</a></p>
+<p>下面有网友留言因为这个bug，他一直坚持使用2020.1版本，因为更高版本的会有crash的问题：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/7.png" alt="7"></p>
+<h4 id="Debug参数设置"><a href="#Debug参数设置" class="headerlink" title="Debug参数设置"></a>Debug参数设置</h4><p>我们在使用joern将<code>nodes.csv</code>和<code>rels.csv</code>转成<code>cpg_edges.csv</code>代码属性图，对应的命令是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;phpast2cpg nodes.csv rels.csv</span><br></pre></td></tr></table></figure>
+
+<p>所以我们需要传递两个参数<code>nodes.csv</code>和<code>rels.csv</code>，如何向IDEA传递命令行参数呢？</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/8.png" alt="8"></p>
+<p>设置<code>Program arguments</code>为我们需要的命令行参数：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/9.png" alt="9"></p>
+<p>然后在程序入口处打上断点：</p>
+<p><img src="/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/imgs/10.png" alt="10"></p>
+<p>能够命中断点并且传递的参数也正确。执行完发现在相应目录下也生成了<code>cpg_edges.csv</code>文件，说明配置正确。</p>
+<p>接下来就可以正常调试了。</p>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>这次阅读joern中php-cpg相关部分的源码对我来说也是一个全新的挑战，配好环境后也能更方便地开始学习了。加油💪！！！</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/">https://bantttian.github.io/2021/04/01/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0%E4%B9%8BIEAD%E6%BA%90%E7%A0%81%E5%AF%BC%E5%85%A5/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/PHP%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/"># PHP程序分析</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/04/01/PHP%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%E4%B9%8BPHPJoern%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">PHP程序分析之PHPJoern环境配置</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
