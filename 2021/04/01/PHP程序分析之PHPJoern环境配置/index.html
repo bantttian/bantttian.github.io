@@ -341,6 +341,9 @@
 <p>去掉前面的注释<code>#</code>，分配端口：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> Bolt connector</span></span><br><span class="line">dbms.connector.bolt.enabled=true</span><br><span class="line"><span class="meta">#</span><span class="bash">dbms.connector.bolt.tls_level=OPTIONAL</span></span><br><span class="line">dbms.connector.bolt.listen_address=:4748</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> HTTP Connector. There must be exactly one HTTP connector.</span></span><br><span class="line">dbms.connector.http.enabled=true</span><br><span class="line">dbms.connector.http.listen_address=:4747</span><br></pre></td></tr></table></figure>
 
+<p>如果需要远程访问neo4j数据库的话，记得将下面的注释去掉：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dbms.connectors.default_listen_address=0.0.0.0</span><br></pre></td></tr></table></figure>
+
 <p>然后运行<code>./bin/neo4j</code>启动neo4j数据库。neo4j的初始账号密码是<code>neo4j : neo4j</code>，登录后可以自己修改账号密码。</p>
 <h4 id="Neo4j浏览器端"><a href="#Neo4j浏览器端" class="headerlink" title="Neo4j浏览器端"></a>Neo4j浏览器端</h4><p><code>conf/neo4j.conf</code>文件中的http相关配置<code>dbms.connector.http.listen_address=:4747</code>就是浏览器端访问的路径。启动neo4j数据库之后，也可以在返回的信息中看到：</p>
 <p><img src="/2021/04/01/PHP%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%E4%B9%8BPHPJoern%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/imgs/1.png" alt="1"></p>
