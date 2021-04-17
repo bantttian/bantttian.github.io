@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>DataFlowAnalysis原理学习之ReachingDefinitions | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">DataFlowAnalysis原理学习之ReachingDefinitions</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2021-04-17&nbsp;&nbsp;16:26:28</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这几天在学习Joern源码，在看到CFG生成原理的时候还是挺顺利的，但是学到生成DDG，也就是Data-Flow-Graph的时候，就一脸懵。跟踪调试了几遍都没有搞懂，后来google了如何通过CFG生成DDG发现了一些文章：</p>
+<blockquote>
+<p><a href="https://www.cnblogs.com/kexinxin/p/10147196.html" target="_blank" rel="noopener">https://www.cnblogs.com/kexinxin/p/10147196.html</a></p>
+<p><a href="https://chengxiao19961022.github.io/2019/03/04/%E9%9D%99%E6%80%81%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/" target="_blank" rel="noopener">https://chengxiao19961022.github.io/2019/03/04/%E9%9D%99%E6%80%81%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/</a></p>
+<p><a href="https://liuyehcf.github.io/2017/11/23/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86-%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%962/" target="_blank" rel="noopener">https://liuyehcf.github.io/2017/11/23/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86-%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%962/</a></p>
+</blockquote>
+<p>我这才意识到这和编译原理的代码优化有关。突然想起南京大学Yue Li老师和Tian Tan老师之前开设的静态程序分析课程。去年暑假的时候偶然有看到过，但是没有具体的学习目标就没继续学习，这次重新捡起来看，发现刚好解决了我的困惑，只是可惜课程的视频讲解只有8节（本来应该有16节），在bilibili可以观看：<a href="https://space.bilibili.com/2919428?spm_id_from=333.788.b_765f7570696e666f.1" target="_blank" rel="noopener">https://space.bilibili.com/2919428?spm_id_from=333.788.b_765f7570696e666f.1</a></p>
+<p>老师的课件也做得非常详尽美观，是很好的学习资料。</p>
+<h2 id="数据流分析简介"><a href="#数据流分析简介" class="headerlink" title="数据流分析简介"></a>数据流分析简介</h2><p>什么是数据流分析？数据流分析是一项编译时使用的技术，它能从程序代码中收集程序的语义信息，并通过代数的方法在编译时确定变量的定义和使用。通过数据流分析，可以不必实际运行程序就能够发现程序运行时的一些行为，可以帮助大家更好地理解程序。数据流分析被用于解决编译优化、程序验证、调试、测试、并行、向量化和并行编程环境等问题。简单地说，数据流分析就是，<strong>对程序中数据的使用、定义及其之间的依赖关系等各方面信息进行收集的过程</strong>。</p>
+<p>数据流分析有多种解决方法：</p>
+<blockquote>
+<ol>
+<li>强连通区域方法；</li>
+<li><strong>迭代算法</strong>；</li>
+<li>T1-T2分析；</li>
+<li>结点列表算法；</li>
+<li>图形文法方法；</li>
+<li>消去法，比如，区间分析；</li>
+<li>高级语法制导的方法；</li>
+<li>结构分析；</li>
+<li>为止式（slotwise）分析。</li>
+</ol>
+</blockquote>
+<p>以上关于数据流的定义内容参考自：</p>
+<blockquote>
+<p> [1]汪小飞, 赵克佳, 田祖伟. 数据流分析的关键技术研究[J]. 计算机科学, 2005, 032(012):91-93. </p>
+</blockquote>
+<p>其中本节课老师教授的内容就是迭代算法，它也是最常用也是最实用的一种方法。</p>
+<h3 id="over-approximation"><a href="#over-approximation" class="headerlink" title="over-approximation"></a>over-approximation</h3><p>静态分析应该从下面两个方向来进行把握：</p>
+<ol>
+<li><p>对data做abstraction，这个abstraction有很多种形式，看我们需要什么，比如：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/5.png" alt="5"></p>
+<p>其中<code>T</code>表示<code>undefined</code>，<code>倒T</code>表示<code>unknown</code>。</p>
+</li>
+<li><p>对flow做over-approximation</p>
+</li>
+</ol>
+<p>什么是<strong>over-approximation</strong>？程序在动态运行时，无论在什么输入下，走任何的执行路径，所能产生的值，静态分析都应该能够预测到，称其为over-approximation，也就是对程序的行为做一个模拟，来得到近似程序执行时的行为。</p>
+<p>举个例子，变量x在执行时遇到了两条分支，一条是<code>-x</code>操作，另一个条是<code>+x</code>操作，求x在下一个汇聚点时值是正还是负？对于这种要求，我们只能将<code>-x</code>和<code>+x</code>都考虑进来，因为都存在可能性，这就叫做over-approximation。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/1.png" alt="1"></p>
+<p>对于绝大多数的静态分析来说都是进行的over-approximation，对于这类静态分析，称其为<strong>may analysis</strong>。</p>
+<p>另一类静态分析要求<strong>输出的信息都必须是准确的</strong>，也就是<strong>under-approximation</strong>，对于这类静态分析，称其为<strong>must analysis</strong>。</p>
+<p>但是无论是must analysis还是may analysis，都是为了程序分析的安全性。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/2.png" alt="2"></p>
+<p>综合起来，我们纠正一下开头的说法，静态分析应该从下面两个方向来进行把握：</p>
+<ol>
+<li>对data做abstraction</li>
+<li>对flow做<strong>safe</strong>-approximation</li>
+</ol>
+<p>对于may analysis来说，safe的涵义是<strong>over</strong>；对于must analysis来说，safe的涵义是<strong>under</strong>。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/3.png" alt="3"></p>
+<p>前面提到，safe-approximation的要求就是得到近似程序的行为，那要怎么做呢？</p>
+<h3 id="transfer-function转换函数"><a href="#transfer-function转换函数" class="headerlink" title="transfer function转换函数"></a>transfer function转换函数</h3><p>我们通常将程序表示成图，对于一个图，包含两个要素：节点（Nodes，就是顶点Vertex）和边（Edges）。对照到程序中，节点Nodes就表示一系列的Statements组成的BasicBlock，简称为BB。边Edges就是节点之间的关系，也就是所指的Control Flow。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/4.png" alt="4"></p>
+<p>对于节点Nodes之间的转换关系，也就是Statements（BBs）和Statements（BBs）之间的转换过程，可以用一个<strong>Transfer function转换函数</strong>来表示，转换函数通常是根据程序语义和分析的目的共同设计完成。</p>
+<p>举一个简单的转换函数的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+ op - &#x3D; -;		&#x2F;&#x2F; 正负得负</span><br><span class="line">+ op + &#x3D; +;		&#x2F;&#x2F; 正正得正</span><br><span class="line">- op - &#x3D; +;		&#x2F;&#x2F; 负负得正</span><br></pre></td></tr></table></figure>
+
+<h3 id="control-flow-handling控制流处理方式"><a href="#control-flow-handling控制流处理方式" class="headerlink" title="control-flow handling控制流处理方式"></a>control-flow handling控制流处理方式</h3><p>每一个节点对应一个基本块，那么每一条边就表示基本块之间流动顺序。control-flow handling就是要如何处理控制流的信息。比如前面举的x变量正负的例子，x经过分支处理之后有正有负，那在merge点要把正负都考虑进来。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/6.png" alt="6"></p>
+<p>不同的数据流分析有不同的data abstraction以及safe-approximation策略，而它们的不同也导致了有不同的转换函数（transfer function）和控制流处理方式（control-flow handling）。</p>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>然后是学习数据流分析时必须要学习的一些最基本的符号概念。</p>
+<h3 id="Input-and-Output-States输入输出状态"><a href="#Input-and-Output-States输入输出状态" class="headerlink" title="Input and Output States输入输出状态"></a>Input and Output States输入输出状态</h3><p>下图中：</p>
+<ol>
+<li><code>s1</code>表示一个IR statement</li>
+<li><code>IN[s1]</code>表示在执行s1语句之前，对应的<strong>program point</strong>的状态可以用<code>IN[s1]</code>表示</li>
+<li><code>OUT[s1]</code>表示执行完s1语句之后，对应的<strong>program point</strong>的状态的状态用<code>OUT[s1]</code>来表示</li>
+</ol>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/7.png" alt="7"></p>
+<p>我们知道控制流只有三种情形，<strong>顺序执行</strong>，<strong>分支</strong>和<strong>汇聚</strong>。</p>
+<p>对于顺序执行控制流<code>s1 -&gt; s2</code>有： <code>IN[s2] = OUT[s1]</code></p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/8.png" alt="8"></p>
+<p>对于分支语句<code>s1 -&gt; s2 , s1 -&gt; s3</code>有：<code>IN[s2] = IN[s3] = OUT[s1]</code></p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/9.png" alt="9"></p>
+<p>对于汇聚语句<code>s1 -&gt; s3, s2 -&gt; s3</code>有：<code>IN[2] = OUT[s1] V OUT[s3]</code>。其中<code>U</code>就是一个meet operator，并不一定表示<code>V</code>，也可能表示<code>^</code>或者其他符号，但是表达的意思就是对两个<code>OUT[s1]</code>和<code>OUT[s3]</code>同时进行处理。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/10.png" alt="10"></p>
+<p>引入输入输出状态是为了什么呢？ppt中是这样阐述的：</p>
+<blockquote>
+<p>In each data-flow analysis application，we associate with every program point a <strong>data-flow value</strong> that represents an <strong>abstraction</strong> of the set of all possible <strong>program states</strong> that can be observed for that point.</p>
+</blockquote>
+<p>这句话的意思就是，给每一个program point（程序点），关联一个数据流的值（data-flow value），这个值代表了关于<strong>program states（程序状态）</strong>的抽象集合，即program states在一个program point的所有的可能值的一个抽象，作为static analysis的结果。</p>
+<p>比如下图ppt中，红框有一段简单的代码，每个statement后有一个红点表示一个program point。</p>
+<p>绿框中则记录了执行完一条statement之后，x和y的状态（比如正，负，是否定义）。绿框就是对每个program point分析的一个结果。当然，我们在绿框的结果中加入更多的信息，比如x=10，y=undefined等等。另外，该抽象集合还有一个值域domain，数据流值（data-flow value）就限制在值域domain中。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/11.png" alt="11"></p>
+<h3 id="data-flow-analysis概念"><a href="#data-flow-analysis概念" class="headerlink" title="data-flow analysis概念"></a>data-flow analysis概念</h3><p>到这里就可以给出一个关于data-flow analysis的总体概览。data-flow analysis就是为程序中所有的statements的in和out找到一个solution，主要是通过解析一系列的safe-approximation约束。这些约束就是transfer function和control flow信息。也就是说，通过不断解析这些转换函数和控制流信息的约束规则，就会得到一个solution，该solution会给每一个statements的in/out program point关联一个<strong>data flow value</strong>。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/12.png" alt="12"></p>
+<h3 id="Transfer-Function’s-Constraints"><a href="#Transfer-Function’s-Constraints" class="headerlink" title="Transfer Function’s Constraints"></a>Transfer Function’s Constraints</h3><p>当我们沿着控制流的方向进行分析时，此时叫做前向分析：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/13.png" alt="13"></p>
+<p>上图中transfer function的意思就是，将<code>IN[s]</code>通过转换函数<code>fs</code>转换为<code>OUT[s]</code>。</p>
+<p>如果我们分析时，沿着控制流反向分析，则有：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/14.png" alt="14"></p>
+<p>有时候，进行backward analysis的时，会对control flow进行反向建模，相当于到达一个forword的效果。</p>
+<h3 id="Control-Flow’s-Constraints"><a href="#Control-Flow’s-Constraints" class="headerlink" title="Control Flow’s Constraints"></a>Control Flow’s Constraints</h3><p>根据基本块BasicBlock的特点，我们可以将控制流分为BasicBlock之间和BasicBlock之内。</p>
+<p>对于BasicBlock内部的Statements，上一条statement的输出out就是这条statement的输入in，用符号来表示它们之间的in和out关系有：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/15.png" alt="15"></p>
+<p>对于整个BasicBlock而言，它的输入in就是第一条statement的输入in，它的输出就是最后一条输出out。但对于BasicBlock和BasicBlock之间来看，它的in和out是这样的：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/16.png" alt="16"></p>
+<p>其中<code>fb</code>表示是经过了BasicBlock块内多个转换函数最后得到的转换函数<code>fb</code>。</p>
+<p><code>IN[B]</code>等于将所有的<code>OUT[P]</code>汇总起来后的结果（P是B的前驱节点）。上图中的meet operator<code>^</code>就是表示在汇聚点，通过一定处理，将<code>OUT[P]</code>组合起来作为<code>IN[B]</code>。</p>
+<p>当进行backward analysis的时候，则有：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/17.png" alt="17"></p>
+<h2 id="Reaching-Definitions-Analysis"><a href="#Reaching-Definitions-Analysis" class="headerlink" title="Reaching Definitions Analysis"></a>Reaching Definitions Analysis</h2><h3 id="什么是Reaching-Definitions"><a href="#什么是Reaching-Definitions" class="headerlink" title="什么是Reaching Definitions"></a>什么是Reaching Definitions</h3><p>Reaching Definitions Analysis即<strong>可达定义分析</strong>，是编译优化中常用的分析手段。</p>
+<p>可达性定义：</p>
+<blockquote>
+<p>A <font color="red">definition d</font> at program point p <font color="red">reaches</font> a point q <strong>if there</strong>（这是一个may analysis） is a path from p to q such that <font color="red">d</font> is not “kill” along that path.</p>
+</blockquote>
+<p>即在程序点p的一个定义d，到程序点q是可达的，当且仅当这个定义d在从程序点p到程序点q这条路径不会被kill掉。</p>
+<p>这个变量v的定义d指的是为这个变量分配数值的statements，比如初始化和赋值。比如下图，变量v在程序点p被定义，在从程序点p到程序点q，变量v不会被重新定义，那就可以说，<strong>程序点p的定义d到程序点q是可达的</strong>：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/18.png" alt="18"></p>
+<p>可达定义分析除了用于编译优化，还可以用在其他的地方，比如未定义变量检测。我们知道CFG中有一个entry node和exit node，现在在entry node中为所有变量添加一个dummy definition。如果假设在程序点p，发现变量v被使用了，并且变量v在程序点p是一个可达定义，那么有可能就发生了“使用未定义的变量”错误，但是也可能没有，因为变量v在其他的path上有新的定义，那才是一条程序在运行时会走的路径。</p>
+<h3 id="Reaching-Definitions表示"><a href="#Reaching-Definitions表示" class="headerlink" title="Reaching Definitions表示"></a>Reaching Definitions表示</h3><p>程序中所有变量的definitions可以用一个bit vectors来表示，比如一个程序中有100个definition，但是这里要注意，并不是表示有100个变量：</p>
+<blockquote>
+<p>D1, D2, D3, D4, …, D100 = 000…0</p>
+</blockquote>
+<p>可达定义分析是一种safe-approximation，主要从两个方面入手：转换函数和控制流信息。</p>
+<p>比如现在有一个definition d为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D: v &#x3D; x op y</span><br></pre></td></tr></table></figure>
+
+<p>这条statement为变量v “生成了”一个definition D，并且这个definition D <strong>kill</strong>掉了程序中所有定义的v，其他变量的定义则不受影响。</p>
+<h3 id="Transfer-Function"><a href="#Transfer-Function" class="headerlink" title="Transfer Function"></a>Transfer Function</h3><p>我们用BasicBlock来表示这条statement，那么可以得到相应的转换函数为：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/19.png" alt="19"></p>
+<p>其中：</p>
+<blockquote>
+<p><code>gen[B]</code>表示新生成的定义;</p>
+<p><code>IN[B]</code>表示流进当前Block的定义；</p>
+<p><code>kill[B]</code>表示去除的其他地方的定义；</p>
+<p><code>OUT[B]</code>表示从该Block流出的定义。</p>
+</blockquote>
+<p>以下图为例，现在有7个定义（d1, d2, d3, d4, d5, d6, d7）。B1中对3个不同的变量（i, j, m）有3个定义，所以gen[B1] = { d1, d2, d3 }，同时，其他对变量（i, j, m）的定义都要被kill掉，所以kill[B1] = { d4, d5, d6, d7 }。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/20.png" alt="20"></p>
+<h3 id="Control-Flow"><a href="#Control-Flow" class="headerlink" title="Control Flow"></a>Control Flow</h3><p>针对control flow则有：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/21.png" alt="21"></p>
+<p>这里<code>IN[B]</code>是所有BasicBlock B的前驱P的<code>OUT[P]</code>总和，因为要做一个over-approximation，所以每一条path都要考虑到，所以对应的符号是<code>U</code>。</p>
+<h3 id="Reaching-Definitions迭代算法"><a href="#Reaching-Definitions迭代算法" class="headerlink" title="Reaching Definitions迭代算法"></a>Reaching Definitions迭代算法</h3><p>可达定义迭代算法如下图所示：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/44.png" alt="44"></p>
+<ol>
+<li>首先，先将<code>OUT[entry]</code>清空，这个<code>OUT[entry]</code>也被称为<strong>boundary condition（边界值）</strong>；</li>
+<li>然后，将除了<code>entry</code>块的BB块的<code>OUT[B]</code>也清空。既然都是清空的初始化行为，为什么不放在一起呢？因为这个算法是一个经典的迭代算法模板，一个模板不应该仅对over-approximation中的reaching definition迭代适用，也应该对其他的data-flow analysis的迭代算法也适用。在一些data-flow analysis中，它的边界值可能和其他的BB不一样，比如在must analysis中，<code>OUT[entry]=∅</code>，而<code>OUT[B\entry]</code>则不是。</li>
+<li>然后为<code>B\entry</code>块分别计算<code>IN[B]</code>和<code>OUT[B]</code>；</li>
+<li>最后，迭代是否结束的信号取决于：<strong>是否有BasicBlock的OUT发生了变化</strong>。</li>
+</ol>
+<h3 id="Reaching-Definitions算法实例"><a href="#Reaching-Definitions算法实例" class="headerlink" title="Reaching Definitions算法实例"></a>Reaching Definitions算法实例</h3><p>比如现在有这样一个控制流，左边对应的是它可能的语句。这个控制流被分为5个基本块（B1，B2，B3，B4，B5）和5个变量（x，y，z，m）分别用不同的颜色表示。这里5个基本块一共对应了8个definition：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/22.png" alt="22"></p>
+<p>根据迭代算法的初始步骤，会将<code>OUT[entry]</code>和其他BB块的<code>OUT[B]</code>设置为<code>∅</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">OUT[entry] &#x3D; ∅;</span><br><span class="line">&#x2F;&#x2F; B\entry 表示BasicBlock去除entry块</span><br><span class="line">for (each basic block B\entry)</span><br><span class="line">	OUT[B] &#x3D; ∅;</span><br></pre></td></tr></table></figure>
+
+<p>初始化后，每一个BB块的IN和OUT结果都表示为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">D1 D2 D3 D4 D5 D6 D7 D8</span><br><span class="line">0  0  0  0  0  0  0  0</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/23.png" alt="23"></p>
+<p>要注意这个0000 0000结果是作用在每一个program point上的，而不是直接作用在BB块上。</p>
+<p>然后开始迭代部分：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/24.png" alt="24"></p>
+<h4 id="第一轮迭代"><a href="#第一轮迭代" class="headerlink" title="第一轮迭代"></a>第一轮迭代</h4><ol>
+<li><p>第一次迭代首先作用在B1块上，首先是IN：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IN[B1] &#x3D; 0000 0000</span><br></pre></td></tr></table></figure>
+
+<p>然后计算OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B1] &#x3D; &#x3D; &#123; D1, D2 &#125; &#x3D; 1100 0000</span><br><span class="line">IN[B1] &#x3D; 0000 0000</span><br><span class="line">kill[B1] &#x3D; &#123; D4, D5, D7 &#125; &#x3D; 0001 1010</span><br><span class="line"></span><br><span class="line">OUT[B1] &#x3D; gen[B1] U (IN[B1] - kill[B1])</span><br><span class="line">		&#x3D; 0000 0000 - 0001 1010 &#x3D; 0000 0000</span><br><span class="line">		&#x3D; 1100 0000 U 0000 0000</span><br><span class="line">		&#x3D; 1100 0000</span><br></pre></td></tr></table></figure>
+
+<p>现在得到的结果是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B1]  &#x3D; 0000 0000</span><br><span class="line">OUT[B1] &#x3D; 1100 0000</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/25.png" alt="25"></p>
+</li>
+<li><p>然后是针对B2，B2的IN有分别来自B1和B4，所以得到IN[B2]为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B2] &#x3D; OUT[B1] U OUT[B4]</span><br><span class="line">	   &#x3D; 1100 0000 U 0000 0000</span><br><span class="line">	   &#x3D; 1100 0000</span><br></pre></td></tr></table></figure>
+
+<p>然后求解B2的OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B2] &#x3D; &#123; D3, D4 &#125; &#x3D; 0011 0000</span><br><span class="line">IN[B2] &#x3D; 1100 0000</span><br><span class="line">kill[B2] &#x3D; &#123; D2 &#125; &#x3D; 0100 0000</span><br><span class="line"></span><br><span class="line">OUT[B2]  &#x3D; gen[B2] U (IN[B2] - kill[B2])</span><br><span class="line">		 &#x3D; 0011 0000 U (1100 0000 - 0100 0000)</span><br><span class="line">		 &#x3D; 0011 0000 U 1000 0000</span><br><span class="line">		 &#x3D; 1011 0000</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/26.png" alt="26"></p>
+</li>
+<li><p>接着是B3的IN，就是来自B2的OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B3] &#x3D; OUT[B2]</span><br><span class="line">	   &#x3D; 1011 0000</span><br></pre></td></tr></table></figure>
+
+<p>然后计算OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B3] &#x3D; &#123; D7 &#125; &#x3D; 0000 0010</span><br><span class="line">IN[B3] &#x3D; 1011 0000</span><br><span class="line">kill[B3] &#x3D; &#123; D1, D5 &#125; &#x3D; 1000 1000</span><br><span class="line"></span><br><span class="line">OUT[B3] &#x3D; gen[B3] U (IN[B3] - kill[B3])</span><br><span class="line">		&#x3D; 0000 0010 U (1011 0000 - 1000 1000)</span><br><span class="line">		&#x3D; 0000 0010 U 0011 0000</span><br><span class="line">		&#x3D; 0011 0010</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/27.png" alt="27"></p>
+</li>
+<li><p>然后是B4块的IN，即为<code>IN[B2]</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B4] &#x3D; IN[B2]</span><br><span class="line">	   &#x3D; 1011 0000</span><br></pre></td></tr></table></figure>
+
+<p>接着计算OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B4] &#x3D; &#123; D5, D6 &#125; &#x3D; 0000 1100</span><br><span class="line">IN[B4] &#x3D; 1011 0000</span><br><span class="line">kill[B4] &#x3D; &#123; D1, D7, D8 &#125; &#x3D; 1000 0011</span><br><span class="line"></span><br><span class="line">OUT[B4] &#x3D; gen[B4] U (IN[B4] - kill[B4])</span><br><span class="line">		&#x3D; 0000 1100 U (1011 0000 - 1000 0011)</span><br><span class="line">		&#x3D; 0000 1100 U 0011 0000</span><br><span class="line">		&#x3D; 0011 1100</span><br></pre></td></tr></table></figure>
+
+<p>同时需要注意的是，<code>B4</code>的OUT也是<code>B2</code>的IN：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/28.png" alt="28"></p>
+</li>
+<li><p>最后计算B5的IN和OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B5] &#x3D; OUT[B3] U OUT[B4]</span><br><span class="line">	   &#x3D; 0011 1100 U 0011 0010</span><br><span class="line">	   &#x3D; 0011 1110</span><br></pre></td></tr></table></figure>
+
+<p><code>OUT[B5]</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B5] &#x3D; &#123; D8 &#125; &#x3D; 0000 0001</span><br><span class="line">IN[B5] &#x3D; 0011 1110</span><br><span class="line">kill[B5] &#x3D; &#123; D6 &#125; &#x3D; 0000 0100</span><br><span class="line"></span><br><span class="line">OUT[B5] &#x3D; gen[B5] U (IN[B5] - kill[B5])</span><br><span class="line">		&#x3D; 0000 0001 U (0011 1110 - 0000 0100)</span><br><span class="line">		&#x3D; 0000 0001 U 0011 1010</span><br><span class="line">		&#x3D; 0011 1011</span><br></pre></td></tr></table></figure>
+
+<p>其中红色加粗框中的<code>0011 1110</code>表示<code>IN[B5]</code>：</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/29.png" alt="29"></p>
+</li>
+</ol>
+<p>到这里为止，第一遍遍历就结束了。在第一遍遍历结束之后，根据算法，要不要继续进行遍历取决于<strong>是否有OUT[B]发生变化</strong>，从上图的结果很容易可以看过，<code>OUT[B1]</code>，<code>OUT[B2]</code>，<code>OUT[B3]</code>，<code>OUT[B4]</code>和<code>OUT[B5]</code>全部都发生了变化，所以遍历继续进行。</p>
+<h4 id="第二轮迭代"><a href="#第二轮迭代" class="headerlink" title="第二轮迭代"></a>第二轮迭代</h4><ol>
+<li><p>第二轮迭代还是从B1块开始，首先是IN，还是从entry block进来，所以不会发生变化：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B1] &#x3D; IN[entry]</span><br><span class="line">	   &#x3D; 0000 0000</span><br></pre></td></tr></table></figure>
+
+<p>然后是OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B1] &#x3D; &#123; D1, D2 &#125; &#x3D; 1100 0000</span><br><span class="line">IN[B1] &#x3D; 0000 0000</span><br><span class="line">kill[B1] &#x3D; &#123; D4, D5, D7 &#125; &#x3D; 0001 1010</span><br><span class="line"></span><br><span class="line">OUT[B1] &#x3D; gen[B1] U (IN[B1] - kill[B1])</span><br><span class="line">	    &#x3D; 1100 0000 U (0000 0000 - 0001 1010)</span><br><span class="line">	    &#x3D; 1100 0000 U 0000 0000</span><br><span class="line">	    &#x3D; 1100 0000</span><br></pre></td></tr></table></figure>
+
+<p>相较上一次的结果，<code>OUT[B1]</code>没有发生变化。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/30.png" alt="30"></p>
+</li>
+<li><p>接着看B2：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B2] &#x3D; OUT[B1] U OUT[B4]</span><br><span class="line">	   &#x3D; 1100 0000 U 0011 1100</span><br><span class="line">	   &#x3D; 1111 1100</span><br></pre></td></tr></table></figure>
+
+<p>B2块的OUT为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B2] &#x3D; &#123; D3, D4 &#125; &#x3D; 0011 0000</span><br><span class="line">IN[B2] &#x3D; 1111 1100</span><br><span class="line">kill[B2] &#x3D; &#123; D2 &#125; &#x3D; 0100 0000</span><br><span class="line"></span><br><span class="line">OUT[B2] &#x3D; gen[B2] U (IN[B2] - kill[B2])</span><br><span class="line">		&#x3D; 0011 0000 U (1111 1100 - 0100 0000)</span><br><span class="line">		&#x3D; 0011 0000 U 1011 1100</span><br><span class="line">		&#x3D; 1011 1100</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/31.png" alt="31"></p>
+<p>蓝色加粗方框里的是<code>OUT[B1]+OUT[B4]</code>的结果，最后得到的<code>OUT[B2]</code>是<code>1011 1100</code>，相较于前一轮的结果，发生了变化。</p>
+</li>
+<li><p>接着是B3块：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IN[B3] &#x3D; OUT[B2] &#x3D; 1011 1100</span><br></pre></td></tr></table></figure>
+
+<p>然后是OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B3] &#x3D; &#123; D7 &#125; &#x3D; 0000 0010</span><br><span class="line">IN[B3] &#x3D; 1011 1100</span><br><span class="line">kill[B3] &#x3D; &#123; D1, D5 &#125; &#x3D; 1000 1000</span><br><span class="line"></span><br><span class="line">OUT[B3] &#x3D; gen[B3] U (IN[B3] - kill[B3])</span><br><span class="line">		&#x3D; 0000 0010 U (1011 1100 - 1000 1000)</span><br><span class="line">		&#x3D; 0000 0010 U 0011 0100</span><br><span class="line">		&#x3D; 0011 0110</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/32.png" alt="32"></p>
+<p>相较于上一轮的结果，<code>OUT[B3]</code>也发生了改变。</p>
+</li>
+<li><p>然后是计算B4块的IN和OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IN[B4] &#x3D; IN[B2] &#x3D; 1011 1100</span><br></pre></td></tr></table></figure>
+
+<p>然后是OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B4] &#x3D; &#123; D5, D6 &#125; &#x3D; 0000 1100</span><br><span class="line">IN[B4] &#x3D; 1011 1100</span><br><span class="line">kill[B4] &#x3D; &#123; D1, D7, D8 &#125; &#x3D; 1000 0011</span><br><span class="line"></span><br><span class="line">OUT[B4] &#x3D; gen[B4] U (IN[B4] - kill[B4])</span><br><span class="line">		&#x3D; 0000 1100 U (1011 1100 - 1000 0011)</span><br><span class="line">		&#x3D; 0000 1100 U 0011 1100</span><br><span class="line">		&#x3D; 0011 1100</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/33.png" alt="33"></p>
+<p>可以看到相比上一轮的结果，<code>OUT[B4]</code>也没有发生改变。</p>
+</li>
+<li><p>第二轮迭代的最后一个BB块，B5：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B5] &#x3D; OUT[B3] U OUT[B4]</span><br><span class="line">	   &#x3D; 0011 0110 U 0011 1100</span><br><span class="line">	   &#x3D; 0011 1110</span><br></pre></td></tr></table></figure>
+
+<p>然后计算<code>OUT[B5]</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B5] &#x3D; &#123; D8 &#125; &#x3D; 0000 0001</span><br><span class="line">IN[B5] &#x3D; 0011 1110</span><br><span class="line">kill[B5] &#x3D; &#123; D6 &#125; &#x3D; 0000 0100</span><br><span class="line"></span><br><span class="line">OUT[B5] &#x3D; gen[B5] U (IN[B5] - kill[B5])</span><br><span class="line">		&#x3D; 0000 0001 U (0011 1110 - 0000 0100)</span><br><span class="line">		&#x3D; 0000 0001 U 0011 1010</span><br><span class="line">		&#x3D; 0011 1011</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/34.png" alt="34"></p>
+<p>其中蓝色加粗框中表示的是<code>IN[B5]</code>，相比上一次的结果，<code>OUT[B5]</code>并没有发生改变。</p>
+</li>
+</ol>
+<p>执行到这一步，第二轮迭代也结束了。相比第一轮的迭代结果，<code>OUT[B2]</code>和<code>OUT[B3]</code>发生了改变。</p>
+<h4 id="第三轮迭代"><a href="#第三轮迭代" class="headerlink" title="第三轮迭代"></a>第三轮迭代</h4><p>因为<code>OUT[B2]</code>和<code>OUT[B3]</code>发生了变化，所以迭代继续。</p>
+<ol>
+<li><p>从B1块开始，IN：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B1] &#x3D; OUT[entry]</span><br><span class="line">	   &#x3D; 0000 0000</span><br></pre></td></tr></table></figure>
+
+<p>然后是<code>OUT[B1]</code>，其实因为我们知道<code>IN[B1]</code>没有发生改变，而且<code>gen[B1]</code>和<code>kill[B1]</code>是不会发生改变的，因为这两个是由BB块，更准确地说是由BB块中的statement决定的，statement是不会发生改变的，所以<code>gen[B1]</code>和<code>kill[B1]</code>也是不会发生改变的，因此<code>OUT[B1]</code>也同样不会改变：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B1] &#x3D; &#123; D1, D2 &#125; &#x3D; 1100 0000</span><br><span class="line">IN[B1] &#x3D; 0000 0000</span><br><span class="line">kill[B1] &#x3D; &#123; D4, D5, D7 &#125; &#x3D; 0001 1010</span><br><span class="line"></span><br><span class="line">OUT[B1] &#x3D; gen[B1] U (IN[B1] - kill[B1])</span><br><span class="line">	    &#x3D; 1100 0000 U (0000 0000 - 0001 1010)</span><br><span class="line">	    &#x3D; 1100 0000 U 0000 0000</span><br><span class="line">	    &#x3D; 1100 0000</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/35.png" alt="35"></p>
+</li>
+<li><p>然后是计算<code>B2</code>，首先是<code>IN[B2]</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B2] &#x3D; OUT[B1] U OUT[B4]</span><br><span class="line">	   &#x3D; 1100 0000 U 1011 1100</span><br><span class="line">	   &#x3D; 1111 1100</span><br></pre></td></tr></table></figure>
+
+<p>然后是OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B2] &#x3D; &#123; D3, D4 &#125; &#x3D; 0011 0000</span><br><span class="line">IN[B2] &#x3D; 1111 1100</span><br><span class="line">kill[B2] &#x3D; &#123; D2 &#125; &#x3D; 0100 0000</span><br><span class="line"></span><br><span class="line">OUT[B2] &#x3D; gen[B2] U (IN[B2] - kill[B2])</span><br><span class="line">		&#x3D; 0011 0000 U (1111 1100 - 0100 0000)</span><br><span class="line">		&#x3D; 0011 0000 U 1011 1100</span><br><span class="line">		&#x3D; 1011 1100</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/36.png" alt="36"></p>
+<p>相较于第二轮迭代，<code>OUT[B2]</code>没有发生变化。加粗绿框中的是<code>IN[B2]</code>。</p>
+</li>
+<li><p>接着是B3，我们已经知道，因为<code>OUT[B2]</code>没有发生变化，所以B3块的IN和OUT也不会发生任何变化：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B3] &#x3D; OUT[B2]</span><br><span class="line">	   &#x3D; 1011 1100</span><br></pre></td></tr></table></figure>
+
+<p>然后是<code>OUT[B3]</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B3] &#x3D; &#123; D7 &#125; &#x3D; 0000 0010</span><br><span class="line">IN[B3] &#x3D; 1011 1100</span><br><span class="line">kill[B3] &#x3D; &#123; D1, D5 &#125; &#x3D; 1000 1000</span><br><span class="line"></span><br><span class="line">OUT[B3] &#x3D; gen[B3] U (IN[B3] - kill[B3])</span><br><span class="line">		&#x3D; 0000 0010 U (1011 1100 - 1000 1000)</span><br><span class="line">		&#x3D; 0000 0010 U 0011 0100</span><br><span class="line">		&#x3D; 0011 0110</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/37.png" alt="37"></p>
+</li>
+<li><p>然后是B4块，同样的，因为<code>OUT[B2]</code>没有发生改变，所以<code>IN[B4]</code>保持不变，顾<code>OUT[B4]</code>也不会发生变化：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IN[B4] &#x3D; IN[B2] &#x3D; 1011 1100</span><br></pre></td></tr></table></figure>
+
+<p>计算OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B4] &#x3D; &#123; D5, D6 &#125; &#x3D; 0000 1100</span><br><span class="line">IN[B4] &#x3D; 1011 1100</span><br><span class="line">kill[B4] &#x3D; &#123; D1, D7, D8 &#125; &#x3D; 1000 0011</span><br><span class="line"></span><br><span class="line">OUT[B4] &#x3D; gen[B4] U (IN[B4] - kill[B4])</span><br><span class="line">		&#x3D; 0000 1100 U (1011 1100 - 1000 0011)</span><br><span class="line">		&#x3D; 0000 1100 U 0011 1100</span><br><span class="line">		&#x3D; 0011 1100</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/38.png" alt="38"></p>
+</li>
+<li><p>最后是B5块，同样因为<code>OUT[B4]</code>和<code>OUT[B3]</code>保持不变，所以可以推出<code>IN[B5]</code>不变，那么<code>OUT[B5]</code>也不会发生变化</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B2] &#x3D; OUT[B1] U OUT[B4]</span><br><span class="line">	   &#x3D; 1100 0000 U 1011 1100</span><br><span class="line">	   &#x3D; 1111 1100</span><br></pre></td></tr></table></figure>
+
+<p>然后是OUT：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B2] &#x3D; &#123; D3, D4 &#125; &#x3D; 0011 0000</span><br><span class="line">IN[B2] &#x3D; 1111 1100</span><br><span class="line">kill[B2] &#x3D; &#123; D2 &#125; &#x3D; 0100 0000</span><br><span class="line"></span><br><span class="line">OUT[B2] &#x3D; gen[B2] U (IN[B2] - kill[B2])</span><br><span class="line">		&#x3D; 0011 0000 U (1111 1100 - 0100 0000)</span><br><span class="line">		&#x3D; 0011 0000 U 1011 1100</span><br><span class="line">		&#x3D; 1011 1100</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/39.png" alt="39"></p>
+</li>
+</ol>
+<p>第3轮遍历也正式结束，此时每个BasicBlock块的OUT都没有发生改变，所以迭代结束。</p>
+<h3 id="Reaching-Definitions迭代原理"><a href="#Reaching-Definitions迭代原理" class="headerlink" title="Reaching Definitions迭代原理"></a>Reaching Definitions迭代原理</h3><p>现在剩下一个问题需要我们思考：<strong>为什么迭代能够停下来？</strong>也就是说，为什么<code>OUT[B]</code>的变化会越来越少？</p>
+<p>首先，<code>gen[s]</code>和<code>kill[s]</code>是不会发生改变的，因为这是statement本身决定的，而statement是不会改变的，故<code>gen[s]</code>和<code>kill[s]</code>不会发生改变。<strong>所以<code>OUT[s]</code>的变化其实是由<code>IN[s]</code>决定的</strong>。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/40.png" alt="40"></p>
+<p>那么什么会导致<code>IN[s]</code>发生变化呢，<code>IN[s]</code>的变化其实是由<code>more facts</code>导致的，但是这个more facts对<code>OUT</code>的改变来说，只可能比之前更多，不可能比之前更少，因为他们要么是被<code>kill[s]</code>给kill掉，要么是保留下来称为<code>survivor</code>，所以<code>OUT</code>只会越来越多（简单点讲就是OUT中的1只会越来越多）。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/41.png" alt="41"></p>
+<p><code>OUT</code>中bit位的变化只有三种可能性：</p>
+<ul>
+<li>0 -&gt; 0</li>
+<li>0 -&gt; 1</li>
+<li>1 -&gt; 1</li>
+</ul>
+<p>不可能出现1-&gt;0，也就说不可能出现之前是1的definition突然被kill掉。</p>
+<p>因为factsd是有限的，所以在不断加入facts的过程中，<code>OUT</code>也会慢慢收敛，直到<code>OUT</code>不再发生变化。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/42.png" alt="42"></p>
+<p>因为<code>OUT</code>不会再发生变化了，所以<code>IN</code>也不会发生变化了，而<code>IN</code>不会再变化的效果又作用在<code>OUT</code>上，从而达到一个平衡的状态，也就说程序达到了一个<strong>不动点（fix point）</strong>，所以迭代的结束是以<code>OUT</code>不再改变作为标准。</p>
+<p><img src="/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/imgs/43.png" alt="43"></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>在Joern中DDG图的生成中，之前一直看不懂，学了这一小节课后，明白了类<code>DDGCreator</code>也是通过reaching definition迭代算法来讲CFG转化为DDG的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DDGCreator</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">updateOut</span><span class="params">(Object x)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		HashSet&lt;Object&gt; listForKey = out.getListForKey(x);</span><br><span class="line">		HashSet&lt;Object&gt; oldOut = <span class="keyword">new</span> HashSet&lt;Object&gt;(listForKey);</span><br><span class="line"></span><br><span class="line">		out.removeAllForKey(x);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">        * 根据OUT[x] = gen[x] U (IN[x] - kill[x])</span></span><br><span class="line"><span class="comment">       	* 先将IN[x]加入</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">		<span class="comment">// in(x)</span></span><br><span class="line">		HashSet&lt;Object&gt; inForX = in.getListForKey(x);</span><br><span class="line">		<span class="keyword">if</span> (inForX != <span class="keyword">null</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">for</span> (Object o : inForX)</span><br><span class="line">			&#123;</span><br><span class="line">				out.add(x, o);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">        </span><br><span class="line">		<span class="comment">// 然后去掉kill[x]</span></span><br><span class="line">		<span class="comment">// -kill(x)</span></span><br><span class="line">		List&lt;Object&gt; killX = cfg.getSymbolsDefined().get(x);</span><br><span class="line">		<span class="keyword">if</span> (killX != <span class="keyword">null</span>)</span><br><span class="line">		&#123;</span><br><span class="line"></span><br><span class="line">			Iterator&lt;Object&gt; it = out.getListForKey(x).iterator();</span><br><span class="line">			<span class="keyword">while</span> (it.hasNext())</span><br><span class="line">			&#123;</span><br><span class="line">				Definition def = (Definition) it.next();</span><br><span class="line">				<span class="keyword">if</span> (killX.contains(def.identifier))</span><br><span class="line">					it.remove();</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">       	<span class="comment">// 再将gen(x)加入到out(x)集合中</span></span><br><span class="line">		<span class="comment">// gen(X)</span></span><br><span class="line">		HashSet&lt;Object&gt; genX = gen.getListForKey(x);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (genX != <span class="keyword">null</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">for</span> (Object o : genX)</span><br><span class="line">			&#123;</span><br><span class="line">				out.add(x, o);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> !oldOut.equals(out.getListForKey(x));</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>最近的状态很不好，焦虑症又复发了，看不到什么毕业的希望，学习也是断断续续的，没有什么特别大的动力，但是只能继续强撑着。坚强点嗷嗷嗷嗷，希望能早点走出困境吧。。。TAT</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="https://bantttian.github.io/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/">https://bantttian.github.io/2021/04/17/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BReachingDefinitions/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/"># 程序分析</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/04/10/Joern%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E4%B9%8Bswitch%E8%AF%AD%E5%8F%A5CFG%E7%94%9F%E6%88%90/">Joern源码阅读之switch语句CFG生成</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
