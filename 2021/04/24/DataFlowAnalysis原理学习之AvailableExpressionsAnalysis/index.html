@@ -178,7 +178,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">2021-04-24&nbsp;&nbsp;15:13:12</a>
+                        Date: <a href="#">2021-04-24&nbsp;&nbsp;15:16:28</a>
                         </span>
                     
                     
@@ -187,14 +187,14 @@
         </header>
 
         <div class="post-content">
-            <h1 id="DataFlowAnalysis原理学习之AvailableExpressionsAnalysis"><a href="#DataFlowAnalysis原理学习之AvailableExpressionsAnalysis" class="headerlink" title="DataFlowAnalysis原理学习之AvailableExpressionsAnalysis"></a>DataFlowAnalysis原理学习之AvailableExpressionsAnalysis</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
 <li><strong>Reaching Definitions Analysis</strong></li>
 <li><strong>Live Variables Analysis</strong></li>
 <li><strong>Available Expressions Analysis</strong></li>
 </ul>
 <p>前面两节学习了Reaching Definitions Analysis（可达定义分析）和Live Variables Analysis（存活变量分析，可能这样翻译不太准确），这两种分析方法都是<strong>may analysis</strong>。</p>
 <p>本文要学习的是最后的<strong>Available Expression Analysis</strong>（可替换表达式分析），这是一种<strong>must analysis</strong>。</p>
-<h2 id="Available-Expressions-Analysis定义"><a href="#Available-Expressions-Analysis定义" class="headerlink" title="Available Expressions Analysis定义"></a>Available Expressions Analysis定义</h2><p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/1.png" alt="1"></p>
+<h2 id="Available-Expressions-Analysis定义"><a href="#Available-Expressions-Analysis定义" class="headerlink" title="Available Expressions Analysis定义"></a>Available Expressions Analysis定义</h2><p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/1.png" alt="1"></p>
 <p>课程ppt上给出的定义是这样的：</p>
 <blockquote>
 <p>An expression <code>x op y</code> is available at program point <strong>p</strong> if (1) <strong><font color="red">all</font></strong> paths from the entry to <strong>p</strong> <strong><font color="red">must</font></strong> pass through the evaluation of <code>x op y</code>，and (2) after the last evaluation of <code>x op y</code>, there is no redefinition of <code>x op y</code></p>
@@ -209,26 +209,26 @@
 <p>也就是说，如果在程序点p处表达式是available的，那么就可以用最后一次的计算结果来替换表达式<code>x op y</code>。</p>
 <p>Available Expressions Analysis可以用来检测全局通用表达式。</p>
 <h2 id="Available-Expressions-Analysis理解"><a href="#Available-Expressions-Analysis理解" class="headerlink" title="Available Expressions Analysis理解"></a>Available Expressions Analysis理解</h2><p>假设现在有100个expressions，按照顺序命名为<code>E1</code>，<code>E2</code>，<code>E3</code>，<code>...</code>，<code>E100</code>，最后用一个bit vector来表示：</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/2.png" alt="2"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/2.png" alt="2"></p>
 <h3 id="transfer-function"><a href="#transfer-function" class="headerlink" title="transfer function"></a>transfer function</h3><p>假设现在有如下图所示的CFG片段，有个BasicBlock，对应的表达式为<code>x op y</code>：</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/3.png" alt="3"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/3.png" alt="3"></p>
 <ul>
 <li><p><strong>gen</strong>：<code>x op y</code>是新的expression，所以得到<code>gen[B] = { x op y }</code></p>
 </li>
 <li><p><strong>kill</strong>：<code>a = x op y</code>，变量a被重定义了，所以表达式<code>a + b</code>被<strong><font color="red">kill</font></strong>了，<code>kill[B] = { a + b }</code></p>
 </li>
 <li><p><strong>transfer function</strong>：得到的转换函数为：</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/4.png" alt="4"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/4.png" alt="4"></p>
 </li>
 </ul>
 <p>下图的例子中，从表达式<code>a = e^16 * x</code>到表达式<code>c = e^16 * x</code>，无论走哪条路径，计算<code>e^16 * x</code>，都可以用它的last expression值来替代：</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/5.png" alt="5"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/5.png" alt="5"></p>
 <p>根据control flow信息，可以得到<code>IN[B]</code>的计算公式：</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/6.png" alt="6"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/6.png" alt="6"></p>
 <p>因为Available Expressions Analysis是must analysis，所以这里的符号是<code>∩</code>，需要对BasicBlock的所有前驱块P的<code>OUT[P]</code>取一个交集。这样才能控制所有情况下都满足。</p>
 <p>对于may analysis来说，可以存在误报，即false positive，但是不可以有漏报，即false negative；但是must analysis正好相反，可以存在漏报，但是不可以有误报。</p>
 <h2 id="Available-Expressions-Analysis算法"><a href="#Available-Expressions-Analysis算法" class="headerlink" title="Available Expressions Analysis算法"></a>Available Expressions Analysis算法</h2><p>下图是算法伪代码。</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/7.png" alt="7"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/7.png" alt="7"></p>
 <p>首先进行初始化，边界值的<code>OUT</code>，即<code>OUT[entry]</code> = <code>∅</code>，除了entry块之外，其余块的<code>OUT</code>都是<code>U</code>（用数学符号来表示，就是1111…111）。接下来进行的迭代和之前两种算法类似，就不再赘述了。</p>
 <h2 id="Available-Expressions-Analysis实例"><a href="#Available-Expressions-Analysis实例" class="headerlink" title="Available Expressions Analysis实例"></a>Available Expressions Analysis实例</h2><p>现在有一个程序的控制流，涉及5个BasicBlocks，共有5个表达式：</p>
 <blockquote>
@@ -239,7 +239,7 @@
 <p>y + 3</p>
 </blockquote>
 <p>首先进行初始化，根据迭代算法，<code>OUT[entry] = 00000</code>，其余块<code>OUT</code>均初始化为<code>U</code>，得到<code>OUT[B\entry] = 11111</code>：</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/8.png" alt="8"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/8.png" alt="8"></p>
 <h3 id="第一轮迭代"><a href="#第一轮迭代" class="headerlink" title="第一轮迭代"></a>第一轮迭代</h3><ol>
 <li><p>根据控制流信息计算<code>IN[B1]</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B1] &#x3D; OUT[entry]</span><br><span class="line">	   &#x3D; 0 0000</span><br></pre></td></tr></table></figure>
@@ -247,7 +247,7 @@
 <p>然后根据transfer function计算<code>OUT[B1]</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">gen[B1] &#x3D; &#123; p - 1 &#125; &#x3D; 1 0000</span><br><span class="line">IN[B1] &#x3D; 0 0000</span><br><span class="line">kill[B1] &#x3D; &#123; 2 * y, y + 3 &#125; &#x3D; 0 0101</span><br><span class="line"></span><br><span class="line">OUT[B1] &#x3D; gen[B1] U (IN[B1] - kill[B1])</span><br><span class="line">		&#x3D; 1 0000 U (0 0000 - 0 0101)</span><br><span class="line">		&#x3D; 1 0000</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/9.png" alt="9"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/9.png" alt="9"></p>
 </li>
 <li><p>根据控制流信息计算<code>IN[B2]</code>，B2块的前驱块为<code>B1</code>和<code>B4</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B2] &#x3D; OUT[B1] ∩ OUT[B4]</span><br><span class="line">	   &#x3D; 1 0000 ∩ 1 1111</span><br><span class="line">	   &#x3D; 1 0000</span><br></pre></td></tr></table></figure>
@@ -256,7 +256,7 @@
 <p>接着根据转换函数计算<code>OUT[B2]</code>，因为有一个statement是<code>p = e^7 * x</code>，所以表达式<code>p - 1</code>被<strong>kill</strong>了：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">gen[B2] &#x3D; &#123; z &#x2F; 5, e^7 * x&#125; &#x3D; 0 1010</span><br><span class="line">IN[B2] &#x3D; 1 0000</span><br><span class="line">kill[B2]  &#x3D; &#123; p - 1 &#125; &#x3D; 1 0000</span><br><span class="line"></span><br><span class="line">OUT[B2] &#x3D; gen[B2] U (IN[B2] - kill[B2])</span><br><span class="line">		&#x3D; 0 1010 U (1 0000 - 1 0000)</span><br><span class="line">		&#x3D; 0 1010</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/10.png" alt="10"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/10.png" alt="10"></p>
 </li>
 <li><p>接着计算B3块的<code>IN</code>，它的前驱块只有B2，所以：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B3] &#x3D; OUT[B2]</span><br><span class="line">	   &#x3D; 0 1010</span><br></pre></td></tr></table></figure>
@@ -264,7 +264,7 @@
 <p>然后根据transfer function计算<code>OUT</code>，B3块的statement为<code>z = y + 3</code>，所以与变量<code>z</code>被重定义了，所以与变量<code>z</code>相关的表达式<code>z / 5</code>被kill了：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B3] &#x3D; &#123; y + 3 &#125; &#x3D; 0 0001</span><br><span class="line">IN[B3] &#x3D; 0 1010</span><br><span class="line">kill[B3] &#x3D; &#123; z &#x2F; 5 &#125; &#x3D; 0 1000</span><br><span class="line"></span><br><span class="line">OUT[B3] &#x3D; gen[B3] U (IN[B3] - kill[B3])</span><br><span class="line">		&#x3D; 0 0001 U (0 1010 - 0 1000)</span><br><span class="line">		&#x3D; 0 0001 U 0 0010</span><br><span class="line">		&#x3D; 0 0011</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/11.png" alt="11"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/11.png" alt="11"></p>
 </li>
 <li><p>然后计算B4块的<code>IN[B4]</code>，它的前驱块也是B2：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B4] &#x3D; OUT[B2]</span><br><span class="line">	   &#x3D; 0 1010</span><br></pre></td></tr></table></figure>
@@ -272,7 +272,7 @@
 <p>然后计算<code>OUT[B4]</code>，变量<code>x</code>和变量<code>q</code>发生了重定义，所以与它们相关的表达式需要被kill掉，变量<code>q</code>没有与之相关的表达式，所以可以不去管，与变量<code>x</code>相关的表达式为<code>e^7 * x</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">   gen[B4] &#x3D; &#123; 2 * y, e^7 * x &#125; &#x3D; 0 0110</span><br><span class="line">   IN[B4] &#x3D; 0 1010</span><br><span class="line">   kill[B4] &#x3D; &#123; e^7 * x &#125; &#x3D; 0 0010</span><br><span class="line">   </span><br><span class="line">OUT[B4] &#x3D; gen[B4] U (IN[B4] - kill[B4])</span><br><span class="line">   		&#x3D; 0 0110 U (0 1010 - 0 0010)</span><br><span class="line">   		&#x3D; 0 0110 U 0 1000</span><br><span class="line">   		&#x3D; 0 1110</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/12.png" alt="12"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/12.png" alt="12"></p>
 </li>
 <li><p>最后一个BasicBlock块是B5，它的前驱块为B3和B4：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B5] &#x3D; OUT[B3] ∩ OUT[B4] </span><br><span class="line">	   &#x3D; 0 1110 ∩ 0 0011</span><br><span class="line">	   &#x3D; 0 0010</span><br></pre></td></tr></table></figure>
@@ -280,7 +280,7 @@
 <p>然后计算<code>OUT</code>，变量<code>y</code>被重新定义，所以表达式<code>2 * y</code>和<code>y + 3</code>被kill掉：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B5] &#x3D; &#123; e^7 * x, z &#x2F; 5 &#125; &#x3D; 0 1010</span><br><span class="line">IN[B5] &#x3D; 0 0010</span><br><span class="line">kill[B5] &#x3D; 0 0101</span><br><span class="line"></span><br><span class="line">OUT[B5] &#x3D; gen[B5] U (IN[B5] - kill[B5])</span><br><span class="line">		&#x3D; 0 1010 U (0 0010 - 0 0101)</span><br><span class="line">		&#x3D; 0 1010 U 0 0010</span><br><span class="line">		&#x3D; 0 1010</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/13.png" alt="13"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/13.png" alt="13"></p>
 </li>
 </ol>
 <p>第一轮遍历结束后，<code>OUT[B1]</code>，<code>OUT[B2]</code>，<code>OUT[B3]</code>，<code>OUT[B4]</code>和<code>OUT[B5]</code>都发生了变化，所以迭代继续。</p>
@@ -291,17 +291,17 @@
 <p>B1块对变量y进行了重定义，所以变量<code>y</code>相关的表达式<code>2 * y</code>和<code>y + 3</code>都被kill了，同时，新生成的表达式为<code>p - 1</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B1] &#x3D; &#123; p - 1 &#125; &#x3D; 1 0000</span><br><span class="line">IN[B1] &#x3D; 0 0000</span><br><span class="line">kill[B1] &#x3D; &#123; 2 * y, y + 3 &#125; &#x3D; 0 0101</span><br><span class="line"></span><br><span class="line">OUT[B1] &#x3D; gen[B1] U (IN[B1] - kill[B1])</span><br><span class="line">		&#x3D; 1 0000 U (0 0000 - 0 0101)</span><br><span class="line">		&#x3D; 1 0000 U 0 0000</span><br><span class="line">		&#x3D; 1 0000</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/14.png" alt="14"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/14.png" alt="14"></p>
 <p>相比于上一次迭代结果，<code>OUT[B1]</code>没有发生变化，因为entry块没有发生变化，而<code>gen</code>和<code>kill</code>都是由statements来决定的，statements不会变，所以<code>gen</code>和<code>kill</code>也不会发生变化，因此<code>OUT[B1]</code>也不会发生变化，可以看到，<code>OUT</code>的结果集已经开始收敛了。</p>
 </li>
 <li><p>然后计算B2块的<code>IN</code>：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B2] &#x3D; OUT[B1] ∩ OUT[B4]</span><br><span class="line">	   &#x3D; 1 0000 ∩ 0 1110</span><br><span class="line">	   &#x3D; 0 0000</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/15.png" alt="15"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/15.png" alt="15"></p>
 <p>然后计算OUT：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B2] &#x3D; &#123; z &#x2F; 5, e^7 * x &#125; &#x3D; 0 1010</span><br><span class="line">IN[B2] &#x3D; 0 0000</span><br><span class="line">kill[B2] &#x3D; &#123; p -1 &#125; &#x3D; 1 0000</span><br><span class="line"></span><br><span class="line">OUT[B2] &#x3D; gen[B2] U (IN[B2] - kill[B2])</span><br><span class="line">		&#x3D; 0 1010 U (0 0000 - 1 0000)</span><br><span class="line">		&#x3D; 0 1010 U 0 0000</span><br><span class="line">		&#x3D; 0 1010</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/16.png" alt="16"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/16.png" alt="16"></p>
 <p>相比第一次迭代结果，<code>OUT[B2]</code>也没有发生变化。</p>
 </li>
 <li><p>然后计算B3块的<code>IN</code>，其前驱块为B2，因为<code>OUT[B2]</code>没有发生变化，所以<code>IN[B2]</code>不变：</p>
@@ -310,7 +310,7 @@
 <p>同样的，<code>OUT[B2]</code>也不会发生什么变化：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B2] &#x3D; &#123; y + 3 &#125; &#x3D; 0 0001</span><br><span class="line">IN[B3] &#x3D; 0 1010</span><br><span class="line">kill[B2] &#x3D; &#123; z &#x2F; 5 &#125; &#x3D; 0 1000</span><br><span class="line"></span><br><span class="line">OUT[B2] &#x3D; gen[B2] U (IN[B3] - kill[B2])</span><br><span class="line">		&#x3D; 0 0001 U (0 1010 - 0 1000)</span><br><span class="line">		&#x3D; 0 0001 U 0 0010</span><br><span class="line">		&#x3D; 0 0011</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/17.png" alt="17"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/17.png" alt="17"></p>
 </li>
 <li><p>B4块的前驱也是B2，所以它和B3的道理一样：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IN[B4] &#x3D; OUT[B2]</span><br><span class="line">	   &#x3D; 0 1010</span><br></pre></td></tr></table></figure>
@@ -318,7 +318,7 @@
 <p><code>OUT[B4]</code>也不会发生变化：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B4] &#x3D; &#123; 2 * y, e^7 * x &#125; &#x3D; 0 0110</span><br><span class="line">IN[B4] &#x3D; 0 1010</span><br><span class="line">kill[B4] &#x3D; &#123; e^7 * x &#125; &#x3D; 0 0010</span><br><span class="line"></span><br><span class="line">OUT[B4] &#x3D; gen[B4] U (IN[B4] - kill[B4])</span><br><span class="line">		&#x3D; 0 0110 U (0 1010 - 0 0010)</span><br><span class="line">		&#x3D; 0 0110 U 0 1000</span><br><span class="line">		&#x3D; 0 1110</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/18.png" alt="18"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/18.png" alt="18"></p>
 </li>
 <li><p>最后是B5，前驱块是<code>B3</code>和<code>B4</code>，因为<code>OUT[B3]</code>和<code>OUT[B4]</code>都没有发生变化，所以<code>IN[B5]</code>也不会发生变化：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IN[B5] &#x3D; OUT[B3] ∩ OUT[B4] </span><br><span class="line">	   &#x3D; 0 1110 ∩ 0 0011</span><br><span class="line">	   &#x3D; 0 0010IN[B5] &#x3D; OUT[B3]</span><br></pre></td></tr></table></figure>
@@ -326,12 +326,12 @@
 <p><code>IN[B5]</code>没变，<code>OUT[B5]</code>也不会变：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">gen[B5] &#x3D; &#123; e^7 * x, z &#x2F; 5 &#125; &#x3D; 0 1010</span><br><span class="line">IN[B5] &#x3D; 0 0010</span><br><span class="line">kill[B5] &#x3D; 0 0101</span><br><span class="line"></span><br><span class="line">OUT[B5] &#x3D; gen[B5] U (IN[B5] - kill[B5])</span><br><span class="line">		&#x3D; 0 1010 U (0 0010 - 0 0101)</span><br><span class="line">		&#x3D; 0 1010 U 0 0010</span><br><span class="line">		&#x3D; 0 1010</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/19.png" alt="19"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/19.png" alt="19"></p>
 </li>
 </ol>
 <p>经过第二轮迭代，所有基础块的<code>OUT</code>都没有发生改变。算法到此结束。</p>
 <h2 id="三种算法的比较"><a href="#三种算法的比较" class="headerlink" title="三种算法的比较"></a>三种算法的比较</h2><p>下图对<strong>Reaching Definitions Analysis</strong>，<strong>Live Variables Analysis</strong> 和 <strong>Available Expressions Analysis</strong>进行了简单的比较：</p>
-<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/20.png" alt="20"></p>
+<p><img src="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/imgs/20.png" alt="20"></p>
 <p>个人认为李樾老师讲的数据流分析很详尽，在讲解了原理的基础上，还会不厌其烦地用例子，带着我们一遍一遍地做迭代，自己遍历过一遍算法后，真的能理解地透彻很多，记忆也会深刻很多。</p>
 
         </div>
@@ -365,6 +365,10 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/"># 程序分析</a>
+                    
+                        
                 </span>
             </div>
             <div>
