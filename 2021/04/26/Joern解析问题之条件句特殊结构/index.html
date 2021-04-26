@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bantian">
+
+
+
+
+
+<title>Joern解析问题之条件句特殊结构 | Bantian</title>
+
+
+
+    <link rel="icon" href="/my.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bantian&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bantian&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Archives</a>
+                
+                    <a class="menu-item" href="/tags">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Joern解析问题之条件句特殊结构</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bantian</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2021-04-26&nbsp;&nbsp;22:05:57</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>除了最常见的if条件语句之外，条件句还可以用运算符来表示。</p>
+<h3 id="三元运算符"><a href="#三元运算符" class="headerlink" title="三元运算符 ?:"></a>三元运算符 ?:</h3><p><code>?:</code>是唯一的三元运算符。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$b = <span class="keyword">isset</span>($a) ? $a : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>对应的CPG为：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/1.png" alt="1"></p>
+<p>我更喜欢转成规整的树状图查看：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/ifTernary/ifTernary.svg" alt="ifTernary-PHPJoern"></p>
+<p>上面的代码相当于：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($a))</span><br><span class="line">	$b = $a;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">	$b = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>对应的CFG为：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/2.png" alt="2"></p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/if/if.svg" alt="if"></p>
+<p>我们可以看到，<code>id=10</code>的节点是statement <code>$b=$a</code>的根节点，<code>id=17</code>是statement <code>$b=1</code>的根节点。</p>
+<h3 id="php7新特性——null合并运算符"><a href="#php7新特性——null合并运算符" class="headerlink" title="php7新特性——null合并运算符??"></a>php7新特性——null合并运算符??</h3><p>而在php7中，也有一些新的特性引入，具体可以参看下面这2篇文章：</p>
+<blockquote>
+<p><a href="https://blog.teamtreehouse.com/5-new-features-php-7" target="_blank" rel="noopener">5 New Features in PHP 7</a></p>
+<p><a href="https://www.php.net/manual/en/migration70.new-features.php" target="_blank" rel="noopener">https://www.php.net/manual/en/migration70.new-features.php</a></p>
+</blockquote>
+<p>php7中引入了一些新特性，比如：</p>
+<blockquote>
+<p><strong>Scalar type declarations</strong>：标量类型声明</p>
+<p><strong>Return type declarations</strong>：返回值类型声明</p>
+<p><strong>Null coalescing operator</strong>：null合并运算符，<code>??</code></p>
+<p><strong>Spaceship operator</strong>：太空船操作符（组合比较符），<code>&lt;=&gt;</code></p>
+<p><strong>Constant arrays using define()</strong>：（通过<strong>define()</strong>定义常量数组）</p>
+<p><strong>Anonymous classes</strong>：匿名类</p>
+<p><strong>Unicode codepoint escape syntax</strong>：Unicode codepoint转译语法</p>
+<p>and so on …</p>
+</blockquote>
+<p>其中，和条件语句相关的新特性是<code>null合并运算符</code>，通常用<code>??</code>来表示，比如源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> (!<span class="keyword">empty</span>($firstName)) </span><br><span class="line">    $name = $firstName;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    $name = <span class="string">"Guest"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>用null合并运算表示符来表示就是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$name = $firstName ??  <span class="string">"Guest"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>我用<a href="https://github.com/nikic/PHP-Parser/" target="_blank" rel="noopener">PHP-Parser</a>解析后得到的AST树是这样的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">array(</span><br><span class="line">    0: Stmt_Expression(</span><br><span class="line">        expr: Expr_Assign(</span><br><span class="line">            var: Expr_Variable(</span><br><span class="line">                name: name</span><br><span class="line">            )</span><br><span class="line">            expr: Expr_BinaryOp_Coalesce(</span><br><span class="line">                left: Expr_Variable(</span><br><span class="line">                    name: firstName</span><br><span class="line">                )</span><br><span class="line">                right: Scalar_String(</span><br><span class="line">                    value: Guest</span><br><span class="line">                )</span><br><span class="line">            )</span><br><span class="line">        )</span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>更具象点，用<a href="https://github.com/ircmaxell/php-ast-visualizer" target="_blank" rel="noopener">php-ast-visualizer</a>可视化后的AST树为：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/AST_if.svg" alt="AST-if"></p>
+<p>这个ast树其实和下面的源码对应的ast是一模一样的：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> ($firstName)</span><br><span class="line">    $name = $firstName;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    $name = <span class="string">'Guest'</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>但是这并不是合法的php语法，因为<code>$firstName</code>是未定义的，编译执行的时候会报错：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> php test.php </span></span><br><span class="line">PHP Notice:  Undefined variable: firstName in /home/sec/Documents/test.php on line 2</span><br></pre></td></tr></table></figure>
+
+<p>报错原因为：<a href="https://blog.csdn.net/mnmnwq/article/details/82465985" target="_blank" rel="noopener">https://blog.csdn.net/mnmnwq/article/details/82465985</a></p>
+<h4 id="nodes-csv"><a href="#nodes-csv" class="headerlink" title="nodes.csv"></a>nodes.csv</h4><p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/5.png" alt="5"></p>
+<h4 id="rels-csv"><a href="#rels-csv" class="headerlink" title="rels.csv"></a>rels.csv</h4><p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/6.png" alt="6"></p>
+<p>生成的代码属性图为：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/4.png" alt="4"></p>
+<p>用更清晰的图来表示为：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/if_coalescing/if_coalescing.svg" alt="if_coalescing"></p>
+<p>其中结点<code>id=8, type=AST_COALESCE</code>的结点就是表示<code>??</code>运算符，但是该结点被当成了顺序语句。在上图中并没有体现出分支的情况。</p>
+<h2 id="问题小结"><a href="#问题小结" class="headerlink" title="问题小结"></a>问题小结</h2><p>上面的两个cases中，问题在于，PHPJoern将<code>AST_CONDITION</code>和<code>AST_COALESCE</code>节点当成了普通的赋值节点。如果我们真的要改进也很困难，像上面提到的正常的分支语句，我们能找到分支所需要的根节点，但是对于这种情况，我们找不到根节点，因为<code>php2ast</code>在将php文件解析为抽象语法树的时候，压根就没将其当成分支语句，所以没有解析出可用的分支节点，那Joern自然也无法根据php2ast解析的结果来处理这样特殊的条件语句。</p>
+<p>如果说Joern无法正确处理三元运算条件语句和null合并运算符是因为没有分支需要的根节点，那么我们可以尝试将源码改成：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$b = <span class="keyword">isset</span>($a) ? $b=$a : $b=<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>得到的代码属性图为：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/3.png" alt="3"></p>
+<p>转化为我自己更喜欢的图就是：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/ifTernary2/ifTernary2-PHPJoern.svg" alt="ifTernary2-PHPJoern"></p>
+<p>可以看到，在这种情况下，还是按照顺序语句处理。但是对于这种情况，是可以优化Joern的，我们自己也可以画出正确的控制流（我认为的正确的画法）：</p>
+<p><img src="/2021/04/26/Joern%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98%E4%B9%8B%E6%9D%A1%E4%BB%B6%E5%8F%A5%E7%89%B9%E6%AE%8A%E7%BB%93%E6%9E%84/imgs/ifTernary2/ifTernary2-right.svg" alt="ifTernary2-right.svg"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bantian</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>早睡早起身体好</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/PHP%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/"># PHP程序分析</a>
+                    
+                        <a href="/tags/Joern/"># Joern</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/04/24/DataFlowAnalysis%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0%E4%B9%8BAvailableExpressionsAnalysis/">DataFlowAnalysis原理学习之AvailableExpressionsAnalysis</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bantian | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
