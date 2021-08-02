@@ -299,7 +299,7 @@
 <p>如果我直接单单安装这个包也会报相同的错误：</p>
 <p><img src="/2021/04/01/PHP%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%E4%B9%8BPHPJoern%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/imgs/13.png" alt="13"></p>
 <p>所以安装失败，现在问题已经找到了，所以我们安装低版本的pygraphviz就可以解决这个问题（应该也可以安装1.6的，尝试下就知道了）：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install pygraphviz==1.5</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install -y graphviz-dev</span><br><span class="line">sudo pip3 install pygraphviz==1.5</span><br></pre></td></tr></table></figure>
 
 <p><img src="/2021/04/01/PHP%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%E4%B9%8BPHPJoern%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/imgs/14.png" alt="14"></p>
 <p>最后重新执行<code>sudo ./build.sh</code>，成功：</p>
